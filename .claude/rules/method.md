@@ -80,6 +80,13 @@ liquidation preference × m.
 | prices.csv | date, ticker, close |
 | kpi_snapshots.csv | fetched_at, netSatsPerShare, netBtcReserve, amplification, mNav, btc_price, mstr_price |
 | attribution.csv | firm, week_end, action, usd, m, q, dn_first_order, dn_exact, dn_per_dollar |
+| stated.csv | firm, week_end, filed, filing_url, coins, usd_reserve, usd_cash |
+
+stated.csv holds each 8-K's own aggregates, the targets for Step 1 (coins) and Step 2 (reserve).
+
+Signs: for actions, `usd` and `units` are positive magnitudes; the action gives direction.
+`carry` rows are signed changes to R (`usd`) and C (`units`): a dividend paid is negative usd,
+staking earned is positive units.
 
 `action` ∈ issue_common, buyback_common, issue_pref, retire_pref, buy_coin, sell_coin, carry.
 `units`: shares for common, notional dollars for preferred, coins for coin trades.
