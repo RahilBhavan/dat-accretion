@@ -25,5 +25,8 @@
 - No synthetic fallback data. If a source fails, fail loudly.
 - The KPI snapshot saves the raw JSON for each day too (`data/kpi/<date>.json`), since the API
   keeps no history and Step 0 may need fields the CSV drops.
+- BitMine staking: weekly releases give staked ETH (often unchanged for weeks) and annualized
+  projections only, never realized rewards. Staking carry comes from 10-Qs or is left in the
+  residual, labeled.
 - Open question: which STRC price prices a retirement. Use the 8-K's disclosed average where
   given, else the daily close, and record which in `avg_price`.
