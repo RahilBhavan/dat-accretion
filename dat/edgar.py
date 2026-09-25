@@ -47,10 +47,15 @@ def filings(cik, form='8-K', since='2026-06-01'):
     return sorted(out, key=lambda r: (r['filed'], r['accession']))
 
 
-def fetch(url):
-    """Document text, cached at data/raw/<accession>/<doc>. A cache hit makes no request."""
+def cache_path(url):
+    """Where fetch() caches a document: data/raw/<accession>/<doc>."""
     parts = url.rstrip('/').split('/')
-    path = os.path.join(RAW, parts[-2], parts[-1])
+    return os.path.join(RAW, parts[-2], parts[-1])
+
+
+def fetch(url):
+    """Document text, cached at cache_path(url). A cache hit makes no request."""
+    path = cache_path(url)
     if not os.path.exists(path):
         body = client.get(url)
         os.makedirs(os.path.dirname(path), exist_ok=True)
