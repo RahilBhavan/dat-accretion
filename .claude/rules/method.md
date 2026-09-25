@@ -18,6 +18,34 @@ Strategy's definition and this file changes to match. Tests reference these form
 
 N = C + (R − D − F)/p   n = N/S   m = s·S/(p·N) = s/(p·n)
 
+### Strategy's definition (Step 0, confirmed; adopted for both firms)
+
+Source: glossary in the 2026-08-24 FWP,
+https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm
+
+- R = USD Assets = USD Reserve + USD Cash.
+- D = notional of out-of-the-money converts and other debt-like instruments. In-the-money
+  converts are not in D; their shares go into S. The $39.8M secured term loan is not deducted.
+- F = notional (not trading price, not accrued dividends) of all perpetual preferred, excluding
+  in-the-money STRK. STRE (EUR) converts at the Friday 12:30 PM NY rate (API implies ~1.147).
+- S = Fully Diluted Shares Outstanding: basic (class A + B) + options + RSUs + PSUs +
+  in-the-money converts + in-the-money STRK. (satsPerShare, gross, uses Assumed Diluted:
+  every convert converted. Do not mix the two.)
+- In the money: MSTR price above conversion price. A convert crossing its price moves notional
+  out of D and shares into S; the roll-forward applies this each date, not a fixed list.
+- mNAV = s / (N·p / S). Amplification = C·p / (N·p) = BTC reserve / net reserve.
+
+Rebuild pinned in tests/test_balances.py against the 2026-09-25T16:19:32Z snapshot (8-K 9/21 +
+Q2 10-Q): netSatsPerShare +0.107%, net reserve −0.003%, amplification +0.004%, mNAV −0.114%.
+Gate passed; levels are computed, not anchored to the API. S is ~0.11% below the API's implied
+FDSO; gap unexplained, likely post-6/30 award vesting.
+
+BMNP (BitMine q): liquidation preference $100 (Certificate of Designations, ex3-1,
+https://www.sec.gov/Archives/edgar/data/1829311/000149315226028140/ex3-1.htm). After BitMine's
+first follow-on BMNP sale it floats to max($100, last sale price, 10-day average), which caps q
+near 1; recheck each week's ex99-1 for sales. 3.5M shares issued 2026-06-10 at $80 (q = 0.80
+at issue). 9.50% cumulative on $100, paid weekly in cash (carry). Not convertible.
+
 ## Actions (first order, k = x/(p·S), x = dollars)
 
 | # | action | Δn | adds when |
