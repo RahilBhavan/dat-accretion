@@ -1,18 +1,11 @@
 import pytest
-from dat.balances import net
+from decimal import Decimal
+from dat.balances import net, CONVERTS, pref_notional, class_a, reserve_checks, PREF_ANCHOR
 
 # 8-K filed 2026-09-21 (acc 0001193125-26-396093; file named mstr-20260914.htm)
 COINS = 846_000  # https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm
 USD_ASSETS = 5.04e9 + 1.05e9  # USD Reserve + USD Cash, same 8-K
-# converts (face, conv price), Q2 10-Q https://www.sec.gov/Archives/edgar/data/1050446/000105044626000044/mstr-20260630.htm
-CONVERTS = [
-    (1_010.0e6, 183.19),  # 2028
-    (1_500.0e6, 672.40),  # 2029
-    (800.0e6, 149.77),  # 2030A
-    (2_000.0e6, 433.43),  # 2030B
-    (603.659e6, 232.72),  # 2031
-    (800.0e6, 204.33),  # 2032
-]
+# converts (face, conv price): dat.balances.CONVERTS, from the Q2 10-Q
 # prefs (notional, conv price or None, shares if converted), Q2 10-Q above
 PREFS = [
     (1_283.97e6, None, 0),  # STRF
@@ -50,3 +43,56 @@ def test_2028_flips_at_190():
     a, b = run(), run(190)
     assert a['D'] - b['D'] == pytest.approx(1_010e6)
     assert b['S'] - a['S'] == pytest.approx(1_010e6 / 183.19)
+
+
+def act(week, action, ticker, usd='0', units='0'):
+    return {'week_end': week, 'action': action, 'ticker': ticker, 'usd': usd, 'units': units}
+
+
+def test_pref_roll_both_directions():
+    acts = [act('2026-06-28', 'issue_pref', 'STRC', units='5000000'),  # before the 6/30 anchor: backed out
+            act('2026-07-26', 'retire_pref', 'STRC', units='28893000'),
+            act('2026-08-02', 'issue_pref', 'STRF', units='1000000')]
+    at = lambda w, t: pref_notional(acts, w)[t]
+    assert at('2026-06-30', 'STRC') == PREF_ANCHOR['STRC']
+    assert at('2026-06-21', 'STRC') == PREF_ANCHOR['STRC'] - 5_000_000
+    assert at('2026-06-28', 'STRC') == PREF_ANCHOR['STRC']
+    assert at('2026-07-26', 'STRC') == PREF_ANCHOR['STRC'] - 28_893_000
+    assert at('2026-08-02', 'STRF') == PREF_ANCHOR['STRF'] + 1_000_000
+    assert at('2026-07-26', 'STRF') == PREF_ANCHOR['STRF']
+
+
+def test_class_a_roll_direction():
+    acts = [act('2026-07-19', 'issue_common', 'MSTR', units='100'), act('2026-07-26', 'issue_common', 'MSTR', units='10'),
+            act('2026-08-02', 'issue_common', 'MSTR', units='1'), act('2026-08-09', 'buyback_common', 'MSTR', units='3')]
+    base = 364_585_501
+    assert class_a(acts, '2026-07-26') == base  # the 7/20-7/26 week is in the 7/24 anchor
+    assert class_a(acts, '2026-07-19') == base - 10
+    assert class_a(acts, '2026-07-12') == base - 110
+    assert class_a(acts, '2026-08-02') == base + 1
+    assert class_a(acts, '2026-08-09') == base - 2
+
+
+def st(week, reserve, rprec, cash='', cprec='', r_in='', r_out=''):
+    return {'week_end': week, 'usd_reserve': reserve, 'usd_reserve_prec': rprec, 'usd_cash': cash,
+            'usd_cash_prec': cprec, 'reserve_in': r_in, 'reserve_out': r_out}
+
+
+def test_reserve_check_pass_fail_and_kinds():
+    stated = [st('2026-07-26', '3750000000', '10000000'),
+              st('2026-08-02', '4000000000', '100000000', r_in='250000000'),  # tol 5M + 50M
+              st('2026-08-09', '4040000000', '10000000', r_in='200000000', r_out='40000000'),
+              st('2026-08-16', '5100000000', '10000000', '1590000000', '10000000'),  # prior lacks cash: reserve kind
+              st('2026-08-23', '5100000000', '10000000', '1610000000', '10000000'),
+              st('2026-08-30', '5100000000', '10000000', '1440000000', '10000000')]
+    acts = [act('2026-08-23', 'issue_common', 'MSTR', '602800000'), act('2026-08-23', 'buy_coin', 'BTC', '369700000'),
+            act('2026-08-23', 'retire_pref', 'STRC', '151800000'), act('2026-08-23', 'carry', 'DIV_INT', '-50700000'),
+            act('2026-08-30', 'retire_pref', 'STRC', '196300000')]
+    got = {w: (k, d, f, t, ok) for w, k, d, f, t, ok in reserve_checks(stated, acts, check_from='2026-08-02')}
+    assert got['2026-08-02'] == ('reserve', 250_000_000, 250_000_000, 55_000_000, True)
+    assert got['2026-08-09'][:3] == ('reserve', 40_000_000, 160_000_000) and got['2026-08-09'][4] is False  # off 120M > 55M
+    assert got['2026-08-16'][0] == 'reserve' and got['2026-08-16'][4] is False  # +1.06B, nothing itemized
+    assert got['2026-08-23'] == ('R', 20_000_000, 30_600_000, 20_000_000, True)  # off 10.6M within 4 x 5M
+    assert got['2026-08-30'][:3] == ('R', -170_000_000, -196_300_000) and got['2026-08-30'][4] is False  # off 26.3M
+    early = reserve_checks(stated[:2], acts, check_from='2026-08-09')
+    assert early == [('2026-08-02', 'none', Decimal(250_000_000), Decimal(0), None, None)]

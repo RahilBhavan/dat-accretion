@@ -33,7 +33,7 @@ Run a step with `/build-step <n>`. One branch and one PR per step.
 |---|---|---|---|
 | 0 | step-0-kpi-snapshot | snapshot_kpi.py + snapshot.yml; rebuild netSatsPerShare; BMNP terms | cron row lands on `data`; rebuild within 0.5% of API |
 | 1 | step-1-parse-mstr | Strategy 8-Ks → actions.csv | each week's rolled BTC equals the 8-K's stated holdings exactly |
-| 2 | step-2-balances | 10-Q anchors rolled forward; prices.csv | rolled USD Reserve equals each 8-K; every week has m and q for STRC |
+| 2 | step-2-balances | 10-Q anchors rolled forward; prices.csv | R roll within disclosure rounding from 8/02 (method.md); every week has m and q for STRC |
 | 3 | step-3-parse-bmnr | BitMine rows; staking as carry | rolled ETH within 0.1% of strategicethreserve.xyz |
 | 4 | step-4-engine | five formulas, exact recompute, attribution + residual | pytest incl. $3.895M STRC case; attribution + residual = observed Δn |
 | 5 | step-5-site | break-even map and attribution bars | 375px wide, no horizontal scroll; every dot links to its filing |
