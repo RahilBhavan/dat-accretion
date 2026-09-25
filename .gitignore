@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.DS_Store
+.env
+# private notes, drafts, outreach: never public
+private/
+# per-machine Claude settings
+.claude/settings.local.json
+.claude/worktrees/
+# cached filings are rebuildable from EDGAR; generated data lives on the data branch
+data/raw/
