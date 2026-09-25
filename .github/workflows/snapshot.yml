@@ -1,0 +1,46 @@
+name: snapshot
+on:
+  schedule:
+    - cron: '30 21 * * *'   # 21:30 UTC daily, after US close
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+concurrency: snapshot
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: check out the data branch into _data (orphan on first run)
+        run: |
+          if git ls-remote --exit-code --heads origin data; then
+            git fetch origin data && git worktree add -B data _data origin/data
+          else
+            git worktree add --orphan -b data _data
+          fi
+      - name: fetch today's KPI row and raw JSON
+        run: python -m dat.snapshot_kpi _data/data
+      # Step 6 adds `python check.py` to this job.
+      - name: commit and push (append-only; never force-push, the API keeps no history)
+        working-directory: _data
+        run: |
+          git config user.name dat-bot
+          git config user.email dat-bot@users.noreply.github.com
+          git add data
+          git commit -m "data: KPI snapshot $(date -u +%F)"
+          git push origin data
+      - name: alert (one open issue per failure streak; comment on it if already open)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="KPI snapshot failed"
+          url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          n=$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')
+          if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $url"
+          else gh issue create --title "$title" --body "Run: $url"; fi
