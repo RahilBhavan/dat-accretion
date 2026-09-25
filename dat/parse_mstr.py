@@ -3,12 +3,12 @@
 Sections are found by heading text, tables are read by row and column label. An unknown label
 inside a recognized section raises. Acceptance: rolled BTC equals each 8-K's stated holdings.
 """
-import csv, os, re, sys, datetime as dt
+import os, re, sys, datetime as dt
 from decimal import Decimal
 from html.parser import HTMLParser
 
 CIK = 1050446
-ACTION_FIELDS = ['firm', 'week_end', 'filed', 'filing_url', 'action', 'ticker', 'usd', 'units', 'avg_price']
+ACTION_FIELDS = ['firm', 'week_end', 'filed', 'filing_url', 'action', 'ticker', 'usd', 'units', 'avg_price', 'note']  # note: blank = filed figure
 STATED_FIELDS = ['firm', 'week_end', 'filed', 'filing_url', 'coins', 'usd_reserve', 'usd_cash', 'reserve_in',
                  'reserve_out', 'usd_reserve_prec', 'usd_cash_prec']
 PREFS = {'STRF', 'STRC', 'STRK', 'STRD', 'STRE'}
@@ -279,6 +279,11 @@ def ulp(amount, unit):
     return Decimal(1).scaleb(Decimal(amount.replace(',', '')).as_tuple().exponent) * SCALE[unit.lower()]
 
 
+BAL_ONE = rf'As of ({DATE}), the balance of the USD Reserve (?:is|was) {MONEY}'
+BAL_TWO = rf'As of ({DATE}), the balances of the USD Reserve and USD Cash were {MONEY} and {MONEY}'
+BAL_ITEM = rf'USD (Reserve|Cash): {MONEY}'
+
+
 def balances(bs):
     """{as_of: {'usd_reserve', 'usd_cash', 'usd_reserve_prec', 'usd_cash_prec': Decimal}} from any paragraph.
     *_prec is the unit in the last disclosed digit (the R check's tolerance is half of it)."""
@@ -290,49 +295,103 @@ def balances(bs):
     for k, t in bs:
         if k != 'p':
             continue
-        if m := re.search(rf'As of ({DATE}), the balance of the USD Reserve (?:is|was) {MONEY}', t, re.I):
+        if m := re.search(BAL_ONE, t, re.I):
             put(iso(m.group(1)), 'usd_reserve', *m.group(2, 3))
-        elif m := re.search(rf'As of ({DATE}), the balances of the USD Reserve and USD Cash were {MONEY} and {MONEY}', t):
+        elif m := re.search(BAL_TWO, t):
             put(iso(m.group(1)), 'usd_reserve', *m.group(2, 3))
             put(iso(m.group(1)), 'usd_cash', *m.group(4, 5))
         elif m := re.search(rf'As of ({DATE}), the balances of the USD Reserve and USD Cash were as follows', t):
             pending = iso(m.group(1))
-        elif pending and (m := re.fullmatch(rf'USD (Reserve|Cash): {MONEY}', t)):
+        elif pending and (m := re.fullmatch(BAL_ITEM, t)):
             put(pending, 'usd_' + m.group(1).lower(), *m.group(2, 3))
     return out
 
 
-RESERVE_IN = rf'{MONEY}[^$;]{{0,120}}? were used to increase the USD Reserve\b'
+# The amount must sit in the same clause as "were used to increase": no ", and", "used to", "remaining" or
+# "and the rest/remainder/balance" between, so a clause that doesn't state its own amount never borrows one.
+RESERVE_IN = (rf'{MONEY}(?:(?!,\s*and\b|\bremaining\b|\bused to\b|\band the (?:rest|remainder|balance)\b)[^$;]){{0,120}}?'
+              r' were used to increase the USD Reserve\b')
+RESERVE_REMAINING = r'\b(?:remaining|rest|remainder)\b[^$;.]{0,120}?\bUSD Reserve\b'  # inflow with no amount: raises
 RESERVE_OUT = rf'{MONEY} of the USD Reserve to\b'
-# Any other "$X ... <verb> ... USD Reserve" must be a known sentence or it raises.
-RESERVE_NEAR = (rf'{MONEY}[^$;]{{0,160}}?\b(?:increas|fund|add|contribut|allocat|deposit|transfer|replenish)\w*'
-                rf'\b[^$;]{{0,20}}?\bUSD Reserve\b')
 RESERVE_CAPACITY = r'up to \$1\.25 billion of additional proceeds to fund the USD Reserve'  # BTC Monetization Program size, not a flow
+DIVIDEND_FUNDING = rf'{MONEY}[^$]{{0,160}}?\bto fund (?:the )?(?:payment of )?(?:dividends|distributions|interest)'
+# Other known uses of proceeds or USD Cash that share a sentence with USD Reserve flows.
+OTHER_FUNDING = (rf"{MONEY} in (?:net )?proceeds from [^$;]{{0,60}}? were (?:used to fund (?:repurchases of \w+ Stock|"
+                 rf"bitcoin purchases)|added to Strategy[’']s cash balance|used to increase the USD Cash liquidity account)",
+                 rf'{MONEY} of USD Cash to (?:fund repurchases|purchase bitcoin)\b')
+# In a sentence with a $, every "USD Reserve" mention must fall inside one of these matches.
+COVER = (BAL_ONE, BAL_TWO, BAL_ITEM, RESERVE_CAPACITY, RESERVE_IN, RESERVE_OUT)
+# Words in the 40 chars before a RESERVE_IN/RESERVE_OUT amount that make the flow hypothetical or negated.
+HEDGE = r'\b(?:up to|may|will|would|plans? to|not|no)\b'
+# Every $ amount in a sentence that mentions the USD Reserve must fall inside one of these matches.
+CONSUMERS = (BAL_ONE, BAL_TWO, BAL_ITEM, RESERVE_CAPACITY, RESERVE_IN, RESERVE_OUT, DIVIDEND_FUNDING) + OTHER_FUNDING
+# Sentence split: whitespace after "." (or ";" not) followed by a capital, "(" or a bullet; not after "U.S."-style
+# abbreviations. Periods inside numbers ("$5.04") are never followed by whitespace.
+SENTENCE = r'(?<![A-Z]\.[A-Z]\.)(?<!\b[A-Z]\.)(?<=\.)\s+(?=[A-Z(•●])'
+
+
+def sentences(text):
+    return re.split(SENTENCE, text)
+
+
+def reserve_guard(bs, where=''):
+    """Raise on a USD Reserve sentence that moves money the parser can't account for: a $ amount no known phrase
+    consumes, an "increase the USD Reserve" clause without its own amount, or a "remaining/rest" inflow."""
+    for k, t in bs:
+        if k != 'p':
+            continue
+        for s in sentences(t):
+            if 'USD Reserve' not in s:
+                continue
+            for rx in (RESERVE_IN, RESERVE_OUT):
+                for m in re.finditer(rx, s):
+                    if h := re.search(HEDGE, s[max(0, m.start() - 40):m.start()], re.I):
+                        raise ValueError(f'{where}: hypothetical or negated USD Reserve flow ({h.group(0)!r}) in {s!r}')
+            if '$' in s:
+                cover = [m.span() for rx in COVER for m in re.finditer(rx, s, re.I)]
+                for m in re.finditer(r'USD Reserve', s):
+                    if not any(a <= m.start() < b for a, b in cover):
+                        raise ValueError(f'{where}: unknown USD Reserve flow: "USD Reserve" at char {m.start()} is not '
+                                         f'part of a balance, capacity, inflow or outflow phrase in {s!r}')
+            if len(re.findall(r'\bincrease the USD Reserve\b', s)) != len(re.findall(RESERVE_IN, s)):
+                raise ValueError(f'{where}: unknown USD Reserve flow: an "increase the USD Reserve" clause without its own '
+                                 f'amount in {s!r}')
+            if r := re.search(RESERVE_REMAINING, s):
+                raise ValueError(f'{where}: unknown USD Reserve flow with no amount of its own: {r.group(0)!r} in {s!r}')
+            spans = [m.span() for rx in CONSUMERS for m in re.finditer(rx, s, re.I)]
+            for m in re.finditer(r'\$\d[\d,.]*', s):
+                if not any(a <= m.start() < b for a, b in spans):
+                    raise ValueError(f'{where}: unknown USD Reserve flow: {m.group(0)} not consumed by a known phrase in {s!r}')
 
 
 def reserve_flows(bs, where=''):
     """(in, out): sums of amounts "used to increase the USD Reserve" and "$X of the USD Reserve to ...";
-    None when none disclosed. An unknown sentence moving money into the USD Reserve raises."""
+    None when none disclosed. reserve_guard raises first on any unconsumed USD Reserve amount."""
+    reserve_guard(bs, where)
     ins, outs = [], []
     for k, t in bs:
         if k != 'p':
             continue
-        known = {m.start() for m in re.finditer(RESERVE_IN, t)} | {m.start() + 6 for m in re.finditer(RESERVE_CAPACITY, t)}
-        for m in re.finditer(RESERVE_NEAR, t):
-            if m.start() not in known:
-                raise ValueError(f'{where}: unknown USD Reserve flow sentence: {m.group(0)!r}')
         ins += [money(*m.group(1, 2)) for m in re.finditer(RESERVE_IN, t)]
         outs += [money(*m.group(1, 2)) for m in re.finditer(RESERVE_OUT, t)]
     return (sum(ins) if ins else None), (sum(outs) if outs else None)
 
 
 def dividends_paid(bs):
-    """Distinct amounts disclosed as used to fund dividends/interest, from any source (USD Reserve,
-    ATM or BTC-sale proceeds). The same amount twice in one filing is one payment."""
-    # ponytail: dedupe by amount, so two equal separate payments in one filing merge; revisit if
-    # semi-monthly STRC dividends are disclosed per payment.
-    rx = rf'{MONEY}[^$]{{0,160}}?\bto fund (?:the )?(?:payment of )?(?:dividends|distributions|interest)'
-    return sorted({money(m.group(1), m.group(2)) for k, t in bs if k == 'p' for m in re.finditer(rx, t)})
+    """Amounts disclosed as used to fund dividends/interest, from any source (USD Reserve, ATM or BTC-sale
+    proceeds), one per funding sentence. The only merge: an amount in a footnote ("(n) ...") that the USD
+    Reserve/USD Cash paragraph also states is the same payment, so each such pair counts once."""
+    foot, balance, other = [], [], []
+    for k, t in bs:
+        if k != 'p':
+            continue
+        for m in re.finditer(DIVIDEND_FUNDING, t):
+            amt = money(m.group(1), m.group(2))
+            (foot if re.match(r'\(\d+\)', t) else balance if re.search(r'USD (?:Reserve|Cash)', t) else other).append(amt)
+    for a in balance:
+        if a in foot:
+            foot.remove(a)
+    return sorted(foot + balance + other)
 
 
 def parse(html, filing):
@@ -412,13 +471,6 @@ def roll(actions, stated, gaps=KNOWN_FILING_GAPS):
     return out
 
 
-def write(path, fields, rows):
-    with open(path, 'w', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=fields, lineterminator='\n')
-        w.writeheader()
-        w.writerows(rows)
-
-
 def main(data_dir='data'):
     from dat import edgar
     actions, stated, read, skipped = [], [], 0, []
@@ -436,8 +488,9 @@ def main(data_dir='data'):
         raise ValueError(f'duplicate stated week_end: {sorted(w for w in set(weeks) if weeks.count(w) > 1)}')
     actions.sort(key=lambda r: (r['week_end'], r['action'], r['ticker']))
     stated.sort(key=lambda r: r['week_end'])
-    write(os.path.join(data_dir, 'actions.csv'), ACTION_FIELDS, actions)
-    write(os.path.join(data_dir, 'stated.csv'), STATED_FIELDS, stated)
+    from dat.parse_bmnr import merge_write  # keep BMNR rows in the shared files
+    merge_write(os.path.join(data_dir, 'actions.csv'), ACTION_FIELDS, 'MSTR', actions)
+    merge_write(os.path.join(data_dir, 'stated.csv'), STATED_FIELDS, 'MSTR', stated)
     print('\n'.join(skipped))
     print(f'8-Ks read {read}, skipped {len(skipped)}, parsed {read - len(skipped)}; '
           f'actions.csv {len(actions)} rows, stated.csv {len(stated)} rows')

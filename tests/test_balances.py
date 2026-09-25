@@ -1,6 +1,6 @@
 import pytest
 from decimal import Decimal
-from dat.balances import net, CONVERTS, pref_notional, class_a, reserve_checks, PREF_ANCHOR
+from dat.balances import net, CONVERTS, pref_notional, class_a, reserve_checks, PREF_ANCHOR, bmnr_flows, bmnr_basic, BMNR_A0, BMNR_A1
 
 # 8-K filed 2026-09-21 (acc 0001193125-26-396093; file named mstr-20260914.htm)
 COINS = 846_000  # https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm
@@ -96,3 +96,39 @@ def test_reserve_check_pass_fail_and_kinds():
     assert got['2026-08-30'][:3] == ('R', -170_000_000, -196_300_000) and got['2026-08-30'][4] is False  # off 26.3M
     early = reserve_checks(stated[:2], acts, check_from='2026-08-09')
     assert early == [('2026-08-02', 'none', Decimal(250_000_000), Decimal(0), None, None)]
+
+
+def bst(week, r):
+    return {'week_end': week, 'usd_reserve': str(r)}
+
+
+def test_bmnr_flows_unexplained():
+    stated = [bst('2026-06-07', 200_000_000), bst('2026-06-14', 455_000_000)]
+    acts = [act('2026-06-14', 'issue_pref', 'BMNP', '273800000', '350000000'),
+            act('2026-06-14', 'buy_coin', 'ETH', '128000000', '76881'), act('2026-06-14', 'carry', 'DIV', '-800000')]
+    d, flow, un = bmnr_flows(stated, acts)['2026-06-14']
+    assert (d, flow, un) == (255_000_000, 145_000_000, 110_000_000)
+
+
+def test_bmnr_basic_scales_to_anchor_then_accumulates():
+    weeks = ['2026-05-31', '2026-06-07', '2026-07-12', '2026-07-19', '2026-07-26']
+    gap = BMNR_A1[1] - BMNR_A0[1]
+    # unexplained dR: $100 then $300 before the anchor (close $10 -> 10 and 30 shares, scaled to the gap);
+    # -$50 (no issuance) and $200 after it (close $20 -> 10 shares); 5 shares bought back in 7/19.
+    flows = {'2026-06-07': (0, 0, 100), '2026-07-12': (0, 0, 300), '2026-07-19': (0, 0, -50), '2026-07-26': (0, 0, 200)}
+    closes = dict.fromkeys(weeks, 10.0) | {'2026-07-26': 20.0}
+    acts = [act('2026-07-19', 'buyback_common', 'BMNR', units='5')]
+    out, scale, between = bmnr_basic(weeks, flows, closes, acts)
+    assert out['2026-05-31'][0] == BMNR_A0[1]
+    assert scale == pytest.approx(gap / 40)
+    assert out['2026-06-07'][0] == pytest.approx(BMNR_A0[1] + gap / 4)
+    assert out['2026-07-12'][0] == BMNR_A1[1] and 'anchored' in out['2026-07-12'][2]
+    assert out['2026-07-19'][0] == BMNR_A1[1] - 5 and out['2026-07-19'][1] == 0
+    assert out['2026-07-26'][0] == BMNR_A1[1] - 5 + 10 and 'estimated' in out['2026-07-26'][2]
+
+
+def test_bmnr_buyback_in_anchor_week_raises():
+    weeks = ['2026-05-31', '2026-07-12']
+    with pytest.raises(ValueError, match='holds the 2026-07-09 anchor'):
+        bmnr_basic(weeks, {'2026-07-12': (0, 0, 100)}, dict.fromkeys(weeks, 10.0),
+                   [act('2026-07-12', 'buyback_common', 'BMNR', units='5')])

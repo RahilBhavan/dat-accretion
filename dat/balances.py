@@ -56,7 +56,7 @@ AWARDS = 3_950_554  # options + RSU + PSU, 10-Q 6/30, constant
 CHECK_FROM = '2026-08-02'
 STRC_CHECK = ('2026-09-20', 9_316_191_300)  # 93,161,913 sh x $100 (Step 0)
 BAL_FIELDS = ['firm', 'date', 'coins', 'usd_reserve', 'debt', 'pref_notional', 'shares_diluted', 'source']
-WEEK_FIELDS = ['firm', 'week_end', 'price_date', 'p', 's', 'q_strc', 'm', 'n']
+WEEK_FIELDS = ['firm', 'week_end', 'price_date', 'p', 's', 'q', 'm', 'n']
 SIGN = {'issue_common': 1, 'issue_pref': 1, 'sell_coin': 1, 'buy_coin': -1, 'retire_pref': -1,
         'buyback_common': -1, 'carry': 1}
 
@@ -140,9 +140,116 @@ def build(stated, actions, prices):
         bal.append({'firm': 'MSTR', 'date': week, 'coins': st['coins'], 'usd_reserve': round(R), 'debt': round(x['D']),
                     'pref_notional': round(x['F']), 'shares_diluted': round(x['S']), 'source': src})
         weekly.append({'firm': 'MSTR', 'week_end': week, 'price_date': price_date, 'p': closes['BTC'], 's': s,
-                       'q_strc': closes['STRC'] / 100, 'm': f"{x['mnav']:.6f}", 'n': f"{x['n']:.10g}"})
+                       'q': closes['STRC'] / 100, 'm': f"{x['mnav']:.6f}", 'n': f"{x['n']:.10g}"})
         notes.append((week, pn['STRC']))
     return bal, weekly, notes
+
+
+# ---- Step 3: weekly state for BitMine (BMNR), method.md "BitMine mapping" and "BitMine S" ----
+BMNR_10Q = 'https://www.sec.gov/Archives/edgar/data/1829311/000162828026048157/bmnr-20260531.htm'
+BMNR_A0 = ('2026-05-31', 579_652_432)  # common outstanding, 10-Q balance sheet
+BMNR_A1 = ('2026-07-09', 603_226_394)  # common outstanding, 10-Q cover
+BMNR_RSU = 1_097_346  # unvested time-based RSUs at 5/31 (10-Q); no strike, always in S
+# (shares, strike) from the 10-Q; in S only while the BMNR close is above the strike.
+BMNR_DILUTIVE = [(359_124, 21.10),  # options: weighted-average exercise price (per-grant strikes not disclosed)
+                 (2_820_774, 5.40),  # strategic advisor warrants
+                 (50_875, 0.0),  # representative warrants: strike not disclosed; 10-Q counts them in the money
+                 (10_435_430, 87.50)]  # CVI warrants, expire 2027-03-22
+# Excluded: 4,500,000 performance RSUs (conditions unmet at 5/31); 1,280 C-3 warrants (strike not disclosed,
+# out of the money per the 10-Q). D = 0: the 10-Q states no debt at 5/31.
+
+
+def bmnr_flows(stated, actions):
+    """{week: (dR, disclosed cash flows, unexplained)} for each stated week after the first.
+    Flows: BMNP net proceeds, estimated ETH cost, buybacks, dividends (actions.csv usd, signed)."""
+    rows = sorted(stated, key=lambda s: s['week_end'])
+    out = {}
+    for prev, cur in zip(rows, rows[1:]):
+        w = cur['week_end']
+        flow = sum(SIGN[a['action']] * dec(a['usd']) for a in actions if prev['week_end'] < a['week_end'] <= w)
+        d = dec(cur['usd_reserve']) - dec(prev['usd_reserve'])
+        out[w] = (d, flow, d - flow)
+    return out
+
+
+def bmnr_basic(weeks, flows, closes, actions):
+    """{week: (basic shares, estimated shares added that week, label)}. Estimate = max(unexplained dR, 0) / BMNR close.
+    Weeks up to the one holding the 7/09 anchor: estimates scaled so A0 + issuance - buybacks = A1 there.
+    Later weeks: A1 + unscaled estimates - buybacks."""
+    bb = {}
+    for a in actions:
+        if a['action'] == 'buyback_common':
+            bb[a['week_end']] = bb.get(a['week_end'], 0) + float(a['units'])
+    est = {w: max(float(flows[w][2]), 0) / closes[w] if w in flows else 0.0 for w in weeks}
+    a1_week = min(w for w in weeks if w >= BMNR_A1[0])
+    between = [w for w in weeks if BMNR_A0[0] < w <= a1_week]
+    if bb.get(a1_week):
+        raise ValueError(f'buyback in week {a1_week}, which holds the {BMNR_A1[0]} anchor: cannot tell if it is before or '
+                         'after the cover count; split the week by trade date before rolling')
+    scale = (BMNR_A1[1] - BMNR_A0[1] + sum(bb.get(w, 0) for w in between)) / sum(est[w] for w in between)
+    out, level = {}, float(BMNR_A0[1])
+    for w in weeks:
+        if w <= BMNR_A0[0]:
+            out[w] = (float(BMNR_A0[1]), 0.0, 'S anchored 10-Q 5/31 balance sheet')
+            continue
+        add = est[w] * (scale if w <= a1_week else 1)
+        level += add - bb.get(w, 0)
+        if w == a1_week:
+            level = float(BMNR_A1[1]) - sum(bb.get(x, 0) for x in weeks if BMNR_A1[0] < x <= w)
+            label = f'S anchored 10-Q cover {BMNR_A1[0]} (week holding it)'
+        elif w < a1_week:
+            label = f'S estimated: 5/31 anchor + unexplained dR / BMNR close x {scale:.4f} (scaled to 7/09 anchor)'
+        else:
+            label = 'S estimated: 7/09 anchor + unexplained dR / BMNR close (unscaled) - buybacks'
+        out[w] = (level, add, label)
+    return out, scale, between
+
+
+def build_bmnr(stated, actions, prices):
+    """-> (balances rows, weekly rows, per-week print lines) for BMNR."""
+    from dat.prices import close_on_or_before
+    stated = sorted(stated, key=lambda s: s['week_end'])
+    weeks = [s['week_end'] for s in stated]
+    pdate, closes = {}, {}
+    for w in weeks:
+        pdate[w], closes[w] = close_on_or_before(prices, 'BMNR', w)
+
+    def close(t, w):
+        d, c = close_on_or_before(prices, t, pdate[w])
+        if d != pdate[w]:
+            raise LookupError(f'{t}: no close on {pdate[w]} (BMNR price date for week {w})')
+        return c
+
+    issue = min(a['week_end'] for a in actions if a['action'] == 'issue_pref' and a['ticker'] == 'BMNP')
+    flows = bmnr_flows(stated, actions)
+    basic, scale, between = bmnr_basic(weeks, flows, closes, actions)
+    bal, weekly, lines = [], [], []
+    for st in stated:
+        w, s = st['week_end'], closes[st['week_end']]
+        F = sum(SIGN[a['action']] * float(a['units']) for a in actions
+                if a['ticker'] == 'BMNP' and a['action'] in ('issue_pref', 'retire_pref') and a['week_end'] <= w)
+        awards = BMNR_RSU + sum(n for n, k in BMNR_DILUTIVE if s > k)
+        b, add, label = basic[w]
+        p = close('ETH', w)
+        x = net(float(st['coins']), float(st['usd_reserve']), [], [(F, None, 0)], b, awards, p, s)
+        if w < issue:
+            q, qlab = '', 'q blank (BMNP not issued)'
+        elif w == issue:
+            q, qlab = 0.80, 'q = 0.80 issue price / $100 (BMNP not yet trading)'
+        else:
+            q, qlab = close('BMNP', w) / 100, 'q = BMNP close / 100'
+        bal.append({'firm': 'BMNR', 'date': w, 'coins': st['coins'], 'usd_reserve': round(float(st['usd_reserve'])),
+                    'debt': 0, 'pref_notional': round(F), 'shares_diluted': round(x['S']),
+                    'source': f"release {accession(st['filing_url'])}; R = cash & marketable securities (incl. securities); "
+                              f"D = 0 (10-Q 5/31: no debt); {label}; awards/warrants in S at close {s:.2f}: "
+                              f"{awards:,.0f}; {qlab}"})
+        weekly.append({'firm': 'BMNR', 'week_end': w, 'price_date': pdate[w], 'p': p, 's': s, 'q': q,
+                       'm': f"{x['mnav']:.6f}", 'n': f"{x['n']:.10g}"})
+        un = f"unexplained dR={float(flows[w][2]) / 1e6:+,.1f}M" if w in flows else 'first week'
+        lines.append(f"{w} {'anchored' if 'anchored' in label else 'estimated'} basic={b:,.0f} est_added={add:,.0f} "
+                     f"({un}) S={x['S']:,.0f} m={x['mnav']:.4f} q={q if q == '' else f'{q:.4f}'}")
+    lines.append(f'BMNR: issuance estimates {between[0][5:]}..{between[-1][5:]} scaled x{scale:.4f} to land on the 7/09 10-Q cover count')
+    return bal, weekly, lines
 
 
 def read(path):
@@ -163,11 +270,17 @@ def m_usd(x):
 
 def main(data_dir='data'):
     from dat.prices import load
-    stated, actions = read(os.path.join(data_dir, 'stated.csv')), read(os.path.join(data_dir, 'actions.csv'))
-    bal, weekly, notes = build(stated, actions, load(os.path.join(data_dir, 'prices.csv')))
-    write(os.path.join(data_dir, 'balances.csv'), BAL_FIELDS, bal)
-    write(os.path.join(data_dir, 'weekly.csv'), WEEK_FIELDS, weekly)
-    print(f'balances.csv {len(bal)} rows, weekly.csv {len(weekly)} rows')
+    all_stated, all_actions = read(os.path.join(data_dir, 'stated.csv')), read(os.path.join(data_dir, 'actions.csv'))
+    firm = lambda rows, f: [r for r in rows if r['firm'] == f]
+    stated, actions = firm(all_stated, 'MSTR'), firm(all_actions, 'MSTR')
+    prices = load(os.path.join(data_dir, 'prices.csv'))
+    bal, weekly, notes = build(stated, actions, prices)
+    b_bal, b_weekly, b_lines = build_bmnr(firm(all_stated, 'BMNR'), firm(all_actions, 'BMNR'), prices)
+    write(os.path.join(data_dir, 'balances.csv'), BAL_FIELDS, b_bal + bal)  # firms sorted, as in actions.csv
+    write(os.path.join(data_dir, 'weekly.csv'), WEEK_FIELDS, b_weekly + weekly)
+    print(f'balances.csv {len(bal)} MSTR + {len(b_bal)} BMNR rows, weekly.csv {len(weekly)} MSTR + {len(b_weekly)} BMNR rows')
+    print('\n'.join(b_lines))
+    print('BMNR: R not rolled; releases don\'t itemize flows')
     checks, bad = {c[0]: c[1:] for c in reserve_checks(stated, actions)}, []
     for st in sorted(stated, key=lambda s: s['week_end']):
         week = st['week_end']
@@ -184,8 +297,9 @@ def main(data_dir='data'):
               f'{"OK" if ok else "FAIL"}')
         if not ok:
             bad.append(week)
-    missing = [w['week_end'] for w in weekly if not (w['m'] and w['q_strc'])]
-    print(f'm and q_STRC present for {len(weekly) - len(missing)}/{len(weekly)} weeks' + (f'; missing {missing}' if missing else ''))
+    missing = [w['week_end'] for w in weekly if not (w['m'] and w['q'])]
+    missing += [w['week_end'] for w in b_weekly if not w['m']]
+    print(f'm and q (STRC) present for {len(weekly) - len(missing)}/{len(weekly)} weeks' + (f'; missing {missing}' if missing else ''))
     strc = dict(notes)[STRC_CHECK[0]]
     strc_ok = round(strc) == STRC_CHECK[1]
     print(f'STRC notional {STRC_CHECK[0]} = {strc:,.0f} (expect {STRC_CHECK[1]:,}) {"OK" if strc_ok else "FAIL"}')

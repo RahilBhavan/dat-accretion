@@ -26,9 +26,12 @@
 - The KPI snapshot saves the raw JSON for each day too (`data/kpi/<date>.json`), since the API
   keeps no history and Step 0 may need fields the CSV drops.
 - BitMine staking: weekly releases give staked ETH (often unchanged for weeks) and annualized
-  projections only, never realized rewards. Decision (2026-09-25): estimate weekly staking carry
-  as staked ETH × the release's 7-day annualized yield × 7/365, one `carry` row per week citing
-  that release's filing_url. The page labels it an estimate. When a 10-Q reports realized
-  rewards, compare the quarter's summed estimates to it and publish the difference.
+  projections only, never realized rewards. Decision (2026-09-25, revised the same day): no
+  staking carry rows. "ETH acquired" equals the stated holdings change in 13 of 16 weeks, so a
+  separate estimate double counts. The stated change is booked as the week's ETH change; the
+  staking estimate (staked × 7-day yield × 7/365) is printed as a diagnostic only. The page says
+  BitMine's releases do not separate staking rewards from purchases.
+- strategicethreserve.xyz check: compare rolled ETH at the week matching the site's
+  `snapshotDate` (the site lags), print both dates, fail if the snapshot is over 6 weeks old.
 - Open question: which STRC price prices a retirement. Use the 8-K's disclosed average where
   given, else the daily close, and record which in `avg_price`.

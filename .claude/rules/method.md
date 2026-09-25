@@ -75,19 +75,19 @@ liquidation preference × m.
 
 | file | columns |
 |---|---|
-| actions.csv | firm, week_end, filed, filing_url, action, ticker, usd, units, avg_price |
+| actions.csv | firm, week_end, filed, filing_url, action, ticker, usd, units, avg_price, note |
 | balances.csv | firm, date, coins, usd_reserve, debt, pref_notional, shares_diluted, source |
 | prices.csv | date, ticker, close |
 | kpi_snapshots.csv | fetched_at, netSatsPerShare, netBtcReserve, amplification, mNav, btc_price, mstr_price |
 | attribution.csv | firm, week_end, action, usd, m, q, dn_first_order, dn_exact, dn_per_dollar |
 | stated.csv | firm, week_end, filed, filing_url, coins, usd_reserve, usd_cash, reserve_in, reserve_out, usd_reserve_prec, usd_cash_prec |
-| weekly.csv | firm, week_end, price_date, p, s, q_strc, m, n |
+| weekly.csv | firm, week_end, price_date, p, s, q, m, n |
 
 stated.csv holds each 8-K's own aggregates, the targets for Step 1 (coins) and Step 2 (reserve).
 `reserve_in`: sum of amounts the 8-K says were "used to increase the USD Reserve"; `reserve_out`:
 sum of "$X of the USD Reserve to ..." amounts (blank when none). `*_prec`: unit in the last
 disclosed digit of that balance ($5.10 billion → 10,000,000). weekly.csv (Step 2, for Step 4):
-per stated week, the price date used, p, s, q for STRC, and m and n from net().
+per stated week, the price date used, p, s, q (the firm's own preferred: STRC for MSTR, BMNP for BMNR), and m and n from net().
 
 ### R: stated levels, rolled check with tolerance (decided 2026-09-25)
 
@@ -107,6 +107,30 @@ August, don't itemize flows into it, so R is taken as stated, not rolled. The ro
 - Disclosure change, 2026-08-23: R jumps by the first-disclosed USD Cash ($1.59B). That cash
   existed before; it was not reported. Step 4 books it as its own row (`disclosure`, labeled
   "USD Cash first disclosed"), never as an action or inside the 5% residual test.
+
+### BitMine mapping (decided 2026-09-25)
+
+C = ETH held (weekly release, exact). R = the release's "total cash & marketable securities",
+labeled as including securities. BTC holdings and "moonshots" (equity stakes) are excluded, as
+Strategy's definition counts only the coin reserve and USD assets; the page states the excluded
+amount. F = BMNP notional ($100 × shares). Releases give ETH bought in coins only, so a BMNR
+`buy_coin` row's usd = units × that week's ETH close, labeled estimated (neutral in attribution).
+
+BitMine S (decided 2026-09-25). Filed anchors: 579,652,432 (5/31 10-Q balance sheet) and
+603,226,394 (7/09, 10-Q cover). Roll by disclosed buybacks. Unreported issuance per week is
+estimated as the week's unexplained ΔR ÷ that week's BMNR close (unexplained = ΔR − disclosed
+cash flows). Between the two anchors, estimates are scaled so 5/31 + issuance = 7/09 exactly;
+after 7/09 they accumulate unscaled until the fiscal-year 10-K cover count reanchors. Estimates
+live in balances.csv (`source` says "S estimated"), never as actions.csv rows. Awards and
+warrants follow the in-the-money rule at the week's BMNR close. Known bias: "acquired" ETH
+includes staking (~2,500 ETH/week), so it is costed as a cash purchase, which inflates
+unexplained ΔR and S (≈ +0.43% of S by 2026-09-20); the 10-K reanchor removes it. Weeks with
+negative unexplained ΔR add 0 shares (two weeks; ≈ +0.015% of S). Warrants and options are
+counted from the 10-Q; an exercise before the next 10-K would be counted twice (as a warrant
+and via unexplained ΔR). Releases don't disclose exercises; the 10-K reanchor resets both.
+
+actions.csv `note`: blank for filed figures; says what was estimated otherwise (e.g. "usd
+estimated: units × ETH close").
 
 Price date for a week: the last US trading day on or before week_end, for every ticker (BTC/ETH
 close for that same date). q for STRC = STRC close / 100. The coin close for date D is
