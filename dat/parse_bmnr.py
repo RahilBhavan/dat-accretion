@@ -113,6 +113,23 @@ def dividends(bs, url, filed):
     return out
 
 
+EXCL_BTC = r'\b([\d,]+) Bitcoin \(BTC\)'
+EXCL_STAKE = rf'{MONEY} stake in ([A-Z][\w&.]*(?: [A-Z][\w&.]*)*)'
+
+
+def excluded_holdings(html):
+    """Holdings Strategy's definition leaves out of BitMine's net (method.md "BitMine mapping"), from the release's
+    holdings sentence -> {'week_end', 'btc', 'stakes': [(name, usd)]}, or None when the sentence isn't there."""
+    for p in paragraphs(blocks(html)):
+        for m in re.finditer(HOLDINGS, p):
+            text = m.group(0)
+            btc = re.search(EXCL_BTC, text)
+            stakes = [(s[3], int(money(s[1], s[2]))) for s in re.finditer(EXCL_STAKE, text)]
+            if btc or stakes:
+                return {'week_end': iso(m.group(1)), 'btc': int(btc[1].replace(',', '')) if btc else 0, 'stakes': stakes}
+    return None
+
+
 # Release dates that contradict the filing sequence; corrected with the evidence cited.
 KNOWN_DATE_ERRATA = {
     '0001493152-26-032090': ('2026-06-28', '2026-07-05',
