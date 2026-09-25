@@ -79,7 +79,8 @@ def test_no_sale_week_with_buy_repurchase_and_reserve():
     assert (carry['usd'], carry['units'], carry['avg_price']) == ('-57400000', '0', '')
     assert all(a['filing_url'] == F['url'] and a['firm'] == 'MSTR' for a in actions)
     assert stated == [dict(firm='MSTR', week_end='2026-09-20', filed='2026-09-21', filing_url=F['url'],
-                           coins='846000', usd_reserve='5040000000', usd_cash='1050000000')]
+                           coins='846000', usd_reserve='5040000000', usd_cash='1050000000',
+                           reserve_in='', reserve_out='57400000', usd_reserve_prec='10000000', usd_cash_prec='10000000')]
 
 
 def test_atm_sale_week_and_btc_sale():
@@ -148,3 +149,24 @@ def test_dividend_carry_from_every_source():
     carry = sorted(a['usd'] for a in actions if a['action'] == 'carry')
     assert carry == ['-52400000', '-57400000']  # $52.4M described twice -> one row; $57.4M reserve -> another
     assert all(a['ticker'] == 'DIV_INT' and a['units'] == '0' for a in actions if a['action'] == 'carry')
+
+
+def test_reserve_in_and_precision():
+    note = p('(5) $250.0 million in proceeds from MSTR Stock sales were used to increase the USD Reserve, $28.9 million '
+             'in proceeds from MSTR Stock sales were used to fund repurchases of STRC Stock, and $149.1 million in net '
+             'proceeds from MSTR Stock sales were used to increase the USD Reserve (defined below).')
+    cap = p('On June 29, 2026, Strategy announced a BTC Monetization Program pursuant to which Strategy may sell bitcoin '
+            'from time to time, including for the purpose of generating up to $1.25 billion of additional proceeds to fund '
+            'the USD Reserve.') + p('to generate up to $1.25 billion of additional proceeds to fund the USD Reserve;')
+    bal = p('As of August 2, 2026, the balance of the USD Reserve is $4.0 billion.')
+    _, stated = parse(atm_sale() + note + cap + BTC_SELL + bal, F)
+    s = stated[0]
+    assert (s['reserve_in'], s['reserve_out'], s['usd_reserve'], s['usd_reserve_prec'], s['usd_cash_prec']) == \
+        ('399100000', '', '4000000000', '100000000', '')
+
+
+def test_unknown_reserve_flow_raises():
+    for t in ('$75.0 million in net proceeds from MSTR Stock sales were added to the USD Reserve.',
+              '$75.0 million of the proceeds was used to fund the USD Reserve.'):
+        with pytest.raises(ValueError, match='unknown USD Reserve flow'):
+            parse(BTC_SELL + p(t), F)

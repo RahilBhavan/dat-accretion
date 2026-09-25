@@ -80,9 +80,37 @@ liquidation preference × m.
 | prices.csv | date, ticker, close |
 | kpi_snapshots.csv | fetched_at, netSatsPerShare, netBtcReserve, amplification, mNav, btc_price, mstr_price |
 | attribution.csv | firm, week_end, action, usd, m, q, dn_first_order, dn_exact, dn_per_dollar |
-| stated.csv | firm, week_end, filed, filing_url, coins, usd_reserve, usd_cash |
+| stated.csv | firm, week_end, filed, filing_url, coins, usd_reserve, usd_cash, reserve_in, reserve_out, usd_reserve_prec, usd_cash_prec |
+| weekly.csv | firm, week_end, price_date, p, s, q_strc, m, n |
 
 stated.csv holds each 8-K's own aggregates, the targets for Step 1 (coins) and Step 2 (reserve).
+`reserve_in`: sum of amounts the 8-K says were "used to increase the USD Reserve"; `reserve_out`:
+sum of "$X of the USD Reserve to ..." amounts (blank when none). `*_prec`: unit in the last
+disclosed digit of that balance ($5.10 billion → 10,000,000). weekly.csv (Step 2, for Step 4):
+per stated week, the price date used, p, s, q for STRC, and m and n from net().
+
+### R: stated levels, rolled check with tolerance (decided 2026-09-25)
+
+balances.csv `usd_reserve` = R = the 8-K's stated USD Reserve + USD Cash (USD Cash is first
+disclosed for 2026-08-23; before that R = USD Reserve alone, labeled). Filings round R and, before
+August, don't itemize flows into it, so R is taken as stated, not rolled. The roll is a check:
+- From 2026-08-23 (both balances disclosed): ΔR must equal the week's cash flows from actions.csv
+  (+ ATM net proceeds, + BTC sale proceeds, − BTC purchases, − repurchases, + carry).
+- 2026-08-02 to 2026-08-16 (reserve only): ΔReserve must equal the itemized "used to increase the
+  USD Reserve" amounts plus reserve-funded carry (reserve_in − reserve_out). Also 2026-08-23,
+  whose prior week has no USD Cash.
+- 2026-06-30 (quarter-end holdings row, no balance stated): R carried from the prior 8-K, labeled.
+- Tolerance per week: half a unit in the last disclosed digit of each of the two stated figures,
+  summed ($5.10 billion → ±$5M; $4.0 billion → ±$50M).
+- Before 2026-08-02: no check. Print the unexplained ΔR per week, labeled; it lands in Step 4's
+  residual.
+- Disclosure change, 2026-08-23: R jumps by the first-disclosed USD Cash ($1.59B). That cash
+  existed before; it was not reported. Step 4 books it as its own row (`disclosure`, labeled
+  "USD Cash first disclosed"), never as an action or inside the 5% residual test.
+
+Price date for a week: the last US trading day on or before week_end, for every ticker (BTC/ETH
+close for that same date). q for STRC = STRC close / 100. The coin close for date D is
+CoinGecko's point at 00:00 UTC on D+1, about 4 hours after the US equity close.
 
 Signs: for actions, `usd` and `units` are positive magnitudes; the action gives direction.
 `carry` rows are signed changes to R (`usd`) and C (`units`): a dividend paid is negative usd,

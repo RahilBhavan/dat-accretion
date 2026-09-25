@@ -9,7 +9,8 @@ from html.parser import HTMLParser
 
 CIK = 1050446
 ACTION_FIELDS = ['firm', 'week_end', 'filed', 'filing_url', 'action', 'ticker', 'usd', 'units', 'avg_price']
-STATED_FIELDS = ['firm', 'week_end', 'filed', 'filing_url', 'coins', 'usd_reserve', 'usd_cash']
+STATED_FIELDS = ['firm', 'week_end', 'filed', 'filing_url', 'coins', 'usd_reserve', 'usd_cash', 'reserve_in',
+                 'reserve_out', 'usd_reserve_prec', 'usd_cash_prec']
 PREFS = {'STRF', 'STRC', 'STRK', 'STRD', 'STRE'}
 STATED_AMOUNT = 100  # liquidation preference per preferred share, USD (STRE is EUR 100)
 HEADINGS = {'atm': r'ATM Updates?', 'btc': r'BTC Updates?', 'atm+btc': r'ATM and BTC Updates?',
@@ -273,21 +274,56 @@ def btc(sec, where):
     return trades, holdings
 
 
+def ulp(amount, unit):
+    """Unit in the last disclosed digit, USD: ('5.10', 'billion') -> 10,000,000."""
+    return Decimal(1).scaleb(Decimal(amount.replace(',', '')).as_tuple().exponent) * SCALE[unit.lower()]
+
+
 def balances(bs):
-    """{as_of: {'usd_reserve': Decimal, 'usd_cash': Decimal}} from any paragraph in the filing."""
+    """{as_of: {'usd_reserve', 'usd_cash', 'usd_reserve_prec', 'usd_cash_prec': Decimal}} from any paragraph.
+    *_prec is the unit in the last disclosed digit (the R check's tolerance is half of it)."""
     out, pending = {}, None
+
+    def put(as_of, name, amount, unit):
+        out.setdefault(as_of, {}).update({name: money(amount, unit), name + '_prec': ulp(amount, unit)})
+
     for k, t in bs:
         if k != 'p':
             continue
         if m := re.search(rf'As of ({DATE}), the balance of the USD Reserve (?:is|was) {MONEY}', t, re.I):
-            out.setdefault(iso(m.group(1)), {})['usd_reserve'] = money(m.group(2), m.group(3))
+            put(iso(m.group(1)), 'usd_reserve', *m.group(2, 3))
         elif m := re.search(rf'As of ({DATE}), the balances of the USD Reserve and USD Cash were {MONEY} and {MONEY}', t):
-            out.setdefault(iso(m.group(1)), {}).update(usd_reserve=money(*m.group(2, 3)), usd_cash=money(*m.group(4, 5)))
+            put(iso(m.group(1)), 'usd_reserve', *m.group(2, 3))
+            put(iso(m.group(1)), 'usd_cash', *m.group(4, 5))
         elif m := re.search(rf'As of ({DATE}), the balances of the USD Reserve and USD Cash were as follows', t):
             pending = iso(m.group(1))
         elif pending and (m := re.fullmatch(rf'USD (Reserve|Cash): {MONEY}', t)):
-            out.setdefault(pending, {})['usd_' + m.group(1).lower()] = money(m.group(2), m.group(3))
+            put(pending, 'usd_' + m.group(1).lower(), *m.group(2, 3))
     return out
+
+
+RESERVE_IN = rf'{MONEY}[^$;]{{0,120}}? were used to increase the USD Reserve\b'
+RESERVE_OUT = rf'{MONEY} of the USD Reserve to\b'
+# Any other "$X ... <verb> ... USD Reserve" must be a known sentence or it raises.
+RESERVE_NEAR = (rf'{MONEY}[^$;]{{0,160}}?\b(?:increas|fund|add|contribut|allocat|deposit|transfer|replenish)\w*'
+                rf'\b[^$;]{{0,20}}?\bUSD Reserve\b')
+RESERVE_CAPACITY = r'up to \$1\.25 billion of additional proceeds to fund the USD Reserve'  # BTC Monetization Program size, not a flow
+
+
+def reserve_flows(bs, where=''):
+    """(in, out): sums of amounts "used to increase the USD Reserve" and "$X of the USD Reserve to ...";
+    None when none disclosed. An unknown sentence moving money into the USD Reserve raises."""
+    ins, outs = [], []
+    for k, t in bs:
+        if k != 'p':
+            continue
+        known = {m.start() for m in re.finditer(RESERVE_IN, t)} | {m.start() + 6 for m in re.finditer(RESERVE_CAPACITY, t)}
+        for m in re.finditer(RESERVE_NEAR, t):
+            if m.start() not in known:
+                raise ValueError(f'{where}: unknown USD Reserve flow sentence: {m.group(0)!r}')
+        ins += [money(*m.group(1, 2)) for m in re.finditer(RESERVE_IN, t)]
+        outs += [money(*m.group(1, 2)) for m in re.finditer(RESERVE_OUT, t)]
+    return (sum(ins) if ins else None), (sum(outs) if outs else None)
 
 
 def dividends_paid(bs):
@@ -324,13 +360,16 @@ def parse(html, filing):
     for used in dividends_paid(bs):
         acts.append((week_end, 'carry', 'DIV_INT', -used, Decimal(0), None))
     bal = balances(bs)
+    r_in, r_out = reserve_flows(bs, where)
     if stray := set(bal) - {e for e, _ in holdings}:
         raise ValueError(f'{where}: USD balance dated {sorted(stray)} matches no BTC holdings date')
     base = {'firm': 'MSTR', 'filed': filing['filed'], 'filing_url': filing['url']}
     actions = [dict(base, week_end=e, action=a, ticker=t, usd=fmt(u), units=fmt(n), avg_price=fmt(p))
                for e, a, t, u, n, p in acts]
-    stated = [dict(base, week_end=e, coins=fmt(c), usd_reserve=fmt(bal.get(e, {}).get('usd_reserve')),
-                   usd_cash=fmt(bal.get(e, {}).get('usd_cash'))) for e, c in holdings]
+    stated = [dict(base, week_end=e, coins=fmt(c), reserve_in=fmt(r_in if e == week_end else None),
+                   reserve_out=fmt(r_out if e == week_end else None),
+                   **{f: fmt(bal.get(e, {}).get(f)) for f in ('usd_reserve', 'usd_cash', 'usd_reserve_prec', 'usd_cash_prec')})
+              for e, c in holdings]
     return actions, stated
 
 
