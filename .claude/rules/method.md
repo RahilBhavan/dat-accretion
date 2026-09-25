@@ -63,6 +63,33 @@ Break-even line m = q. Strategy's rotation (1 + 4) adds while m > q: stops when 
 above $100 × m. BitMine's rotation (3 + 2) adds while m < q: stops when BMNP trades below its
 liquidation preference × m.
 
+## Attribution (Step 4, decided 2026-09-25)
+
+Observed Δn for a week = n(this week's balances, this week's p and s) − n(last week's). It is
+split in this order, each step exact (recompute n after it) and the rest left as residual:
+1. `price`: last week's balances revalued at this week's p (the (R − D − F)/p term moves).
+2. `itm_flip`: converts or STRK crossing their conversion price at this week's s (D or F ↔ S).
+3. Each action row, in actions.csv order, applied at its own price: common at avg_price
+   (m_action = avg_price/(p·n)), preferred at q = avg_price/100 (BMNP issue: 80/100), coins at
+   their usd. `dn_first_order` uses the table's formulas with that m or q; `dn_exact` is the
+   recomputed change.
+4. `carry` rows (R or C change).
+5. `residual` = observed − sum of the above. The residual test (check.py #4) applies only to
+   weeks where R is checked (MSTR from 2026-08-02); other weeks report it, labeled. A week passes
+   if |residual| < 5% of |observed Δn| OR |residual| is within that week's R rounding tolerance
+   (the Step 2 tolerance, converted to Δn); the output says which. Decided 2026-09-25, extending
+   the R rounding decision: a quiet week with rounded disclosures otherwise fails with nothing
+   wrong (8/30: −$10.6M on a $107M week, inside ±$20M rounding).
+Unit: Δn in coins per share; the page also shows Δn × S × p in USD ("value to common"), using
+this week's S and p. First order uses the price q or m; exact uses the cash actually received,
+so issue fees show as the gap between them (BMNP issue: q = 0.80 at $80, net $273.8M on $350M
+notional, a $6.2M gap).
+attribution.csv adds `ticker` and `filing_url` (empty for non-action rows) so each bar and dot
+links to its filing.
+
+Rounding note: the 7/26 STRC 8-K states $25.0M, so the data row gives (1/q − 1)·x = $3.893M; the
+Bitcoin Magazine figure $3.895M uses $24.998M and is the unit-test anchor below.
+
 ## Test anchors (tests/test_engine.py)
 
 1. Bitcoin Magazine STRC week: $24.998M retires $28.893M notional → q = 0.8652, action 4 adds
@@ -79,7 +106,7 @@ liquidation preference × m.
 | balances.csv | firm, date, coins, usd_reserve, debt, pref_notional, shares_diluted, source |
 | prices.csv | date, ticker, close |
 | kpi_snapshots.csv | fetched_at, netSatsPerShare, netBtcReserve, amplification, mNav, btc_price, mstr_price |
-| attribution.csv | firm, week_end, action, usd, m, q, dn_first_order, dn_exact, dn_per_dollar |
+| attribution.csv | firm, week_end, action, ticker, usd, m, q, dn_first_order, dn_exact, dn_per_dollar, filing_url |
 | stated.csv | firm, week_end, filed, filing_url, coins, usd_reserve, usd_cash, reserve_in, reserve_out, usd_reserve_prec, usd_cash_prec |
 | weekly.csv | firm, week_end, price_date, p, s, q, m, n |
 
@@ -104,9 +131,11 @@ August, don't itemize flows into it, so R is taken as stated, not rolled. The ro
   summed ($5.10 billion → ±$5M; $4.0 billion → ±$50M).
 - Before 2026-08-02: no check. Print the unexplained ΔR per week, labeled; it lands in Step 4's
   residual.
-- Disclosure change, 2026-08-23: R jumps by the first-disclosed USD Cash ($1.59B). That cash
-  existed before; it was not reported. Step 4 books it as its own row (`disclosure`, labeled
-  "USD Cash first disclosed"), never as an action or inside the 5% residual test.
+- USD Cash, 2026-08-23: R jumps $1.59B because USD Cash was established that week, funded by
+  "the remaining net proceeds from MSTR Stock sales" (8-K filed 2026-08-24):
+  $2,006.5M − $136.4M STRC − $300.0M reserve = $1,570.1M, already booked by `issue_common`.
+  It is not a disclosure change; no special row. (An earlier version of this file said the
+  cash pre-existed; the filing says otherwise.)
 
 ### BitMine mapping (decided 2026-09-25)
 
@@ -140,6 +169,6 @@ Signs: for actions, `usd` and `units` are positive magnitudes; the action gives 
 `carry` rows are signed changes to R (`usd`) and C (`units`): a dividend paid is negative usd,
 staking earned is positive units.
 
-`action` ∈ issue_common, buyback_common, issue_pref, retire_pref, buy_coin, sell_coin, carry.
+`action` ∈ issue_common, buyback_common, issue_pref, retire_pref, buy_coin, sell_coin, carry (actions.csv); attribution.csv adds price, itm_flip, est_issuance (BMNR only: the week's estimated basic-share change from balances.csv "S estimated", booked at that week's BMNR close with its cash; not an actions.csv row), residual.
 `units`: shares for common, notional dollars for preferred, coins for coin trades.
 `firm` ∈ MSTR, BMNR.
