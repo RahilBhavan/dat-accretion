@@ -6,3 +6,6 @@ dependencies = ["numpy>=2"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["dat"]
