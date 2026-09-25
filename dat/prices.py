@@ -84,7 +84,7 @@ def fetch(start=START, end=None):
 
 def save(path, rows):
     with open(path, 'w', newline='') as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator='\n')
         w.writerow(FIELDS)
         w.writerows(rows)
 

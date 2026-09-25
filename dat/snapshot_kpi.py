@@ -38,7 +38,7 @@ def save(data_dir, r, kpi):
     os.makedirs(os.path.join(data_dir, 'kpi'), exist_ok=True)
     new = not os.path.exists(path)
     with open(path, 'a', newline='') as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
+        w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator='\n')
         if new:
             w.writeheader()
         w.writerow(r)
