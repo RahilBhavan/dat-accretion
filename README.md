@@ -4,7 +4,7 @@ Measures every capital action by Strategy and BitMine since June 2026 on one rul
 share, using Strategy's own definition applied to both firms. For each action it gives the
 per-share effect per dollar and the price at which that effect changes sign.
 
-Status: in build. The daily Strategy KPI snapshot runs now; parsers, engine and page follow.
+Status: in build. Steps 0-3 done: Strategy and BitMine actions, balances and weekly m and q are in `data/`. Engine, page and memo follow. Problems hit so far: `docs/build-notes.md`.
 
 ## Layout
 

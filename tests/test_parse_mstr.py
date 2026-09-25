@@ -147,7 +147,7 @@ def test_dividend_carry_from_every_source():
                 'dividends on its preferred stock and interest on its outstanding indebtedness.')
     actions, _ = parse(atm_sale() + footnote + BTC_SELL + btc_note + p('USD Reserve and USD Cash Updates') + reserve, F)
     carry = sorted(a['usd'] for a in actions if a['action'] == 'carry')
-    assert carry == ['-52400000', '-57400000']  # $52.4M described twice -> one row; $57.4M reserve -> another
+    assert carry == ['-52400000', '-52400000', '-57400000']  # two funding sentences, equal amounts -> two rows
     assert all(a['ticker'] == 'DIV_INT' and a['units'] == '0' for a in actions if a['action'] == 'carry')
 
 
@@ -170,3 +170,56 @@ def test_unknown_reserve_flow_raises():
               '$75.0 million of the proceeds was used to fund the USD Reserve.'):
         with pytest.raises(ValueError, match='unknown USD Reserve flow'):
             parse(BTC_SELL + p(t), F)
+
+
+def test_dividend_footnote_repeated_in_reserve_paragraph_counts_once():
+    note = p('(4) $57.4 million in net proceeds from MSTR Stock sales were used to fund dividends on Strategy\'s STRC Stock.')
+    reserve = p('During the same period, Strategy used $57.4 million of the USD Reserve to fund the payment of '
+                'dividends on its preferred stock.')
+    actions, _ = parse(note + BTC_SELL + p('USD Reserve and USD Cash Updates') + reserve, F)
+    assert [a['usd'] for a in actions if a['action'] == 'carry'] == ['-57400000']
+
+
+@pytest.mark.parametrize('t', [
+    'During the period, Strategy withdrew $40.0 million from the USD Reserve to purchase bitcoin.',
+    'The USD Reserve was used to pay $40.0 million of dividends.',
+    'Strategy drew down the USD Reserve by $40.0 million.',
+    'Strategy drew down $50.0 million of its USD Reserve.',
+    'Strategy withdrew $50.0 million out of the USD Reserve.',
+    'Dividends of $50.0 million were paid out of the USD Reserve.',
+    'Strategy reduced the USD Reserve by $50.0 million.',
+    'Strategy applied $50.0 million of USD Reserve funds to dividends.',
+    'Net proceeds of $100.0 million were used to buy bitcoin and the rest were used to increase the USD Reserve.',
+    '$100.0 million in net proceeds from MSTR Stock sales were used to fund repurchases of STRC Stock and used to '
+    'increase the USD Reserve.',
+    'The remaining proceeds were used to increase the USD Reserve.',
+    'Strategy withdrew $50.0 million from the USD Reserve to fund dividends.',
+    '$50.0 million in net proceeds from the STRC ATM were used to increase the USD Cash liquidity account and the USD Reserve.',
+    '$50.0 million in net proceeds from the STRC ATM were added to Strategy’s cash balance, including the USD Reserve.',
+])
+def test_unknown_reserve_outflow_raises(t):
+    with pytest.raises(ValueError, match='unknown USD Reserve flow'):
+        parse(BTC_SELL + p(t), F)
+
+
+def test_remaining_clause_does_not_borrow_amount():
+    # 8/24 8-K sentence shape, with USD Reserve in place of USD Cash
+    t = ('(4) $136.4 million in net proceeds from MSTR Stock sales were used to fund repurchases of STRC Stock under the '
+         'Digital Credit Securities Repurchase Program (defined below), $300.0 million in net proceeds from MSTR Stock '
+         'sales were used to increase the USD Cash liquidity account, and the remaining net proceeds from MSTR Stock '
+         'sales were used to increase the USD Reserve.')
+    with pytest.raises(ValueError, match='USD Reserve'):
+        parse(BTC_SELL + p(t), F)
+
+
+def test_sentence_split_keeps_numbers_and_abbreviations():
+    from dat.parse_mstr import sentences
+    assert sentences('The U.S. balance of the USD Reserve is $5.04 billion. Next sentence.') == \
+        ['The U.S. balance of the USD Reserve is $5.04 billion.', 'Next sentence.']
+
+
+@pytest.mark.parametrize('t', ['Strategy may use up to $50.0 million of the USD Reserve to pay future dividends.',
+                               'The Company did not use $50.0 million of the USD Reserve to fund dividends.'])
+def test_hypothetical_or_negated_reserve_flow_raises(t):
+    with pytest.raises(ValueError, match='hypothetical or negated'):
+        parse(BTC_SELL + p(t), F)
