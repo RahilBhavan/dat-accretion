@@ -159,6 +159,56 @@ negative unexplained ΔR add 0 shares (two weeks; ≈ +0.015% of S). Warrants an
 counted from the 10-Q; an exercise before the next 10-K would be counted twice (as a warrant
 and via unexplained ΔR). Releases don't disclose exercises; the 10-K reanchor resets both.
 
+### SharpLink mapping (decided 2026-09-26)
+
+SharpLink, Inc., Nasdaq SBET, CIK 1981535 (the old SharpLink Gaming Ltd., CIK 1025561, last
+filed 2024-02-23). Filings since 2026-05-01: 8-Ks 0001493152-26-022140 (5/11, Q1 results),
+-029804 (6/23, registered direct), -031202 (6/30, ETH and buyback update), -036741 (8/10, Q2
+results); 424B5 -029734 (6/23); Q2 10-Q -036620 (8/07). No 8-K after 8/10 (checked 2026-09-26).
+
+C = "Total ETH Holdings": native ETH plus LsETH and weETH on an as-if-redeemed basis at the
+protocol rate on the measurement date (10-Q glossary). No BitMine analogue (BitMine states ETH
+only); OPEN, proposed: take SharpLink's total as stated, labeled "includes LsETH and weETH as-if
+redeemed" (254k of 887k ETH on 6/28). Stated in filings on:
+- 2026-05-04: 872,984 (ex99-1 of -022140).
+- 2026-06-16: 875,776 (in passing, ex99-1 of -029804, pricing release).
+- 2026-06-28: 886,725 = 632,719 native + 181,299 LsETH + 72,707 weETH (8-K -031202).
+- 2026-06-30: 886,881 (ex99-1 of -036741); 2026-08-03: 888,938 (same release, and 10-Q).
+BLOCKER, no BitMine analogue: no stated holdings 6/01 to 6/15 or after 8/03 (54 days to 9/26).
+The two-week rule fails; weekly rows from 6/01 cannot trace to filings.
+
+Staking: unlike BitMine, purchases are stated in dollars and ETH (6/24 to 6/26: 10,000 ETH for
+~$16.1M at $1,611.04), and holdings change with no purchase (6/16 to 6/28 +10,949 on 10,000
+bought; 6/30 to 8/03 +2,057, none bought). BitMine's "no staking carry" rule does not carry
+over: stated ΔETH − stated purchases would be a `carry` row (units), derived from the filings'
+own figures. OPEN, with the blocker.
+
+R = cash and cash equivalents, balance sheet only (3/31 $16,875K; 6/30 $56,195K). Weekly
+releases state no cash. Same BitMine decision where stated; between quarters R is not stated.
+USDC stablecoin line is $0 at 6/30. The $100M Galaxy fund commitment (8/07) is not in R or D.
+D = 0: total liabilities $5,572K at 6/30 are payables and accrued expenses; no debt or converts.
+F = 0: Series A-1 and Series B preferred authorized, 0 issued (exchanged for common 2025-04-02).
+No preferred, so no q and no rotation; only issue_common and buyback_common apply (m vs 1).
+
+S: basic = 216,983,308 at 6/30 (221,054,539 issued − 4,071,231 treasury, 10-Q balance sheet);
+217,223,604 at 8/03 (10-Q cover). Same rule as BitMine: warrants and awards follow the
+in-the-money rule at the week's SBET close. 10-Q warrants at 6/30: 16,312,635 (80,000
+pre-funded at $0.0001, always in; Consensys 3,455,019 at $6.15 to $8.00; placement agent
+2,764,013 at $7.68; June 2026 investor 10,013,351 at $8.15). RSUs 1,315,859 unvested at 6/30;
+July grants 1,456,375 time-based and 728,183 performance (10-Q Note 14). Options: 3,146 at
+$122.88 weighted average (10-Q), out of the money. Note the 10-Q restates 12/31 outstanding as 196,707,797;
+the Q1 10-Q said 198,646,255 (that figure is the Q2 10-Q's 12/31 "issued").
+BitMine's between-filing issuance estimate (unexplained ΔR ÷ close) needs weekly R, which
+SharpLink does not state. Q2 had no ATM sales (10-Q equity statement), so 6/30 to 8/03 changes
+are award settlements (e.g. 48,406 net CEO shares, 7/03).
+
+Actions since 6/01, all traceable: issue_common 6/23, 10,013,351 shares at $7.49, gross ~$75M,
+net $73,331K (10-Q equity statement); buyback_common 6/24 to 6/26, 2,132,773 shares at $4.69,
+$10,022K (8-K -031202, 10-Q); buy_coin 10,000 ETH, $16,110K (10-Q MD&A).
+
+strategicethreserve.xyz lists SBET: currentReserve 888,938, snapshotDate 2026-08-03 (checked
+2026-09-26), equal to the 10-Q figure; it has no data later than the filings.
+
 actions.csv `note`: blank for filed figures; says what was estimated otherwise (e.g. "usd
 estimated: units × ETH close").
 
