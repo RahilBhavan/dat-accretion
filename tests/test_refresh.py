@@ -20,6 +20,12 @@ def test_bmnr_s_bias_pin():
     assert week == '2026-09-20' and f'{b:.2%}' == '0.43%'
 
 
+def test_bmnr_s_bias_zero_before_first_estimate():
+    # weeks at or before the one holding the 7/09 anchor carry no estimate yet
+    assert bmnr_s_bias('data', '2026-06-07') == (0.0, '2026-06-07')
+    assert bmnr_s_bias('data', '2026-07-12')[0] == 0.0
+
+
 def test_newer_8k_text():
     fs = [{'filed': '2026-09-21'}, {'filed': '2026-09-25', 'skip': 1}, {'filed': '2026-09-28'}]
     holdings = lambda f: 'skip' not in f

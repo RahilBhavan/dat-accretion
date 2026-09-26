@@ -42,7 +42,9 @@ jobs:
           [ "$code" = 0 ] || [ "$code" = 2 ]
       - name: memo PDF (Chrome is preinstalled on ubuntu-latest)
         timeout-minutes: 3
-        run: google-chrome --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=docs/memo.pdf file://$PWD/docs/memo.html
+        run: |   # test -s: Chrome can exit 0 without writing the file
+          google-chrome --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=docs/memo.pdf file://$PWD/docs/memo.html
+          test -s docs/memo.pdf
       - name: tests
         id: tests
         timeout-minutes: 5
@@ -109,16 +111,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           branch="${{ steps.pr.outputs.branch }}"
+          sha=$(git rev-parse HEAD)   # the commit pushed above; the run must be for it, not an older one
           gh workflow run ci.yml --ref "$branch"
           id=
-          for i in $(seq 30); do
-            id=$(gh run list --workflow ci.yml --branch "$branch" --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId')
+          for i in $(seq 30); do   # dispatch is async: poll up to 150 s for the run to appear
+            id=$(gh run list --workflow ci.yml --branch "$branch" --event workflow_dispatch --json databaseId,headSha \
+                 -q ".[] | select(.headSha == \"$sha\") | .databaseId" | head -n 1)
             [ -n "$id" ] && break
             sleep 5
           done
-          [ -n "$id" ] || { echo "CI run on $branch did not start"; exit 1; }
+          [ -n "$id" ] || { echo "CI run for $sha on $branch did not start within 150 s"; exit 1; }
           gh run watch "$id" --exit-status --interval 15
       - name: squash-merge (only when pytest, check.py and CI passed and no reanchor is needed), then deploy Pages
+        id: merge
         if: >-
           steps.ci.outcome == 'success' && steps.tests.outcome == 'success' &&
           steps.check.outcome == 'success' && steps.refresh.outputs.code == '0'
@@ -138,9 +143,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # "Reanchor needed" only when nothing else failed: a PR, CI or merge failure keeps the failed title.
           title="Weekly refresh failed"
           if [ "${{ steps.refresh.outputs.code }}" = 2 ] && [ "${{ steps.tests.outcome }}" = success ] \
-             && [ "${{ steps.check.outcome }}" = success ] && [ "${{ steps.ci.outcome }}" != failure ]; then
+             && [ "${{ steps.check.outcome }}" = success ] && [ "${{ steps.pr.outcome }}" != failure ] \
+             && [ "${{ steps.ci.outcome }}" != failure ] && [ "${{ steps.merge.outcome }}" != failure ]; then
             title="Reanchor needed"
           fi
           url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

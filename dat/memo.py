@@ -24,22 +24,30 @@ def counts(weekly):
     return out
 
 
-def closest(weekly, bias):
-    """Footnote on the weeks nearest m = q, from weekly.csv. bias: (share of S, week) from dat.balances.bmnr_s_bias."""
+def week_biases(data_dir, weekly):
+    """{BitMine week with m and q: its own S bias} (dat.balances.bmnr_s_bias as of that week)."""
+    return {r['week_end']: bmnr_s_bias(data_dir, r['week_end'])[0] for r in weekly
+            if r['firm'] == 'BMNR' and r['m'] and r['q']}
+
+
+def closest(weekly, biases):
+    """Footnote on the weeks nearest m = q, from weekly.csv. biases: {BitMine week: S bias as a share of S at that
+    week} (dat.balances.bmnr_s_bias). Each week is tested against its own bias; the text states the latest."""
     rows = lambda f: [r for r in weekly if r['firm'] == f and r['m'] and r['q']]
     near = {}
     for f in ('MSTR', 'BMNR'):
         r = min(rows(f), key=lambda r: abs(float(r['m']) / float(r['q']) - 1))
         d = float(r['m']) / float(r['q']) - 1
         near[f] = f"{FIRMS[f]['name']} {r['week_end']}, m {abs(d):.2%} {'above' if d > 0 else 'below'} q"
-    b, asof = bias
-    last = max(r['week_end'] for r in rows('BMNR'))
-    if last != asof:  # raise, not assert: must hold under python -O too
-        raise ValueError(f'BitMine weekly.csv runs to {last} but the S bias is for {asof}: rerun dat.balances')
-    unbiased = [(r['week_end'], float(r['m']) * (1 - b), float(r['q'])) for r in rows('BMNR')]
-    bad = [w for w, m, q in unbiased if not m > q]
+    missing = [r['week_end'] for r in rows('BMNR') if r['week_end'] not in biases]
+    if missing:  # raise, not assert: must hold under python -O too
+        raise ValueError(f'BitMine weeks {missing} have no S bias: rerun dat.balances')
+    asof = max(r['week_end'] for r in rows('BMNR'))
+    b = biases[asof]
+    bad = [(r['week_end'], f"{biases[r['week_end']]:.4%}") for r in rows('BMNR')
+           if not float(r['m']) * (1 - biases[r['week_end']]) > float(r['q'])]
     if bad:
-        raise ValueError(f'BitMine m x (1 - {b:.4%}) is not above q in weeks {bad}: rewrite the footnote')
+        raise ValueError(f'BitMine m x (1 - that week\'s S bias) is not above q in weeks {bad}: rewrite the footnote')
     return (f"Closest weeks to the line: {near['MSTR']}; {near['BMNR']}. BitMine's estimated share count carries a "
             f"known upward bias of up to {b:.2%} of S by {asof} (staked ETH costed as purchases), which raises "
             "m by the same proportion; removing it leaves m above q in every BitMine week.")
@@ -122,9 +130,9 @@ def paragraphs(d):
     return ruler, line, where
 
 
-def footnote(c, weekly, bias):
+def footnote(c, weekly, biases):
     (_, n, m0, m1), (_, k, b0, b1) = c['MSTR'], c['BMNR']
-    return [closest(weekly, bias),
+    return [closest(weekly, biases),
         f"Period: Strategy weeks ending {m0} to {m1} ({n} filed dates, including the 2026-06-30 quarter-end holdings "
         f"row); BitMine weeks ending {b0} to {b1} ({k} weeks with a BMNP price; BMNP was issued 2026-06-10).",
         "Sources: Strategy weekly 8-Ks and Q2 10-Q (EDGAR CIK 1050446); BitMine weekly 8-K releases and 10-Q (EDGAR CIK "
@@ -170,7 +178,7 @@ def main(data_dir='data', out='docs'):
     d = build(data_dir, online=False)
     weekly = read(os.path.join(data_dir, 'weekly.csv'))
     c = counts(weekly)
-    t, paras, notes, svg = title(c), paragraphs(d), footnote(c, weekly, bmnr_s_bias(data_dir)), map_svg(d['weeks'])
+    t, paras, notes, svg = title(c), paragraphs(d), footnote(c, weekly, week_biases(data_dir, weekly)), map_svg(d['weeks'])
     files = {'map.svg': svg, 'memo.md': md(t, paras, notes), 'memo.html': page(t, paras, notes, svg)}
     for name, text in files.items():
         with open(os.path.join(out, name), 'w') as f:

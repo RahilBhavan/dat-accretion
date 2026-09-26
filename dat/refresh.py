@@ -1,8 +1,9 @@
 """Weekly refresh (`python -m dat.refresh [data_dir]`): every step's main() in order, then a reanchor alert. stdlib only.
 
 A step that raises or returns non-zero stops the run (no step is skipped). After the pipeline, any 10-Q or 10-K
-on EDGAR for a period after the anchors the code uses is printed and the exit code is 2: the data still updates,
-and a human reanchors by hand (method.md; no automatic reanchoring).
+on EDGAR for a period after the anchors the code uses is printed and the exit code is 2: the data files still
+update, but refresh.yml leaves them in an open PR (not merged to main) until a human reanchors by hand (method.md;
+no automatic reanchoring).
 Exit codes: 0 done; 1 a step failed; 2 done, reanchor needed (refresh.yml tells these apart).
 """
 import importlib, os, sys

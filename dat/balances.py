@@ -216,7 +216,9 @@ def bmnr_s_bias(data_dir='data', asof=None):
     bal = sorted((r for r in read(os.path.join(data_dir, 'balances.csv')) if r['firm'] == 'BMNR'
                   and (asof is None or r['date'] <= asof)), key=lambda r: r['date'])
     weeks = [r['date'] for r in bal]
-    a1_week = min(w for w in weeks if w >= BMNR_A1[0])
+    a1_week = min((w for w in weeks if w >= BMNR_A1[0]), default=None)
+    if a1_week is None:  # at or before the week holding the 7/09 anchor: no estimate yet
+        return 0.0, weeks[-1]
     shares = 0.0
     for w in weeks:
         if w <= a1_week:
