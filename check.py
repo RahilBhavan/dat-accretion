@@ -3,8 +3,10 @@
 1-2. Live Strategy KPI API netSatsPerShare and amplification vs the rebuild (latest MSTR state from
      dat.engine.states, revalued at the API's latestPrice and the live MSTR price), within 0.5%. The text
      names any Strategy 8-K on EDGAR filed after the repo's latest stated week (the API moves with it).
-3.   BitMine rolled ETH vs strategicethreserve.xyz at its snapshot week (dat.parse_bmnr.check).
-4.   Residual test for every in-scope week (dat.engine.residual_test; MSTR from 2026-08-02).
+3.   BitMine rolled ETH vs strategicethreserve.xyz at its snapshot week (dat.parse_bmnr.check); SharpLink stated
+     ETH vs the same site at its snapshot date, staleness measured against SharpLink's last filed date (dat.parse_sbet.check).
+4.   Residual test for every in-scope week (dat.engine.residual_test; MSTR from 2026-08-02). SharpLink residuals
+     are reported per filed date, not tested (method.md).
 5.   Every unique actions.csv filing_url fetches from EDGAR (dat.edgar client: UA, 0.6s throttle; not cached).
 Network failures are failures. Writes <data_dir>/check.json {status, run_at, checks: [{name, compared, ok}]}.
 """
@@ -88,6 +90,30 @@ def bmnr_eth(data_dir):
     return [result('BitMine ETH vs strategicethreserve.xyz', buf.getvalue().strip().splitlines()[-1], code == 0)]
 
 
+def sbet_eth(data_dir):
+    """#3b stated SharpLink ETH vs strategicethreserve.xyz at its snapshotDate (dat.parse_sbet.check)."""
+    from dat.parse_sbet import check
+    _, _, stated, actions = load(data_dir, 'SBET')
+    parsed = [{'week_end': r['week_end'], 'coins': Decimal(r['coins'])} for r in stated]
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = check(parsed, actions)
+    return [result('SharpLink ETH vs strategicethreserve.xyz', buf.getvalue().strip().splitlines()[-1], code == 0)]
+
+
+def sbet_residuals(data_dir):
+    """#4b SharpLink residual per filed date, reported (always ok: no R check exists to test it against)."""
+    from dat.engine import states, state_net, week_rows, attribute
+    bal, weekly, stated, actions = load(data_dir, 'SBET')
+    sts, weeks, out = states('SBET', bal, weekly, stated, actions), [b['date'] for b in bal], []
+    for prev_w, w in zip(weeks, weeks[1:]):
+        rows, obs = attribute(sts[prev_w], sts[w], week_rows('SBET', prev_w, w, sts[prev_w], sts[w], actions))
+        usd = state_net(sts[w])['S'] * sts[w]['p']
+        out.append(result(f'residual SBET {w} (report only)', f'residual ${rows[-1]["dn_exact"] * usd / 1e6:+,.1f}M on '
+                                                               f'observed ${obs * usd / 1e6:+,.1f}M since {prev_w}; not tested', True))
+    return out
+
+
 def residuals(data_dir):
     """#4 method.md item 5, per in-scope week."""
     from dat.engine import states, state_net, week_rows, attribute, residual_test, CHECK_FROM
@@ -127,7 +153,7 @@ def filing_urls(data_dir):
                                                    + (f'; failed: {", ".join(bad)}' if bad else ''), urls and not bad)]
 
 
-CHECKS = [kpi, bmnr_eth, residuals, filing_urls]
+CHECKS = [kpi, bmnr_eth, sbet_eth, residuals, sbet_residuals, filing_urls]
 
 
 def run(data_dir='data', checks=CHECKS):

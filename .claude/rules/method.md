@@ -56,7 +56,7 @@ at issue). 9.50% cumulative on $100, paid weekly in cash (carry). Not convertibl
 | 4 | retire_pref | k·(1/q − 1) | q < 1 |
 | 5 | buy_coin / sell_coin | 0 | neutral on day one |
 
-`carry` rows: preferred dividends and convert interest reduce R; staking adds C. They make
+`carry` rows: preferred dividends and convert interest reduce R; staking adds C (SharpLink only, inferred). They make
 attribution sum to the observed change; they are not actions.
 
 Break-even line m = q. Strategy's rotation (1 + 4) adds while m > q: stops when STRC trades
@@ -159,6 +159,73 @@ negative unexplained ΔR add 0 shares (two weeks; ≈ +0.015% of S). Warrants an
 counted from the 10-Q; an exercise before the next 10-K would be counted twice (as a warrant
 and via unexplained ΔR). Releases don't disclose exercises; the 10-K reanchor resets both.
 
+### SharpLink mapping (decided 2026-09-26)
+
+SharpLink, Inc., Nasdaq SBET, CIK 1981535 (the old SharpLink Gaming Ltd., CIK 1025561, last
+filed 2024-02-23). Filings since 2026-06-01: 8-Ks 0001493152-26-029804 (6/23, registered
+direct), -031202 (6/30, ETH and buyback update), -036741 (8/10, Q2 results); Q2 10-Q -036620
+(8/07). No 8-K after 8/10 (checked 2026-09-26).
+
+Rows per filed holdings date, not per week (decided with the user, 2026-09-26). SharpLink states
+ETH held on 2026-06-16 (875,776, in passing in the -029804 pricing release), 2026-06-28 (886,725,
+8-K -031202), 2026-06-30 (886,881) and 2026-08-03 (888,938), both in the -036741 release. No
+weekly carry-forward between them. The 6/16 row is the anchor, so the June actions are attributed.
+dat/parse_sbet.py assigns each action to the first filed date on or after it; an action after the
+last filed date raises.
+
+C = "Total ETH Holdings": native ETH plus LsETH and weETH as-if redeemed at the protocol rate on
+the measurement date (10-Q glossary), taken as stated, labeled as including LsETH and weETH at
+their stated equivalence. No BitMine analogue. The parser checks that native + LsETH + weETH
+equals the total wherever the filing gives the parts (6/28, 6/30, 8/03).
+
+Staking: SharpLink states purchases in ETH and dollars (6/24 to 6/26: 10,000 ETH at $1,611.04
+weighted average), and holdings change without purchases. So, unlike BitMine (whose "acquired"
+already includes staking, data.md), each filed date gets a `carry` row: units = stated ΔETH −
+stated purchases (6/28 +949, 6/30 +156, 8/03 +2,057), usd 0, ticker STAKE, labeled "inferred
+staking/LST accrual". Rolled ETH therefore equals stated ETH by construction; the independent
+checks are the parts sum and strategicethreserve.xyz.
+
+R = cash, stated on the balance sheet only: 6/30 $56,195K (in the -036741 release). Other filed
+dates roll it from 6/30 by filed cash flows (6/16: $8,996,400), labeled; operating costs and
+staking revenue are not itemized, so they are not in R and land in the residual. USDC line is $0.
+The $100M Galaxy fund commitment (8/07) is not in R or D.
+D = 0: total liabilities $5,572K at 6/30 are payables and accrued expenses; no debt or converts.
+F = 0: Series A-1 and Series B preferred authorized, 0 issued. No preferred, so q is blank and
+there is no rotation line; only issue_common (adds while m > 1) and buyback_common (adds while
+m < 1) apply. The map draws SharpLink at q = 1, where m = q is m = 1.
+
+S (decided 2026-09-26): basic from the 10-Q counts, 216,983,308 at 6/30 (221,054,539 issued −
+4,071,231 treasury, balance sheet) and 217,223,604 at 8/03 (cover), rolled by filed issuance and
+buybacks (6/16: 209,102,730). No R-based estimate (BitMine's needs weekly R). Awards and warrants
+follow the in-the-money rule at the SBET close. RSUs and PSUs are in S per Strategy's definition:
+1,315,859 time-based RSUs unvested at 6/30; 49,265 performance RSUs with no grant date yet, from
+6/30 (the 10-Q date that discloses them as outstanding); July grants of 1,456,375 time-based and
+728,183 performance RSUs (10-Q Note 14) from 7/31. Assumption: the 10-Q says only "In July
+2026", so 7/31 is taken as the grant date; only the 8/03 row depends on it. Warrants 80,000 pre-funded at $0.0001 (always
+in), Consensys 1,382,007 at $6.15, 691,004 each at $6.77, $7.38, $8.00; placement agent 2,764,013
+at $7.68; June 2026 investor 10,013,351 at $8.15 (from 6/23); options 3,146 at $122.88. Excluded:
+252 warrants in the 10-Q total (16,312,635) not itemized by tranche. Pre-funded exercises and RSU vesting move shares between basic and awards,
+so they leave S unchanged; 6/30 to 8/03 vestings (up to 240,296 shares) may be counted twice,
+about 0.11% of S. The 10-Q restates 12/31 outstanding as 196,707,797; the Q1 10-Q said
+198,646,255 (the Q2 10-Q's 12/31 "issued"); not used.
+
+Actions since 6/01: issue_common 6/23, 10,013,351 shares at $7.49, usd = net $73,331K from the
+10-Q equity statement (8-K gross ~$75M); buyback_common 6/24 to 6/26, 2,132,773 at $4.69, usd =
+$10,022K treasury cost from the 10-Q (shares × average = $10,002,705); buy_coin 10,000 ETH, usd =
+units × $1,611.04 = $16,110,400. Notes on the rows say where the usd comes from.
+
+Residuals are reported, not tested (no R check). 6/28 is zero by construction (R rolled by the
+same flows, carry inferred); 6/30 carries the 49,265 PSUs entering S; 8/03 carries the July RSU
+and PSU grants and award shares added to S. None of these is an action.
+
+8-Ks are read only when their EDGAR items include 1.01, 2.02, 2.03, 3.02, 3.03, 7.01 or 8.01;
+others (e.g. 5.02, 5.07) are skipped with a printed line. 2.02 is in the set because SharpLink's
+quarterly results releases state holdings and cash. Every 10-Q since 6/01 is read, each for its own
+quarter's equity statement.
+
+strategicethreserve.xyz lists SBET: currentReserve 888,938, snapshotDate 2026-08-03, equal to the
+filed figure (data.md gives the staleness rule).
+
 actions.csv `note`: blank for filed figures; says what was estimated otherwise (e.g. "usd
 estimated: units × ETH close").
 
@@ -172,4 +239,4 @@ staking earned is positive units.
 
 `action` ∈ issue_common, buyback_common, issue_pref, retire_pref, buy_coin, sell_coin, carry (actions.csv); attribution.csv adds price, itm_flip, est_issuance (BMNR only: the week's estimated basic-share change from balances.csv "S estimated", booked at that week's BMNR close with its cash; not an actions.csv row), residual.
 `units`: shares for common, notional dollars for preferred, coins for coin trades.
-`firm` ∈ MSTR, BMNR.
+`firm` ∈ MSTR, BMNR, SBET.

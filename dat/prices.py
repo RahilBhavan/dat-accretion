@@ -6,7 +6,7 @@ import csv, json, os, sys, urllib.request, datetime as dt
 from zoneinfo import ZoneInfo
 
 START = dt.date(2026, 5, 25)
-YAHOO = ['MSTR', 'STRC', 'STRK', 'STRF', 'STRD', 'BMNR', 'BMNP']
+YAHOO = ['MSTR', 'STRC', 'STRK', 'STRF', 'STRD', 'BMNR', 'BMNP', 'SBET']
 GECKO = {'BTC': 'bitcoin', 'ETH': 'ethereum'}
 YAHOO_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/{}?period1={}&period2={}&interval=1d'
 GECKO_URL = 'https://api.coingecko.com/api/v3/coins/{}/market_chart/range?vs_currency=usd&from={}&to={}'
@@ -69,15 +69,18 @@ def load(path='data/prices.csv'):
         return list(csv.DictReader(f))
 
 
-def fetch(start=START, end=None):
+def fetch(start=START, end=None, only=None):
+    """Closes for every ticker, or just `only` (a list of tickers)."""
     end = end or dt.datetime.now(dt.timezone.utc)
     p1 = int(dt.datetime.combine(start, dt.time(), dt.timezone.utc).timestamp())
     p2 = int(end.timestamp())
     rows = []
     for t in YAHOO:
-        rows += yahoo_rows(get_json(YAHOO_URL.format(t, p1, p2)), t)
+        if not only or t in only:
+            rows += yahoo_rows(get_json(YAHOO_URL.format(t, p1, p2)), t)
     for t, cid in GECKO.items():
-        rows += gecko_rows(get_json(GECKO_URL.format(cid, p1, p2)), t)
+        if not only or t in only:
+            rows += gecko_rows(get_json(GECKO_URL.format(cid, p1, p2)), t)
     rows = [r for r in rows if r[0] >= start.isoformat()]
     return sorted(rows, key=lambda r: (r[0], r[1]))
 
@@ -89,11 +92,15 @@ def save(path, rows):
         w.writerows(rows)
 
 
-def main(data_dir='data'):
+def main(data_dir='data', *only):
+    """python -m dat.prices [data_dir] [TICKER ...]: with tickers, refetch only those and keep every other row."""
     path = os.path.join(data_dir, 'prices.csv')
-    rows = fetch()
+    rows = fetch(only=only)
+    if only:
+        rows = sorted([(r['date'], r['ticker'], r['close']) for r in load(path) if r['ticker'] not in only] + rows,
+                      key=lambda r: (r[0], r[1]))
     save(path, rows)
-    for t in YAHOO + list(GECKO):
+    for t in only or YAHOO + list(GECKO):
         ds = [r[0] for r in rows if r[1] == t]
         if not ds:
             raise SystemExit(f'{t}: no rows')

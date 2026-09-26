@@ -6,12 +6,13 @@ and residual. Every step is an exact recompute through net().
 """
 import math, os, sys
 from dat.balances import (net, read, write, CONVERTS, STRK_CONV, CLASS_B, AWARDS, pref_notional, class_a,
-                          bmnr_flows, bmnr_basic, BMNR_RSU, BMNR_DILUTIVE, reserve_checks)
+                          bmnr_flows, bmnr_basic, BMNR_RSU, BMNR_DILUTIVE, reserve_checks, sbet_basic, sbet_awards,
+                          sbet_options)
 
 FIELDS = ['firm', 'week_end', 'action', 'ticker', 'usd', 'm', 'q', 'dn_first_order', 'dn_exact', 'dn_per_dollar',
           'filing_url']
 COMMON, PREF = ('issue_common', 'buyback_common'), ('issue_pref', 'retire_pref')
-CHECK_FROM = {'MSTR': '2026-08-02'}  # 5% residual scope (method.md); BMNR: report only
+CHECK_FROM = {'MSTR': '2026-08-02'}  # 5% residual scope (method.md); BMNR and SBET: report only
 LIMIT = 0.05
 
 
@@ -112,9 +113,12 @@ def states(firm, bal, weekly, stated, actions):
         if firm == 'MSTR':
             st.update(converts=CONVERTS, prefs=pref_notional(actions, w), conv={'STRK': STRK_CONV},
                       basic=class_a(actions, w) + CLASS_B, awards=AWARDS, options=[])
-        else:
+        elif firm == 'BMNR':
             st.update(converts=[], prefs={'BMNP': float(b['pref_notional'])}, conv={}, basic=basic[w][0],
                       awards=BMNR_RSU, options=BMNR_DILUTIVE)
+        else:  # SBET: no converts or preferred; rows per filed holdings date
+            st.update(converts=[], prefs={}, conv={}, basic=sbet_basic(actions, w)[0], awards=sbet_awards(w),
+                      options=sbet_options(w))
         out[w] = st
     return out
 
@@ -140,7 +144,7 @@ def main(data_dir='data'):
     all_bal, all_weekly, all_stated, all_actions = (read(path(f)) for f in
                                                     ('balances.csv', 'weekly.csv', 'stated.csv', 'actions.csv'))
     out, bad_id, bad_n, scope = [], [], [], []
-    for firm in ('BMNR', 'MSTR'):
+    for firm in ('BMNR', 'MSTR', 'SBET'):
         pick = lambda rows: [r for r in rows if r['firm'] == firm]
         bal = sorted(pick(all_bal), key=lambda b: b['date'])
         weekly = {r['week_end']: {**r, 'p': float(r['p']), 's': float(r['s'])} for r in pick(all_weekly)}

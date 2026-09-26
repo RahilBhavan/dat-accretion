@@ -1,7 +1,7 @@
 # Methodology
 
-This project measures each capital action by Strategy (BTC) and BitMine (ETH) since 2026-06-01 on one ruler:
-Strategy's own net coins per share definition, applied to both firms. For each action it states the per-share
+This project measures each capital action by Strategy (BTC), BitMine (ETH) and SharpLink (ETH) since 2026-06-01
+on one ruler: Strategy's own net coins per share definition, applied to all three firms. For each action it states the per-share
 effect at disclosed prices and the price where that effect changes sign. It makes no judgment on any decision
 and gives no forecast.
 
@@ -83,6 +83,11 @@ table's formulas; exact values use the cash actually received, so issue fees sho
 | BMNP q uses its $100 liquidation preference. | Certificate of Designations. After a follow-on BMNP sale the preference floats to max($100, last sale price, 10-day average). |
 | STRC retirements use the 8-K's disclosed average price where given, else the daily close. | The filings do not always state it. |
 | The residual test applies to Strategy weeks from 2026-08-02. A week passes if the residual is under 5% of the week's change, or within that week's R rounding. | R is checked only from that date. A quiet week with rounded disclosures would otherwise fail with nothing wrong (8/30: $10.6M on a $107M week, inside ±$20M rounding). BitMine residuals are reported, not tested. |
+| SharpLink rows exist only on the dates its filings state ETH holdings (2026-06-16, 06-28, 06-30, 08-03); nothing is carried forward between them. | SharpLink files no weekly holdings update; its last 8-K was filed 2026-08-10. |
+| SharpLink C is its stated Total ETH Holdings: native ETH plus LsETH and weETH at the stated as-if-redeemed equivalence. | The filings state the total and its three parts; the parser checks that the parts sum to the total. |
+| SharpLink carry rows: the stated ETH change less stated purchases, labeled inferred staking and LST accrual. | SharpLink states its purchases separately (unlike BitMine, whose "acquired" figure includes staking). |
+| SharpLink R is 2026-06-30 balance-sheet cash, rolled to other dates by filed cash flows. S uses the 10-Q counts for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks, plus RSUs, performance RSUs and in-the-money warrants (July grants taken as of 7/31, an assumption). Issue and buyback USD come from the 10-Q equity statement. | Releases state no cash; the 10-Q gives net proceeds and treasury cost. Operating costs and staking revenue are not in R. |
+| SharpLink has no preferred, so no q and no rotation line: issuing common adds while m > 1, buying back common while m < 1. Its map marks sit at q = 1. Its residuals are reported, not tested. | 10-Q 6/30: no preferred, debt or converts outstanding. |
 
 ## Data sources
 
@@ -93,9 +98,11 @@ table's formulas; exact values use the cash actually received, so issue fees sho
 | https://api.strategy.com/btc/bitcoinKpis | netSatsPerShare, amplification, mNAV (current value only; saved daily) |
 | BitMine 8-K releases (ex99-1), EDGAR CIK 1829311 | ETH held, buybacks, BMNP offering and dividends, cash |
 | BitMine 10-Q (5/31) and Certificate of Designations | shares, balance sheet anchor, BMNP terms |
-| Yahoo Finance daily closes | MSTR, STRC, STRK, STRF, STRD, BMNR, BMNP |
+| SharpLink 8-Ks and ex99-1 releases, EDGAR CIK 1981535 | ETH held on stated dates, registered direct offering, buybacks, ETH purchases |
+| SharpLink Q2 10-Q | shares, cash, warrants and awards, net proceeds, treasury cost |
+| Yahoo Finance daily closes | MSTR, STRC, STRK, STRF, STRD, BMNR, BMNP, SBET |
 | CoinGecko | BTC and ETH daily closes |
-| strategicethreserve.xyz | independent check of BitMine ETH holdings |
+| strategicethreserve.xyz | independent check of BitMine and SharpLink ETH holdings |
 
 Each week uses closes from the last US trading day on or before the week's end. Every row of `data/actions.csv`
 links to its SEC filing. EDGAR requests identify the project in the User-Agent and stay under 10 per second.
@@ -109,8 +116,10 @@ count as failures.
    and the live MSTR price.
 2. Rebuilt amplification within 0.5% of the API.
 3. BitMine rolled ETH within 0.1% of strategicethreserve.xyz at that site's snapshot week, with the snapshot no more
-   than 6 weeks old.
-4. The residual test above, for every Strategy week from 2026-08-02.
+   than 6 weeks old. SharpLink stated ETH within 0.1% at the site's snapshot date, with the snapshot no more than
+   6 weeks before SharpLink's own last filed holdings date (not the calendar, since SharpLink files rarely).
+4. The residual test above, for every Strategy week from 2026-08-02. SharpLink residuals are printed per filed
+   date, not tested.
 5. Every filing link in `data/actions.csv` returns HTTP 200 from EDGAR.
 
 The result and its run time appear in the page's Method section.

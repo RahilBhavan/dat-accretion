@@ -38,7 +38,7 @@
 <text x="51" y="42.0" text-anchor="end" fill="#555">1.45</text>
 <line x1="58" x2="784" y1="422" y2="422" stroke="#555"/>
 <line x1="58" x2="58" y1="14" y2="422" stroke="#555"/>
-<text x="421.0" y="460" text-anchor="middle">q = preferred close / $100 notional (STRC for Strategy, BMNP for BitMine)</text>
+<text x="421.0" y="460" text-anchor="middle">q = preferred close / $100 notional (STRC for Strategy, BMNP for BitMine; SharpLink, no preferred, at q = 1)</text>
 <text transform="translate(16 218.0) rotate(-90)" text-anchor="middle">m = net mNAV</text>
 <line x1="58.0" y1="422.0" x2="784.0" y2="14.0" stroke="#222" stroke-dasharray="6 4"/>
 <text x="744.0" y="20.0" text-anchor="end">m = q</text>
@@ -65,6 +65,7 @@
 <rect x="323.9" y="246.1" width="9.6" height="9.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="236.3" y="306.9" width="9.0" height="9.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="232.2" y="305.0" width="8.4" height="8.4" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
+<path d="M356.9,380.0L363.3,391.0L350.6,391.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
 <rect x="258.8" y="267.5" width="8.3" height="8.3" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="240.6" y="260.2" width="8.0" height="8.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="295.6" y="280.2" width="7.6" height="7.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
@@ -77,11 +78,16 @@
 <rect x="232.0" y="314.8" width="5.9" height="5.9" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="273.7" y="252.3" width="5.9" height="5.9" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="192.0" y="304.0" width="5.5" height="5.5" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
+<path d="M356.9,372.0L361.0,379.0L352.9,379.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
+<path d="M356.9,381.9L361.0,388.9L352.9,388.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
+<path d="M356.9,340.9L361.0,347.9L352.9,347.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
 <circle cx="65.0" cy="480.0" r="6.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6"/>
 <text x="76" y="484">Strategy</text>
 <rect x="159.7" y="474.7" width="10.6" height="10.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834"/>
 <text x="176" y="484">BitMine</text>
-<line x1="258" y1="486" x2="272" y2="474" stroke="#222" stroke-dasharray="3 2"/>
-<text x="278" y="484">m = q</text>
-<text x="338" y="484" fill="#555">Mark area: dollars moved that week (filed actions only)</text>
+<path d="M265.0,470.7L273.1,484.7L256.9,484.7Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7"/>
+<text x="276" y="484">SharpLink</text>
+<line x1="368" y1="486" x2="382" y2="474" stroke="#222" stroke-dasharray="3 2"/>
+<text x="388" y="484">m = q</text>
+<text x="448" y="484" fill="#555">Mark area: dollars moved (filed actions only)</text>
 </svg>

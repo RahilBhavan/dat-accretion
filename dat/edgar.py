@@ -43,7 +43,7 @@ def filings(cik, form='8-K', since='2026-06-01'):
         if f in (form, form + '/A') and recent['filingDate'][i] >= since:
             acc, doc = recent['accessionNumber'][i], recent['primaryDocument'][i]
             out.append({'accession': acc, 'form': f, 'filed': recent['filingDate'][i], 'primary_doc': doc,
-                        'period': recent['reportDate'][i],
+                        'period': recent['reportDate'][i], 'items': recent['items'][i],
                         'url': f'https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc.replace("-", "")}/{doc}'})
     return sorted(out, key=lambda r: (r['filed'], r['accession']))
 

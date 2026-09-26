@@ -10,23 +10,28 @@ def site():
 
 
 def test_headline_break_even_is_100_m(site):
-    assert {h['firm'] for h in site['headline']} == {'MSTR', 'BMNR'}
+    assert {h['firm'] for h in site['headline']} == {'MSTR', 'BMNR', 'SBET'}
     for h in site['headline']:
         latest = max((w for w in site['weeks'] if w['firm'] == h['firm']), key=lambda w: w['week_end'])
+        if h['firm'] == 'SBET':  # no preferred: no break-even price, m vs 1 only
+            assert h['m'] == latest['m'] and h['break_even'] is None and 'no rotation' in h['sentence']
+            assert f"{h['m']:.3f}" in h['sentence'] and '—' not in h['sentence'] + h['close_sentence']
+            continue
         assert h['m'] == latest['m'] and h['break_even'] == round(100 * latest['m'], 2)
         assert f"${h['break_even']:.2f}." in h['sentence']
 
 
 def test_every_map_point_links_to_a_filing(site):
-    points = [w for w in site['weeks'] if w['q'] is not None and w['m'] is not None]
-    assert len(points) >= 30
+    # app.js mapPoints: q and m present, or SharpLink (no preferred, drawn at q = 1)
+    points = [w for w in site['weeks'] if w['m'] is not None and (w['q'] is not None or w['firm'] == 'SBET')]
+    assert len(points) >= 30 and sum(w['firm'] == 'SBET' for w in points) == 4
     for w in points:
         assert w['filing_urls'] and all(u.startswith('https://www.sec.gov/') for u in w['filing_urls'])
 
 
 def test_bars_sum_to_observed(site):
     weeks = [w for w in site['weeks'] if w['value'] is not None]
-    assert len(weeks) == len(site['weeks']) - 2  # one anchor week per firm
+    assert len(weeks) == len(site['weeks']) - 3  # one anchor week per firm
     for w in weeks:
         assert set(w['value']) == set(site['categories'])
         total = sum(w['value'].values()) + w['price'] + w['itm_flip']

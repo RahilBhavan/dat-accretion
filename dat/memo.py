@@ -11,16 +11,19 @@ from dat.build_site import build, FIRMS
 PAGE = 'https://rahilbhavan.github.io/dat-accretion/'
 REPO = 'https://github.com/RahilBhavan/dat-accretion'
 FWP = 'https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm'
-COLOR = {'MSTR': '#2a78d6', 'BMNR': '#eb6834'}
+COLOR = {'MSTR': '#2a78d6', 'BMNR': '#eb6834', 'SBET': '#4a3aa7'}
 ADDS = {'MSTR': lambda m, q: m > q, 'BMNR': lambda m, q: m < q}  # method.md: the rotation's adding side of m = q
 
 
 def counts(weekly):
-    """{firm: (weeks on the adding side, weeks with m and q, first week, last week)} from weekly.csv rows."""
+    """{firm: (weeks on the adding side, weeks with m and q, first week, last week)} from weekly.csv rows.
+    SBET (no preferred): (filed dates with m below 1, filed dates, first, last)."""
     out = {}
     for firm in ('MSTR', 'BMNR'):
         ws = sorted((r for r in weekly if r['firm'] == firm and r['m'] and r['q']), key=lambda r: r['week_end'])
         out[firm] = (sum(ADDS[firm](float(r['m']), float(r['q'])) for r in ws), len(ws), ws[0]['week_end'], ws[-1]['week_end'])
+    ws = sorted((r for r in weekly if r['firm'] == 'SBET' and r['m']), key=lambda r: r['week_end'])
+    out['SBET'] = (sum(float(r['m']) < 1 for r in ws), len(ws), ws[0]['week_end'], ws[-1]['week_end'])
     return out
 
 
@@ -54,12 +57,18 @@ def closest(weekly, biases):
 
 
 def title(c):
-    (a, n, _, _), (b, k, _, _) = c['MSTR'], c['BMNR']
+    (a, n, _, _), (b, k, _, _), (x, y, _, _) = c['MSTR'], c['BMNR'], c['SBET']
     return (f"Strategy's STRC rotation sat on its adding side of the break-even line in {a} of {n} filed weeks; "
-            f"BitMine's BMNP rotation in {b} of {k}")
+            f"BitMine's BMNP rotation in {b} of {k}; SharpLink, with no preferred, had m below 1 on {x} of {y} filed dates")
 
 
 def mark(firm, cx, cy, r, style):
+    if firm == 'SBET':  # equilateral triangle of equal area, as on the page
+        a = r * 2.694
+        h = a * 0.866
+        top = cy - h * 2 / 3
+        return (f'<path d="M{cx:.1f},{top:.1f}L{cx + a / 2:.1f},{top + h:.1f}L{cx - a / 2:.1f},{top + h:.1f}Z" '
+                f'style="{style}"/>')
     if firm == 'MSTR':
         return f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" style="{style}"/>'
     h = r * 0.886  # square of equal area, as on the page
@@ -72,9 +81,11 @@ def ticks(lo, hi, step=0.05):
 
 def map_svg(weeks, W=800, H=500):
     """Break-even map, 16:10: x = q, y = m on one shared domain, m = q diagonal, area ∝ dollars moved."""
-    pts = [w for w in weeks if w['q'] is not None and w['m'] is not None]
+    # SharpLink has no preferred (q None): its marks sit at q = 1, where m = q is m = 1 (as on the page).
+    pts = [{**w, 'qx': 1.0 if w['q'] is None else w['q']} for w in weeks
+           if w['m'] is not None and (w['q'] is not None or w['firm'] == 'SBET')]
     M = {'l': 58, 'r': 16, 't': 14, 'b': 78}
-    vals = [v for w in pts for v in (w['m'], w['q'])]
+    vals = [v for w in pts for v in (w['m'], w['qx'])]
     lo, hi = math.floor((min(vals) - 0.05) * 20) / 20, math.ceil((max(vals) + 0.05) * 20) / 20
     X = lambda v: M['l'] + (v - lo) / (hi - lo) * (W - M['l'] - M['r'])
     Y = lambda v: H - M['b'] - (v - lo) / (hi - lo) * (H - M['t'] - M['b'])
@@ -93,7 +104,7 @@ def map_svg(weeks, W=800, H=500):
     s.append(f'<line x1="{M["l"]}" x2="{W - M["r"]}" y1="{H - M["b"]}" y2="{H - M["b"]}" stroke="#555"/>')
     s.append(f'<line x1="{M["l"]}" x2="{M["l"]}" y1="{M["t"]}" y2="{H - M["b"]}" stroke="#555"/>')
     s.append(f'<text x="{(M["l"] + W - M["r"]) / 2}" y="{H - M["b"] + 38}" text-anchor="middle">'
-             'q = preferred close / $100 notional (STRC for Strategy, BMNP for BitMine)</text>')
+             'q = preferred close / $100 notional (STRC for Strategy, BMNP for BitMine; SharpLink, no preferred, at q = 1)</text>')
     s.append(f'<text transform="translate(16 {(M["t"] + H - M["b"]) / 2}) rotate(-90)" text-anchor="middle">m = net mNAV</text>')
     s.append(f'<line x1="{X(lo):.1f}" y1="{Y(lo):.1f}" x2="{X(hi):.1f}" y2="{Y(hi):.1f}" stroke="#222" stroke-dasharray="6 4"/>')
     s.append(f'<text x="{X(hi) - 40:.1f}" y="{Y(hi) + 6:.1f}" text-anchor="end">m = q</text>')  # above-left, clear of the diagonal
@@ -102,22 +113,22 @@ def map_svg(weeks, W=800, H=500):
              'BitMine\'s rotation adds here (m &lt; q)</text>')
     for w in sorted(pts, key=lambda w: -(w['dollars_moved'] or 0)):  # small marks on top
         c = COLOR[w['firm']]
-        s.append(mark(w['firm'], X(w['q']), Y(w['m']), rad(w), f'fill:{c};fill-opacity:0.45;stroke:{c};stroke-width:1.5'))
+        s.append(mark(w['firm'], X(w['qx']), Y(w['m']), rad(w), f'fill:{c};fill-opacity:0.45;stroke:{c};stroke-width:1.5'))
     y, x = H - 16, M['l']
-    for firm in ('MSTR', 'BMNR'):
+    for firm in ('MSTR', 'BMNR', 'SBET'):
         c = COLOR[firm]
         s.append(mark(firm, x + 7, y - 4, 6, f'fill:{c};fill-opacity:0.45;stroke:{c}'))
         s.append(f'<text x="{x + 18}" y="{y}">{FIRMS[firm]["name"]}</text>')
-        x += 100
+        x += 100 if firm != 'SBET' else 110
     s.append(f'<line x1="{x}" y1="{y + 2}" x2="{x + 14}" y2="{y - 10}" stroke="#222" stroke-dasharray="3 2"/>')
     s.append(f'<text x="{x + 20}" y="{y}">m = q</text>')
-    s.append(f'<text x="{x + 80}" y="{y}" fill="#555">Mark area: dollars moved that week (filed actions only)</text>')
+    s.append(f'<text x="{x + 80}" y="{y}" fill="#555">Mark area: dollars moved (filed actions only)</text>')
     return '\n'.join(s + ['</svg>']) + '\n'
 
 
 def paragraphs(d):
     h = {x['firm']: x for x in d['headline']}
-    ruler = ("The ruler is Strategy's own net coins per share definition, applied to both firms, from the glossary in "
+    ruler = ("The ruler is Strategy's own net coins per share definition, applied to all three firms, from the glossary in "
              f"Strategy's 2026-08-24 FWP. Net coins N are coins held plus USD assets, less out-of-the-money convertible "
              "debt and preferred notional, converted to coins at the coin price. n is N per fully diluted share. m is net "
              "mNAV, the common share price over the net coin value per share: m = s / (p·n). q is the preferred's close "
@@ -125,23 +136,31 @@ def paragraphs(d):
     line = ("Issuing common adds to n while m is above 1; retiring preferred adds while q is below 1. Strategy's rotation "
             "sells common and retires STRC, so it adds while m > q: it stops adding when STRC trades above $100 × m. "
             "BitMine's rotation sells BMNP and buys back common, so it adds while m < q: it stops adding when BMNP trades "
-            "below $100 × m. The line m = q is where both rotations add nothing.")
-    where = ' '.join(f"{h[f]['sentence']} {h[f]['close_sentence']}" for f in ('MSTR', 'BMNR'))
+            "below $100 × m. The line m = q is where both rotations add nothing. SharpLink has no preferred, so no rotation "
+            "line applies: issuing common adds while m > 1 and buying back common adds while m < 1.")
+    s = h['SBET']  # the line paragraph above already states SharpLink's m vs 1 rule
+    where = ' '.join(f"{h[f]['sentence']} {h[f]['close_sentence']}" for f in ('MSTR', 'BMNR')) + \
+        f" SharpLink's net mNAV was {s['m']:.3f} on its last filed date, {s['week_end']}. {s['close_sentence']}"
     return ruler, line, where
 
 
 def footnote(c, weekly, biases):
-    (_, n, m0, m1), (_, k, b0, b1) = c['MSTR'], c['BMNR']
+    (_, n, m0, m1), (_, k, b0, b1), (_, y, s0, s1) = c['MSTR'], c['BMNR'], c['SBET']
     return [closest(weekly, biases),
         f"Period: Strategy weeks ending {m0} to {m1} ({n} filed dates, including the 2026-06-30 quarter-end holdings "
-        f"row); BitMine weeks ending {b0} to {b1} ({k} weeks with a BMNP price; BMNP was issued 2026-06-10).",
+        f"row); BitMine weeks ending {b0} to {b1} ({k} weeks with a BMNP price; BMNP was issued 2026-06-10); SharpLink "
+        f"filed holdings dates {s0} to {s1} ({y} dates; SharpLink states holdings only on those dates, and nothing is "
+        "carried forward between them).",
         "Sources: Strategy weekly 8-Ks and Q2 10-Q (EDGAR CIK 1050446); BitMine weekly 8-K releases and 10-Q (EDGAR CIK "
-        "1829311); Yahoo Finance daily closes for MSTR, STRC, STRK, STRF, STRD, BMNR and BMNP; CoinGecko BTC and ETH "
+        "1829311); SharpLink 8-K releases and Q2 10-Q (EDGAR CIK 1981535); Yahoo Finance daily closes for MSTR, STRC, "
+        "STRK, STRF, STRD, BMNR, BMNP and SBET; CoinGecko BTC and ETH "
         "closes. Each week uses closes from the last US trading day on or before the week's end.",
         "Labeled estimates: BitMine S is estimated between filings, anchored to the 10-Q share counts for 2026-05-31 "
         "and 2026-07-09, with unreported issuance estimated as the week's unexplained change in cash divided by the "
         "BMNR close. BitMine R is its stated cash and marketable securities, so it includes securities. The USD of each "
-        "BitMine ETH purchase is units × that week's ETH close.",
+        "BitMine ETH purchase is units × that week's ETH close. SharpLink C includes LsETH and weETH at their stated "
+        "as-if-redeemed ETH equivalence; its ETH change beyond stated purchases is inferred staking and LST accrual; "
+        "its R is 2026-06-30 balance-sheet cash rolled by filed cash flows.",
     ]
 
 
@@ -157,7 +176,7 @@ body { font: 10pt/1.38 Helvetica, Arial, sans-serif; color: #222; max-width: 7.3
 h1 { font-size: 14.5pt; line-height: 1.25; margin: 0 0 0.12in; }
 p { margin: 0 0 0.09in; }
 figure { margin: 0.04in 0 0.06in; text-align: center; }
-figure svg { width: 6.3in; height: auto; }
+figure svg { width: 5.2in; height: auto; }
 .note { font-size: 7.6pt; line-height: 1.3; color: #444; margin: 0 0 0.04in; }
 a { color: #1a5aa6; }
 @media screen { body { margin: 0.6in auto; } }"""

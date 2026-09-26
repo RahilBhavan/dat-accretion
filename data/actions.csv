@@ -72,3 +72,9 @@ MSTR,2026-09-13,2026-09-14,https://www.sec.gov/Archives/edgar/data/1050446/00011
 MSTR,2026-09-20,2026-09-21,https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm,buy_coin,BTC,75700000,950,79670,
 MSTR,2026-09-20,2026-09-21,https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm,carry,DIV_INT,-57400000,0,,
 MSTR,2026-09-20,2026-09-21,https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm,retire_pref,STRC,174000000,177123800,98.236375,
+SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,buy_coin,ETH,16110400,10000,1611.04,
+SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,buyback_common,SBET,10022000,2132773,4.69,"usd: treasury stock cost, 10-Q equity statement (https://www.sec.gov/Archives/edgar/data/1981535/000149315226036620/form10-q.htm)"
+SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,carry,STAKE,0,949,,inferred staking/LST accrual: stated ETH change less stated purchases
+SBET,2026-06-28,2026-06-23,https://www.sec.gov/Archives/edgar/data/1981535/000149315226029804/form8-k.htm,issue_common,SBET,73331000,10013351,7.49,"usd: net proceeds, 10-Q equity statement (https://www.sec.gov/Archives/edgar/data/1981535/000149315226036620/form10-q.htm)"
+SBET,2026-06-30,2026-08-10,https://www.sec.gov/Archives/edgar/data/1981535/000149315226036741/ex99-1.htm,carry,STAKE,0,156,,inferred staking/LST accrual: stated ETH change less stated purchases
+SBET,2026-08-03,2026-08-10,https://www.sec.gov/Archives/edgar/data/1981535/000149315226036741/ex99-1.htm,carry,STAKE,0,2057,,inferred staking/LST accrual: stated ETH change less stated purchases
