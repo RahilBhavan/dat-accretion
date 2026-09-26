@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "A parser misses a new phrasing of a purchase. Which fix holds up better over many filings?",
+      "options": [
+        "Add the new phrasing to a word list",
+        "Raise whenever holdings change and no parsed purchase explains it",
+        "Skip releases the parser does not understand",
+        "Estimate the purchase from the holdings change"
+      ],
+      "correct": 1,
+      "explanation": "Build note #16: three review rounds of word lists kept finding new phrasings. A structural guard fails loudly on any unexplained change, whatever the wording."
+    },
+    {
+      "stage": "pre",
+      "question": "Two share counts are available. One matches Strategy's API more closely but cannot be traced to a filing. Which one does the project use?",
+      "options": [
+        "The closer one",
+        "The average of the two",
+        "The one that traces to a filing",
+        "Neither; it anchors to the API"
+      ],
+      "correct": 2,
+      "explanation": "Build note #14 and decision R7: every input must trace to a filing. The error rose from 0.02% to 0.11%, still inside the 0.5% gate."
+    },
+    {
+      "stage": "post",
+      "question": "BitMine's stated ETH change equals \"ETH acquired\" in 13 of 16 weeks. What does that imply for a separate staking carry row?",
+      "options": [
+        "It is needed to make attribution sum",
+        "It should be booked only in the other 3 weeks",
+        "It has no effect on the ETH check",
+        "It counts staking twice, since \"acquired\" already includes it"
+      ],
+      "correct": 3,
+      "explanation": "With staking rows the ETH site check read +0.52% (a fail); without them, -0.0006%. The decision was reversed after looking at the data (#15, #6)."
+    },
+    {
+      "stage": "post",
+      "question": "The 2026-08-23 residual was $1,570.1M with a disclosure row for USD Cash. What does 2,006.5 - 136.4 - 300.0 = 1,570.1 show?",
+      "options": [
+        "The USD Cash came from that week's MSTR sale proceeds, already booked by issue_common, so the disclosure row counted it twice",
+        "The USD Cash existed before 8/23",
+        "STRC retirements were missing",
+        "The reserve rounding was too tight"
+      ],
+      "correct": 0,
+      "explanation": "The 8-K filed 2026-08-24 funds USD Cash from the remaining MSTR sale proceeds. Removing the row dropped the residual from 37.9% to about 0.5% (#19)."
+    },
+    {
+      "stage": "post",
+      "question": "A step in a GitHub Actions job hangs past the job's timeout-minutes. What happens to the alert step that has if: failure()?",
+      "options": [
+        "It runs, because the job failed",
+        "It runs twice",
+        "It is skipped, because GitHub cancels the job rather than failing it",
+        "It opens a new issue per day"
+      ],
+      "correct": 2,
+      "explanation": "Build note #20: a job timeout cancels the job. A step-level timeout inside the job fails only that step, so the alert still runs."
+    }
+  ]
+}

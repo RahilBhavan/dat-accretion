@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "On the break-even map, what do the x and y axes show?",
+      "options": [
+        "x is q (preferred close over $100 notional), y is m (net mNAV)",
+        "x is the coin price, y is the share price",
+        "x is the week, y is n",
+        "x is dollars moved, y is value to common"
+      ],
+      "correct": 0,
+      "explanation": "Each mark is one firm-week at (q, m). The diagonal m = q is where both rotations add nothing."
+    },
+    {
+      "stage": "pre",
+      "question": "Which chart library does the page load?",
+      "options": [
+        "D3 from a CDN",
+        "Chart.js from jsDelivr",
+        "Plotly",
+        "None: plain HTML, CSS and JavaScript with hand-drawn SVG"
+      ],
+      "correct": 3,
+      "explanation": "Decision M6: no external scripts or styles. index.html loads only style.css and app.js."
+    },
+    {
+      "stage": "post",
+      "question": "The mapped values run from m = 0.7222 to m = 1.4212. Using the page's rule (min − 0.05 and max + 0.05, rounded out to 0.05), what is the shared domain?",
+      "options": [
+        "0.70 to 1.45",
+        "0.65 to 1.50",
+        "0.72 to 1.42",
+        "0.50 to 1.50"
+      ],
+      "correct": 1,
+      "explanation": "floor((0.7222 − 0.05) × 20) / 20 = 0.65 and ceil((1.4212 + 0.05) × 20) / 20 = 1.50. Both axes use it, so m = q is a true diagonal."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy's week ending 2026-08-23 has a price part of +$4,328.6M and an issue common part of −$215.2M. Why are price moves left out of the stacked bars?",
+      "options": [
+        "Price moves are estimates",
+        "Price moves are not in attribution.csv",
+        "The price part is often 10 to 50 times a week's actions and would hide them; it stays in the tooltip and table",
+        "The page only shows negative values"
+      ],
+      "correct": 2,
+      "explanation": "Decision M8. At this week's scale the actions would be a sliver next to the price bar."
+    },
+    {
+      "stage": "post",
+      "question": "In PR #7's headless Chromium check, what shows there is no horizontal scroll at 375px?",
+      "options": [
+        "w and sw are both 375: the scroll width equals the viewport width",
+        "dots is 33",
+        "tabstops0 is 2",
+        "arrowMoves is true"
+      ],
+      "correct": 0,
+      "explanation": "sw is the document's scroll width. When it equals the viewport width w, nothing overflows sideways."
+    }
+  ]
+}

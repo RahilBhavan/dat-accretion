@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't the engine just add up the five first-order formulas to explain a week's change in n?",
+      "options": [
+        "The formulas need data that the filings don't give",
+        "The causes interact: a price move changes n, which changes the m and q each later action lands at, so first-order values don't sum to the observed change",
+        "First-order formulas only work for Strategy",
+        "The formulas are in dollars and n is in coins"
+      ],
+      "correct": 1,
+      "explanation": "First-order values treat each action alone. The engine applies the parts one at a time and recomputes n exactly after each, so they sum to the observed change."
+    },
+    {
+      "stage": "pre",
+      "question": "What is \"value to common\" on the page?",
+      "options": [
+        "The dollars a firm raised in a week",
+        "The market value of the common stock",
+        "Δn × S × p, a change in net coins per share converted to dollars at the week's S and p",
+        "The dividend paid to common shareholders"
+      ],
+      "correct": 2,
+      "explanation": "The ruler is coins per share; multiplying by S and p turns it into dollars for all shares at the week's coin price."
+    },
+    {
+      "stage": "post",
+      "question": "In what order does `attribute()` split a week?",
+      "options": [
+        "Actions, price, carry, residual",
+        "Price, itm_flip, each action in actions.csv order, carry, est_issuance (BitMine), residual",
+        "itm_flip, price, carry, actions, residual",
+        "Residual first, then each action by size"
+      ],
+      "correct": 1,
+      "explanation": "The fixed order is decision A1: price, in-the-money flips, actions at their own prices, carry, BitMine's estimated issuance, and the residual last."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy's week ending 2026-09-20 has parts price +$711.7M, itm_flip +$125.3M, buy_coin +$1.1M, retire_pref +$3.1M, carry −$57.4M and residual −$2.9M. What is the observed change in value to common?",
+      "options": [
+        "+$836.9M",
+        "+$4.2M",
+        "+$780.9M",
+        "−$2.9M"
+      ],
+      "correct": 2,
+      "explanation": "The identity says the rows including the residual sum to the observed change: 711.7 + 125.3 + 1.1 + 3.1 − 57.4 − 2.9 = 780.9."
+    },
+    {
+      "stage": "post",
+      "question": "BitMine issued $350.0M of BMNP notional at $80 (q = 0.80) and received $273.8M net. Why does `dn_exact` sit below `dn_first_order`?",
+      "options": [
+        "Exact books the $350.0M of notional issued for $273.8M; first order treats the $273.8M as sold at q = 0.80 ($342.25M), so the gap is the $6.2M of fees divided by q, $7.75M",
+        "The coin price moved during the week",
+        "First order ignores preferred stock",
+        "Exact values are always larger in magnitude by 10%"
+      ],
+      "correct": 0,
+      "explanation": "Gross at $80 is $280.0M, net $273.8M, so fees are $6.2M. First order implies $342.25M of notional; exact books $350.0M, a $7.75M difference (6.2 / 0.80)."
+    }
+  ]
+}

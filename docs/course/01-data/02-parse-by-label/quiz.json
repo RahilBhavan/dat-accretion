@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "A weekly 8-K adds a new preferred ticker to its ATM table. What should a parser do with the unknown row?",
+      "options": [
+        "Skip it and keep parsing the known tickers",
+        "Read it by position, since the columns haven't changed",
+        "Raise an error naming the filing and the row",
+        "Estimate its proceeds from the day's close"
+      ],
+      "correct": 2,
+      "explanation": "Decisions S1 and S2: an unknown label raises and no gap is filled with a guess, so a new security fails loudly instead of landing in the wrong column or vanishing."
+    },
+    {
+      "stage": "pre",
+      "question": "What is an at-the-market (ATM) program?",
+      "options": [
+        "A way for a company to sell shares into the market over time at market prices",
+        "A bank account for dividend payments",
+        "A bitcoin custody arrangement",
+        "A share buyback at a fixed price"
+      ],
+      "correct": 0,
+      "explanation": "Strategy's 8-K ATM tables list shares sold under the program each week, with notional and net proceeds per ticker."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy's 8-K filed 8/03 states 842,138 BTC. The prior week was 843,775 and the week sold 1,638. What does roll() report?",
+      "options": [
+        "OK, because 843,775 − 1,638 = 842,138",
+        "GAP, a documented 1-BTC difference: the roll gives 842,137",
+        "MISMATCH, and the run fails",
+        "OK, because a 1-BTC tolerance applies to every week"
+      ],
+      "correct": 1,
+      "explanation": "843,775 − 1,638 = 842,137, one below the stated figure. The week is listed in KNOWN_FILING_GAPS, and the 8/10 filing balances only from 842,137 (−1,690 = 840,447). Any unlisted week with the same miss is a MISMATCH."
+    },
+    {
+      "stage": "post",
+      "question": "reserve_guard() sees 'Strategy withdrew $40.0 million from the USD Reserve to purchase bitcoin.' No rule mentions 'withdrew'. What happens?",
+      "options": [
+        "The sentence is ignored because the verb is unknown",
+        "It books a $40.0M outflow",
+        "It raises only if the week also has a USD Cash balance",
+        "It raises: the 'USD Reserve' mention sits in no balance, capacity, inflow or outflow pattern"
+      ],
+      "correct": 3,
+      "explanation": "The structural guard checks where 'USD Reserve' appears, not which verb is used. That is why it held on the full corpus where word lists kept missing phrasings (build note #16)."
+    },
+    {
+      "stage": "post",
+      "question": "Why does re.split(r'\\.\\s+', 'The U.S. balance of the USD Reserve is $5.04 billion. Next sentence.') go wrong?",
+      "options": [
+        "It splits after 'U.S', cutting the balance sentence in two, so a pattern that needs the whole sentence misses it",
+        "It splits inside '$5.04'",
+        "It fails on the dollar sign",
+        "It returns one sentence"
+      ],
+      "correct": 0,
+      "explanation": "The naive split gives 'The U.S' and 'balance of the USD Reserve is $5.04 billion'. sentences() refuses to split after initials like 'U.S.' and needs a capital after the whitespace; '$5.04' has no whitespace after its period."
+    }
+  ]
+}

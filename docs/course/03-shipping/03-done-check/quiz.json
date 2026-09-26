@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "The offline test suite passes. What can it not tell you?",
+      "options": [
+        "Whether net() computes n correctly for a committed week",
+        "Whether Strategy's live KPI figure still agrees with the rebuild",
+        "Whether the attribution rows sum to the observed change",
+        "Whether the parsers raise on an unknown label"
+      ],
+      "correct": 1,
+      "explanation": "Tests run against committed CSVs. Only a check against live sources, like check.py #1, can see the API move away from the rebuild."
+    },
+    {
+      "stage": "pre",
+      "question": "A done check cannot reach the API. What should it report?",
+      "options": [
+        "Pass, since nothing was proven wrong",
+        "Skip, and retry tomorrow",
+        "Fail",
+        "The last value it saw"
+      ],
+      "correct": 2,
+      "explanation": "Decision A5: a check that passes when it cannot reach the API proves nothing, so run() turns any exception into a failed result."
+    },
+    {
+      "stage": "post",
+      "question": "MSTR week 2026-08-30: residual $10.6M, observed change $106.9M, R rounding ±$20.0M. What does check #4 print?",
+      "options": [
+        "FAIL, because $10.6M is more than 5% of $106.9M",
+        "PASS <5%",
+        "PASS rounding",
+        "Not tested, report only"
+      ],
+      "correct": 2,
+      "explanation": "5% of $106.9M is $5.3M, so the first arm fails, but $10.6M is inside the ±$20.0M R rounding, so the week passes by rounding."
+    },
+    {
+      "stage": "post",
+      "question": "The live run in PR #10 shows netSatsPerShare rebuilt 157,921.0127 vs API 157,752.2269. Against TOL = 0.005, this is:",
+      "options": [
+        "+0.107%, a pass",
+        "+1.07%, a fail",
+        "-0.107%, a pass",
+        "+0.0107%, a pass"
+      ],
+      "correct": 0,
+      "explanation": "157,921.0127 / 157,752.2269 - 1 = +0.107%, inside the 0.5% tolerance."
+    },
+    {
+      "stage": "post",
+      "question": "Why does check.py's main() write check.json inside a finally block that starts from a fail record?",
+      "options": [
+        "To make the file smaller",
+        "So the Pages build can skip reading it",
+        "So a crash or a SIGTERM from a step timeout still leaves status fail on disk",
+        "Because json.dump cannot run inside a try block"
+      ],
+      "correct": 2,
+      "explanation": "If run() never returns, d stays the fail record and finally still writes it, so the page and the data branch never show a stale pass."
+    }
+  ]
+}

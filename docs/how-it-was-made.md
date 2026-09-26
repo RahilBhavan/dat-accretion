@@ -95,7 +95,7 @@ reviewer's first pass found a path where a trade could be skipped silently. It w
 ### Step 2: balances and prices (#4)
 
 The spec's check (rolled USD Reserve equals every 8-K) could not pass: the filings round the reserve to
-$10 to 50 million and, before August, don't itemize flows into it. With the user, the rule changed to:
+the nearest $1M, $10M or $100M and, before August, don't itemize flows into it. With the user, the rule changed to:
 take R as stated, and use the roll as a check within each filing's rounding from 2026-08-02. Eight checked
 weeks pass. Prices come from Yahoo (settled closes, not adjusted) and CoinGecko.
 

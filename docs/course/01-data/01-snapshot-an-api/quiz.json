@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why did the KPI snapshot ship before any filing parser?",
+      "options": [
+        "The parsers depend on the snapshot's CSV",
+        "The KPI API keeps no history, so each day not saved is lost, while filings can be parsed at any time",
+        "GitHub Actions requires a scheduled job before other workflows can run",
+        "The snapshot was the easiest step to write"
+      ],
+      "correct": 1,
+      "explanation": "Filings stay on EDGAR and can be parsed years later. The API returns only the current value, so the clock started with the first saved row."
+    },
+    {
+      "stage": "pre",
+      "question": "What does 'append-only, never force-push' protect on the data branch?",
+      "options": [
+        "Rows that exist nowhere else, since the API cannot resend them",
+        "The main branch's protection rules",
+        "The size of the repository",
+        "The order of the CSV columns"
+      ],
+      "correct": 0,
+      "explanation": "A force-push can drop earlier commits. Each KPI row is the only record of that day's value, so the branch only ever grows."
+    },
+    {
+      "stage": "post",
+      "question": "Which value does positive('mNav', v) accept?",
+      "options": [
+        "True",
+        "'1.1971'",
+        "1.1971",
+        "float('inf')"
+      ],
+      "correct": 2,
+      "explanation": "positive() rejects booleans (True is the integer 1 in Python), anything not an int or float, non-finite values and values at or below zero. Only the float 1.1971 passes."
+    },
+    {
+      "stage": "post",
+      "question": "The snapshot job runs twice on 2026-09-26. What ends up on disk?",
+      "options": [
+        "One CSV row and one JSON file",
+        "Two CSV rows and two JSON files",
+        "One CSV row and two JSON files",
+        "Two CSV rows and one JSON file, the second run's payload"
+      ],
+      "correct": 3,
+      "explanation": "save() appends a CSV row on every run, but the raw file is named data/kpi/<date>.json, so the second run replaces it. The data branch shows this on 2026-09-25: two rows, one 2026-09-25.json."
+    },
+    {
+      "stage": "post",
+      "question": "Why does snapshot.yml push the KPI row before running check.py?",
+      "options": [
+        "check.py reads the new row from the data branch",
+        "If check.py hangs past the job timeout, GitHub cancels the job, and a cancelled job would skip both the commit and the alert",
+        "Pushing first makes check.py run faster",
+        "The data branch rejects commits made after check.py runs"
+      ],
+      "correct": 1,
+      "explanation": "Build note #20: a timed-out job is cancelled, not failed. Committing first keeps the row whatever happens after, and the 5-minute step timeout lets the alert step still run."
+    }
+  ]
+}

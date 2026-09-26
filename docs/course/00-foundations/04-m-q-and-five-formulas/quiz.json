@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "STRC trades at $99 on its $100 notional. What is q?",
+      "options": [
+        "0.99",
+        "99",
+        "1.01",
+        "0.01"
+      ],
+      "correct": 0,
+      "explanation": "q is the preferred price over its notional: 99 / 100 = 0.99."
+    },
+    {
+      "stage": "pre",
+      "question": "A firm buys coins with cash at the coin price. What happens to n on day one?",
+      "options": [
+        "It rises by k",
+        "It falls by k",
+        "It rises by k·(1 − 1/m)",
+        "It does not change"
+      ],
+      "correct": 3,
+      "explanation": "The firm swaps x of R for x / p of C, so N and S stay the same. Action 5 is neutral on day one."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy pays $24.998M to retire $28.893M of STRC notional. What is the value to common, first order?",
+      "options": [
+        "$24.998M",
+        "$3.895M",
+        "$28.893M",
+        "$3.893M"
+      ],
+      "correct": 1,
+      "explanation": "(1/q − 1)·x = notional − x = 28.893 − 24.998 = $3.895M, with q = 0.8652. The 8-K's rounded $25.0M gives $3.893M."
+    },
+    {
+      "stage": "post",
+      "question": "On 2026-09-20 Strategy's m is 1.2171 and STRC's q is 0.9851. What is the value to common of rotating $100M, first order?",
+      "options": [
+        "About −$19.3M",
+        "About +$1.5M",
+        "About +$19.3M",
+        "Zero, since both legs cancel"
+      ],
+      "correct": 2,
+      "explanation": "x·(1/q − 1/m) = 100M × (1/0.9851 − 1/1.2171) ≈ +$19.35M."
+    },
+    {
+      "stage": "post",
+      "question": "BitMine's m is 1.0281 on 2026-09-20. What is its break-even BMNP price, where the line m = q sits?",
+      "options": [
+        "$97.91",
+        "$100.00",
+        "$121.71",
+        "$102.81"
+      ],
+      "correct": 3,
+      "explanation": "Break-even is q = m, so BMNP = $100 × m = $102.81. BitMine's rotation adds only while BMNP trades above that; on 2026-09-20 BMNP closed at $97.91 (q = 0.9791), below it."
+    }
+  ]
+}

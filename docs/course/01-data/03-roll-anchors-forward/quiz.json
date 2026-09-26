@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Strategy's weekly 8-Ks state BTC held and the USD Reserve. Where do weekly preferred notional and share counts come from?",
+      "options": [
+        "The KPI API",
+        "The 10-Q's quarter-end levels, rolled week by week with the sales and repurchases each 8-K reports",
+        "Yahoo Finance market caps",
+        "Each 8-K's balance sheet"
+      ],
+      "correct": 1,
+      "explanation": "The 8-Ks give flows, not levels. The 6/30 10-Q gives the levels, and rolled() carries them forward and backward by the flows in actions.csv (decision S10)."
+    },
+    {
+      "stage": "pre",
+      "question": "What is a convertible note's conversion price?",
+      "options": [
+        "The price the note trades at",
+        "The interest rate on the note",
+        "The share price at which the note can be swapped for common stock",
+        "The face value per note"
+      ],
+      "correct": 2,
+      "explanation": "The holder can exchange the note for shares at that price. When the common trades above it, Strategy's definition counts the note as shares in S rather than as debt in D."
+    },
+    {
+      "stage": "post",
+      "question": "Anchor 100 on 2026-06-30. Changes: +5 on 6/28, +7 on 7/05, +3 on 7/12. What does rolled() return for 2026-06-21?",
+      "options": [
+        "100",
+        "95",
+        "105",
+        "115"
+      ],
+      "correct": 1,
+      "explanation": "6/21 is before the anchor, so changes dated after 6/21 and up to 6/30 are backed out: only the 6/28 +5. 100 − 5 = 95."
+    },
+    {
+      "stage": "post",
+      "question": "The USD Reserve goes from $3.75 billion to $4.0 billion (week of 2026-08-02). What is the R check's tolerance?",
+      "options": [
+        "±$5M",
+        "±$10M",
+        "±$55M",
+        "±$110M"
+      ],
+      "correct": 2,
+      "explanation": "Half a unit in the last disclosed digit of each figure, summed: $3.75 billion has a $10M unit and $4.0 billion a $100M unit, so (10 + 100) / 2 = $55M."
+    },
+    {
+      "stage": "post",
+      "question": "On 2026-08-23, $1.59B of USD Cash appears for the first time. Why is there no special row for it?",
+      "options": [
+        "It existed before and the engine ignores disclosures",
+        "It is below the rounding tolerance",
+        "The 8-K funds it from that week's MSTR sale proceeds, which the issue_common row already books",
+        "USD Cash is not part of R"
+      ],
+      "correct": 2,
+      "explanation": "$2,006.5M − $136.4M STRC − $300.0M reserve = $1,570.1M of remaining proceeds, already in the week's issue_common row. A 'disclosure' row would count it twice; the engine's residual of exactly $1,570.1M exposed the first version of the rule."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Do the tests need network access?",
+      "options": [
+        "Yes, every parser test fetches EDGAR",
+        "Yes, the engine tests call the KPI API",
+        "No, they use committed CSVs, cached releases and snippets that copy the filings' wording",
+        "Only on Mondays"
+      ],
+      "correct": 2,
+      "explanation": "The suite runs offline; live checks belong to check.py, not pytest."
+    },
+    {
+      "stage": "pre",
+      "question": "What is a parameterized test?",
+      "options": [
+        "A test that reads environment variables",
+        "One test function run once per listed case",
+        "A test that only runs in CI",
+        "A test with a fixture file"
+      ],
+      "correct": 1,
+      "explanation": "For example test_unknown_reserve_outflow_raises runs 14 times, once per sentence, which is why 137 tests come from fewer functions."
+    },
+    {
+      "stage": "post",
+      "question": "Which test pins the Bitcoin Magazine STRC figure of $3,895,000?",
+      "options": [
+        "test_matches_api",
+        "test_roll",
+        "test_residual_test",
+        "test_strc_anchor"
+      ],
+      "correct": 3,
+      "explanation": "tests/test_engine.py::test_strc_anchor checks that $24,998,000 retiring $28,893,000 notional adds (1/q − 1)·x = $3,895,000 to the dollar."
+    },
+    {
+      "stage": "post",
+      "question": "Retiring $24,998,000 of cash for $28,893,000 of notional gives what value to common?",
+      "options": [
+        "$3,895,000",
+        "$28,893,000",
+        "$24,998,000",
+        "$0, retirements are neutral"
+      ],
+      "correct": 0,
+      "explanation": "q = 24,998,000 / 28,893,000 ≈ 0.8652 and (1/q − 1)·x = notional − x = 28,893,000 − 24,998,000 = 3,895,000."
+    },
+    {
+      "stage": "post",
+      "question": "With the residual limit tightened to 1%, only test_residual_test fails and test_residuals_offline_all_pass still passes. Why?",
+      "options": [
+        "The committed data has no residuals",
+        "Weeks over 1% still pass on the R rounding branch of the test",
+        "test_residuals_offline_all_pass is skipped offline",
+        "LIMIT is not used by check.py"
+      ],
+      "correct": 1,
+      "explanation": "Decision A3: a week passes under the limit or within its R rounding. 8/02 ($11.7M on $398.3M, ±$55.0M) and 9/07 ($6.3M on $363.0M, ±$20.0M) pass on rounding."
+    }
+  ]
+}
