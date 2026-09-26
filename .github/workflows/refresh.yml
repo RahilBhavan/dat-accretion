@@ -1,6 +1,6 @@
 # Weekly refresh: re-parse new 8-Ks, rebuild every CSV, the memo and the site, open a PR and merge it when green.
 # Needs the repo setting "Allow GitHub Actions to create and approve pull requests" (Settings > Actions > General),
-# currently off: until it is on, `gh pr create` fails and the alert step opens a "Weekly refresh failed" issue.
+# now on (turned on 2026-09-26). If it is turned off, `gh pr create` fails and the alert step opens an issue.
 name: refresh
 on:
   schedule:
