@@ -4,7 +4,7 @@ Measures every capital action by Strategy and BitMine since June 2026 on one rul
 share, using Strategy's own definition applied to both firms. For each action it gives the
 per-share effect per dollar and the price at which that effect changes sign.
 
-Status: in build. Steps 0-3 done: Strategy and BitMine actions, balances and weekly m and q are in `data/`. Engine, page and memo follow. Problems hit so far: `docs/build-notes.md`.
+Status: v1 built. Page: https://rahilbhavan.github.io/dat-accretion/. Memo: `docs/memo.pdf`. Method: `docs/methodology.md`. Done check: `python check.py`. Problems hit while building: `docs/build-notes.md`.
 
 ## Layout
 
@@ -19,6 +19,18 @@ Status: in build. Steps 0-3 done: Strategy and BitMine actions, balances and wee
 uv venv && uv pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
 .venv/bin/python -m dat.snapshot_kpi
+```
+
+Method: [`docs/methodology.md`](docs/methodology.md). Done check: `.venv/bin/python check.py` (live network; writes `data/check.json`).
+
+## Memo
+
+`.venv/bin/python -m dat.memo` writes [`docs/memo.md`](docs/memo.md), `docs/memo.html` and `docs/map.svg`. The PDF is built
+locally with Playwright's headless Chromium (CI does not build it):
+
+```
+~/Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell \
+  --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=docs/memo.pdf file://$PWD/docs/memo.html
 ```
 
 All inputs are public: SEC EDGAR filings, Strategy's KPI API, Yahoo and CoinGecko daily closes.

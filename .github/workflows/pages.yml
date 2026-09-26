@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_run:
+    workflows: [snapshot]
+    types: [completed]
 permissions:
   contents: read
   pages: write
@@ -17,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install numpy
+      - name: latest done check from the data branch (absent before the first run)
+        run: git fetch origin data && git show FETCH_HEAD:data/check.json > /tmp/check.json && mv /tmp/check.json data/check.json || true
       - run: python -m dat.build_site
       - name: stage site (site/* at the root, the CSVs under data/)
         run: |

@@ -74,3 +74,12 @@ def test_est_issuance_in_issue_common_and_flagged(site):
     w = week(site, 'BMNR', '2026-09-20')
     assert w['est_issuance'] == pytest.approx(6_583_230, abs=1)
     assert w['value']['issue_common'] == w['est_issuance']  # BitMine files no issuance: all of it is the estimate
+
+
+@pytest.mark.parametrize('body', ['', 'not json', '[1, 2]'])
+def test_bad_check_json_is_not_yet_run(tmp_path, body, capsys):
+    from dat.build_site import load_check
+    (tmp_path / 'check.json').write_text(body)
+    assert load_check(str(tmp_path / 'check.json')) == {'status': 'not yet run'}
+    assert 'warning' in capsys.readouterr().err
+    assert load_check(str(tmp_path / 'missing.json')) == {'status': 'not yet run'}

@@ -89,6 +89,21 @@ def close_sentence(h):
     return f"{h['pref']} closed at ${h['pref_close']:.2f} on {h['price_date']} (q = {h['q']:.4f})."
 
 
+def load_check(path):
+    """check.json, or {'status': 'not yet run'} when absent, empty or not a JSON object (warning on stderr)."""
+    if not os.path.exists(path):
+        return {'status': 'not yet run'}
+    try:
+        with open(path) as f:
+            d = json.load(f)
+        if isinstance(d, dict):
+            return d
+    except ValueError:
+        pass
+    print(f'warning: {path} is empty or invalid; check shown as not yet run', file=sys.stderr)
+    return {'status': 'not yet run'}
+
+
 def build(data_dir='data', online=False):
     path = lambda f: os.path.join(data_dir, f)
     all_w, all_a, all_act, all_bal, all_st = (read(path(f)) for f in
@@ -135,8 +150,7 @@ def build(data_dir='data', online=False):
     bmnr_url = max((r for r in all_st if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])['filing_url']
     notes = [{'text': n, 'url': None} for n in NOTES]
     notes.insert(1, bmnr_r_note(bmnr_url, online))
-    check_path = path('check.json')
-    check = json.load(open(check_path)) if os.path.exists(check_path) else {'status': 'not yet run'}
+    check = load_check(path('check.json'))
     return {'generated_at': dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
             'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'notes': notes, 'check': check}
 
