@@ -1,7 +1,8 @@
 """Done check (`python check.py [data_dir]`): exit 0 iff every assertion passes. stdlib only.
 
 1-2. Live Strategy KPI API netSatsPerShare and amplification vs the rebuild (latest MSTR state from
-     dat.engine.states, revalued at the API's latestPrice and the live MSTR price), within 0.5%.
+     dat.engine.states, revalued at the API's latestPrice and the live MSTR price), within 0.5%. The text
+     names any Strategy 8-K on EDGAR filed after the repo's latest stated week (the API moves with it).
 3.   BitMine rolled ETH vs strategicethreserve.xyz at its snapshot week (dat.parse_bmnr.check).
 4.   Residual test for every in-scope week (dat.engine.residual_test; MSTR from 2026-08-02).
 5.   Every unique actions.csv filing_url fetches from EDGAR (dat.edgar client: UA, 0.6s throttle; not cached).
@@ -25,6 +26,30 @@ def result(name, compared, ok):
     return {'name': name, 'compared': compared, 'ok': bool(ok)}
 
 
+def holdings_8k(f):
+    """True if dat.parse_mstr parses the 8-K as a weekly holdings filing (others raise Skip)."""
+    from dat.edgar import fetch
+    from dat.parse_mstr import parse, Skip
+    try:
+        parse(fetch(f['url']), f)
+    except Skip:
+        return False
+    return True
+
+
+def newer_8k(week, filed, filings=None, holdings=holdings_8k):
+    """Text naming the newest Strategy holdings 8-K on EDGAR filed after `filed`, so a stale repo explains a red
+    #1/#2. Informational only: an EDGAR or parse error is reported in the text and does not change pass/fail."""
+    try:
+        if filings is None:
+            from dat.edgar import filings as edgar_filings
+            filings = edgar_filings(1050446)
+        new = [f['filed'] for f in filings if f['filed'] > filed and holdings(f)]
+    except Exception as e:
+        return f'; EDGAR 8-K lookup failed: {type(e).__name__}: {e}'
+    return f'; repo at week {week}; newer 8-K filed {max(new)} not yet parsed' if new else ''
+
+
 def kpi(data_dir):
     """#1 netSatsPerShare and #2 amplification vs the live API."""
     from dat.engine import states, state_net
@@ -36,7 +61,7 @@ def kpi(data_dir):
     w = bal[-1]['date']
     x = state_net({**states('MSTR', bal, weekly, stated, actions)[w], 'p': p, 's': s})
     src = f"state from 8-K for week {w} ({stated[-1]['filing_url']}; the API may reflect a newer 8-K), BTC ${p:,.2f} " \
-          f"(API latestPrice), MSTR ${s:,.2f} (Yahoo)"
+          f"(API latestPrice), MSTR ${s:,.2f} (Yahoo)" + newer_8k(w, stated[-1]['filed'])
     out = []
     for name, ours, key in (('netSatsPerShare', x['net_sats_per_share'], 'netSatsPerShare'),
                             ('amplification', x['amplification'], 'amplification')):

@@ -2,17 +2,16 @@
 
 Figures come from data/weekly.csv (title counts) and dat.build_site.build (headline sentences, map points).
 The map is a static, light-theme copy of the page's break-even map (site/app.js drawMap). The PDF is built
-locally from memo.html (README, "Memo"); CI does not build it.
+from memo.html (README, "Memo"); refresh.yml builds it weekly, CI does not.
 """
 import html, math, os, sys
-from dat.balances import read
+from dat.balances import read, bmnr_s_bias
 from dat.build_site import build, FIRMS
 
 PAGE = 'https://rahilbhavan.github.io/dat-accretion/'
 REPO = 'https://github.com/RahilBhavan/dat-accretion'
 FWP = 'https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm'
 COLOR = {'MSTR': '#2a78d6', 'BMNR': '#eb6834'}
-S_BIAS, S_BIAS_ASOF = 0.0043, '2026-09-20'  # BitMine S upward bias as of that week (method.md "BitMine S"); grows weekly
 ADDS = {'MSTR': lambda m, q: m > q, 'BMNR': lambda m, q: m < q}  # method.md: the rotation's adding side of m = q
 
 
@@ -25,24 +24,24 @@ def counts(weekly):
     return out
 
 
-def closest(weekly):
-    """Footnote on the weeks nearest m = q, from weekly.csv. Asserts the BitMine bias clause so it can't go stale."""
+def closest(weekly, bias):
+    """Footnote on the weeks nearest m = q, from weekly.csv. bias: (share of S, week) from dat.balances.bmnr_s_bias."""
     rows = lambda f: [r for r in weekly if r['firm'] == f and r['m'] and r['q']]
     near = {}
     for f in ('MSTR', 'BMNR'):
         r = min(rows(f), key=lambda r: abs(float(r['m']) / float(r['q']) - 1))
         d = float(r['m']) / float(r['q']) - 1
         near[f] = f"{FIRMS[f]['name']} {r['week_end']}, m {abs(d):.2%} {'above' if d > 0 else 'below'} q"
+    b, asof = bias
     last = max(r['week_end'] for r in rows('BMNR'))
-    if last != S_BIAS_ASOF:  # raise, not assert: must hold under python -O too
-        raise ValueError(f'BitMine data runs to {last} but S_BIAS ({S_BIAS:.2%}) is for {S_BIAS_ASOF}; the bias grows '
-                         'each week: recompute it (method.md "BitMine S") and update S_BIAS and S_BIAS_ASOF')
-    unbiased = [(r['week_end'], float(r['m']) * (1 - S_BIAS), float(r['q'])) for r in rows('BMNR')]
+    if last != asof:  # raise, not assert: must hold under python -O too
+        raise ValueError(f'BitMine weekly.csv runs to {last} but the S bias is for {asof}: rerun dat.balances')
+    unbiased = [(r['week_end'], float(r['m']) * (1 - b), float(r['q'])) for r in rows('BMNR')]
     bad = [w for w, m, q in unbiased if not m > q]
     if bad:
-        raise ValueError(f'BitMine m x (1 - {S_BIAS}) is not above q in weeks {bad}: rewrite the footnote')
+        raise ValueError(f'BitMine m x (1 - {b:.4%}) is not above q in weeks {bad}: rewrite the footnote')
     return (f"Closest weeks to the line: {near['MSTR']}; {near['BMNR']}. BitMine's estimated share count carries a "
-            f"known upward bias of up to {S_BIAS:.2%} of S by {S_BIAS_ASOF} (staked ETH costed as purchases), which raises "
+            f"known upward bias of up to {b:.2%} of S by {asof} (staked ETH costed as purchases), which raises "
             "m by the same proportion; removing it leaves m above q in every BitMine week.")
 
 
@@ -123,9 +122,9 @@ def paragraphs(d):
     return ruler, line, where
 
 
-def footnote(c, weekly):
+def footnote(c, weekly, bias):
     (_, n, m0, m1), (_, k, b0, b1) = c['MSTR'], c['BMNR']
-    return [closest(weekly),
+    return [closest(weekly, bias),
         f"Period: Strategy weeks ending {m0} to {m1} ({n} filed dates, including the 2026-06-30 quarter-end holdings "
         f"row); BitMine weeks ending {b0} to {b1} ({k} weeks with a BMNP price; BMNP was issued 2026-06-10).",
         "Sources: Strategy weekly 8-Ks and Q2 10-Q (EDGAR CIK 1050446); BitMine weekly 8-K releases and 10-Q (EDGAR CIK "
@@ -171,7 +170,7 @@ def main(data_dir='data', out='docs'):
     d = build(data_dir, online=False)
     weekly = read(os.path.join(data_dir, 'weekly.csv'))
     c = counts(weekly)
-    t, paras, notes, svg = title(c), paragraphs(d), footnote(c, weekly), map_svg(d['weeks'])
+    t, paras, notes, svg = title(c), paragraphs(d), footnote(c, weekly, bmnr_s_bias(data_dir)), map_svg(d['weeks'])
     files = {'map.svg': svg, 'memo.md': md(t, paras, notes), 'memo.html': page(t, paras, notes, svg)}
     for name, text in files.items():
         with open(os.path.join(out, name), 'w') as f:

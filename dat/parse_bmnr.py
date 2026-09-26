@@ -14,6 +14,7 @@ from dat.parse_mstr import blocks, iso, money, ulp, fmt, ACTION_FIELDS, STATED_F
 CIK = 1829311
 BMNP_STATED = 100  # liquidation preference per BMNP share, USD (method.md)
 AP = "[’']"
+STAKING_FIELDS = ['week_end', 'eth_est']  # staked ETH x 7-day yield x 7/365, diagnostic only (data.md)
 
 HOLDINGS = (rf'As of ({DATE})(?: at [^,]+)?, the Company{AP}s crypto holdings are comprised of ([\d,]+) ETH\b'
             rf'.*? and total cash(?: & marketable securities)? of {MONEY}')
@@ -290,6 +291,10 @@ def main(data_dir='data'):
     acts.sort(key=lambda r: (r['week_end'], r['action'], r['ticker']))
     merge_write(os.path.join(data_dir, 'actions.csv'), ACTION_FIELDS, 'BMNR', acts)
     merge_write(os.path.join(data_dir, 'stated.csv'), STATED_FIELDS, 'BMNR', stated)
+    with open(os.path.join(data_dir, 'staking.csv'), 'w', newline='') as f:  # diagnostic, read by dat.balances.bmnr_s_bias
+        w = csv.writer(f, lineterminator='\n')
+        w.writerow(STAKING_FIELDS)
+        w.writerows([wk, f'{float(v):.1f}'] for wk, v in stake.items())
     print(f'releases parsed {len(releases)}; BMNR actions.csv {len(acts)} rows, stated.csv {len(stated)} rows')
     print('\n'.join(notes))
     return check([r for _, _, r in releases], stake)

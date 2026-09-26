@@ -89,8 +89,8 @@ def save(path, rows):
         w.writerows(rows)
 
 
-if __name__ == '__main__':
-    path = sys.argv[1] if len(sys.argv) > 1 else os.path.join('data', 'prices.csv')
+def main(data_dir='data'):
+    path = os.path.join(data_dir, 'prices.csv')
     rows = fetch()
     save(path, rows)
     for t in YAHOO + list(GECKO):
@@ -99,3 +99,8 @@ if __name__ == '__main__':
             raise SystemExit(f'{t}: no rows')
         print(f'{t:5} {len(ds):4} rows {ds[0]} .. {ds[-1]}')
     print(f'wrote {len(rows)} rows to {path}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv[1:]))
