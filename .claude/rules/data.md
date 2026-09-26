@@ -29,9 +29,11 @@
   projections only, never realized rewards. Decision (2026-09-25, revised the same day): no
   staking carry rows. "ETH acquired" equals the stated holdings change in 13 of 16 weeks, so a
   separate estimate double counts. The stated change is booked as the week's ETH change; the
-  staking estimate (staked × 7-day yield × 7/365) is printed as a diagnostic only. The page says
-  BitMine's releases do not separate staking rewards from purchases.
+  staking estimate (staked × 7-day yield × 7/365) is not booked. It is saved per week to
+  data/staking.csv only to size the upward bias in BitMine S that the memo states
+  (dat.balances.bmnr_s_bias). The page says BitMine's releases do not separate staking rewards
+  from purchases.
 - strategicethreserve.xyz check: compare rolled ETH at the week matching the site's
   `snapshotDate` (the site lags), print both dates, fail if the snapshot is over 6 weeks old.
-- Open question: which STRC price prices a retirement. Use the 8-K's disclosed average where
-  given, else the daily close, and record which in `avg_price`.
+- STRC retirement price (decided): the 8-K's disclosed average where given, else the daily
+  close; `avg_price` records which.

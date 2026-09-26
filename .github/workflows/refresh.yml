@@ -22,9 +22,15 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install pytest numpy
+      # Filed documents never change once filed, so data/raw is safe to keep across runs. The submissions index
+      # that lists new filings is never cached (dat/edgar.py), so new 8-Ks are still found.
+      - uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: edgar-raw-${{ github.run_id }}
+          restore-keys: edgar-raw-
       # Exit 0: done. Exit 2: done, and EDGAR has a 10-Q/10-K newer than the anchors (PR stays open, alert fires).
-      # Exit 1: a step failed; this step fails, the steps below are skipped and the alert fires. The filing cache
-      # (data/raw) starts empty on a runner, so the parsers fetch every filing again (0.6s throttle).
+      # Exit 1: a step failed; this step fails, the steps below are skipped and the alert fires.
       - name: refresh the pipeline (parsers, prices, balances, engine, memo, site)
         id: refresh
         timeout-minutes: 20
