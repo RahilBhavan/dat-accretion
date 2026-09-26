@@ -19,6 +19,7 @@ Status: v1 built. Page: https://rahilbhavan.github.io/dat-accretion/. Memo: `doc
 uv venv && uv pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
 .venv/bin/python -m dat.snapshot_kpi
+.venv/bin/python -m dat.refresh      # weekly: parse new 8-Ks, rebuild CSVs, memo, site (refresh.yml runs it Tuesdays)
 ```
 
 Method: [`docs/methodology.md`](docs/methodology.md). Done check: `.venv/bin/python check.py` (live network; writes `data/check.json`).
@@ -26,7 +27,7 @@ Method: [`docs/methodology.md`](docs/methodology.md). Done check: `.venv/bin/pyt
 ## Memo
 
 `.venv/bin/python -m dat.memo` writes [`docs/memo.md`](docs/memo.md), `docs/memo.html` and `docs/map.svg`. The PDF is built
-locally with Playwright's headless Chromium (CI does not build it):
+locally with Playwright's headless Chromium (refresh.yml builds it with the runner's Chrome):
 
 ```
 ~/Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell \

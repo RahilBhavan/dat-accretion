@@ -205,6 +205,35 @@ def bmnr_basic(weeks, flows, closes, actions):
     return out, scale, between
 
 
+def bmnr_s_bias(data_dir='data', asof=None):
+    """(bias, week): upward bias in BitMine S at week `asof` (default: its last balances.csv week), as a share of S (method.md "BitMine S").
+    Staked ETH (data/staking.csv, parse_bmnr's estimate) is costed as a cash purchase, so each week after the one
+    holding the 7/09 anchor adds eth_est x ETH close / BMNR close shares via unexplained dR. Upper bound: weeks
+    whose unexplained dR is floored at 0 add fewer."""
+    from dat.prices import load, close_on_or_before
+    prices = load(os.path.join(data_dir, 'prices.csv'))
+    stake = {r['week_end']: float(r['eth_est']) for r in read(os.path.join(data_dir, 'staking.csv'))}
+    bal = sorted((r for r in read(os.path.join(data_dir, 'balances.csv')) if r['firm'] == 'BMNR'
+                  and (asof is None or r['date'] <= asof)), key=lambda r: r['date'])
+    weeks = [r['date'] for r in bal]
+    a1_week = min((w for w in weeks if w >= BMNR_A1[0]), default=None)
+    if a1_week is None:  # at or before the week holding the 7/09 anchor: no estimate yet
+        return 0.0, weeks[-1]
+    shares = 0.0
+    for w in weeks:
+        if w <= a1_week:
+            continue
+        if w not in stake:
+            raise LookupError(f'BMNR {w}: no staking estimate in staking.csv (release gives no staked ETH or yield); '
+                              'the S bias cannot be computed')
+        d, s = close_on_or_before(prices, 'BMNR', w)
+        e = close_on_or_before(prices, 'ETH', d)
+        if e[0] != d:
+            raise LookupError(f'ETH: no close on {d} (BMNR price date for week {w})')
+        shares += stake[w] * e[1] / s
+    return shares / float(bal[-1]['shares_diluted']), weeks[-1]
+
+
 def build_bmnr(stated, actions, prices):
     """-> (balances rows, weekly rows, per-week print lines) for BMNR."""
     from dat.prices import close_on_or_before

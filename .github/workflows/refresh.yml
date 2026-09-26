@@ -1,0 +1,157 @@
+# Weekly refresh: re-parse new 8-Ks, rebuild every CSV, the memo and the site, open a PR and merge it when green.
+# Needs the repo setting "Allow GitHub Actions to create and approve pull requests" (Settings > Actions > General),
+# currently off: until it is on, `gh pr create` fails and the alert step opens a "Weekly refresh failed" issue.
+name: refresh
+on:
+  schedule:
+    - cron: '0 14 * * 2'   # 14:00 UTC Tuesday; Strategy and BitMine file their weekly 8-Ks on Monday
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+concurrency: refresh
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pytest numpy
+      # Filed documents never change once filed, so data/raw is safe to keep across runs. The submissions index
+      # that lists new filings is never cached (dat/edgar.py), so new 8-Ks are still found.
+      - uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: edgar-raw-${{ github.run_id }}
+          restore-keys: edgar-raw-
+      # Exit 0: done. Exit 2: done, and EDGAR has a 10-Q/10-K newer than the anchors (PR stays open, alert fires).
+      # Exit 1: a step failed; this step fails, the steps below are skipped and the alert fires.
+      - name: refresh the pipeline (parsers, prices, balances, engine, memo, site)
+        id: refresh
+        timeout-minutes: 20
+        run: |
+          set +e
+          python -m dat.refresh 2>&1 | tee "$RUNNER_TEMP/refresh.log"
+          code=${PIPESTATUS[0]}
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          [ "$code" = 0 ] || [ "$code" = 2 ]
+      - name: memo PDF (Chrome is preinstalled on ubuntu-latest)
+        timeout-minutes: 3
+        run: |   # test -s: Chrome can exit 0 without writing the file
+          google-chrome --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=docs/memo.pdf file://$PWD/docs/memo.html
+          test -s docs/memo.pdf
+      - name: tests
+        id: tests
+        timeout-minutes: 5
+        continue-on-error: true
+        run: python -m pytest -q tests
+      # Same 5-minute step timeout as snapshot.yml: a hang ends this step, not the job, so the alert still runs.
+      - name: done check
+        id: check
+        timeout-minutes: 5
+        continue-on-error: true
+        run: |
+          set +e
+          python check.py 2>&1 | tee "$RUNNER_TEMP/check.log"
+          exit ${PIPESTATUS[0]}
+      # memo.pdf differs on every build (Chrome stamps the creation time), so it alone is not a change; it rides
+      # along in the commit below when something else changed. data/check.json is gitignored (the data branch has it).
+      - name: anything changed?
+        id: diff
+        run: |
+          if [ -z "$(git status --porcelain -- data docs site ':!docs/memo.pdf')" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "no change in data, docs or site"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"; git status --porcelain -- data docs site
+          fi
+      - name: commit to refresh/<date>, push, open the PR (body pastes the real check.py output)
+        id: pr
+        if: steps.diff.outputs.changed == 'true'
+        timeout-minutes: 3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="refresh/$(date -u +%F)"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          git config user.name dat-bot
+          git config user.email dat-bot@users.noreply.github.com
+          git checkout -b "$branch"
+          git add -- data docs site
+          git commit -m "Weekly refresh $(date -u +%F): new 8-Ks, prices, attribution, memo, site"
+          git push origin "$branch"
+          {
+            echo "Weekly refresh from run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "pytest: ${{ steps.tests.outcome }}"
+            echo
+            echo "Refresh summary and reanchor alerts:"
+            echo '```'
+            grep -E '^(last week|reanchor needed)' "$RUNNER_TEMP/refresh.log" || true
+            echo '```'
+            echo
+            echo "check.py output:"
+            echo '```'
+            grep -v 'fetched [0-9]*/' "$RUNNER_TEMP/check.log" || true
+            echo '```'
+          } > "$RUNNER_TEMP/body.md"
+          gh pr create --base main --head "$branch" --title "Weekly refresh $(date -u +%F)" --body-file "$RUNNER_TEMP/body.md"
+      # PRs and pushes by GITHUB_TOKEN trigger no workflows, so CI is dispatched on the branch; its job `tests`
+      # is the required status check on main.
+      - name: run CI on the branch and wait for it
+        id: ci
+        if: steps.pr.outcome == 'success'
+        timeout-minutes: 15
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="${{ steps.pr.outputs.branch }}"
+          sha=$(git rev-parse HEAD)   # the commit pushed above; the run must be for it, not an older one
+          gh workflow run ci.yml --ref "$branch"
+          id=
+          for i in $(seq 30); do   # dispatch is async: poll up to 150 s for the run to appear
+            id=$(gh run list --workflow ci.yml --branch "$branch" --event workflow_dispatch --json databaseId,headSha \
+                 -q ".[] | select(.headSha == \"$sha\") | .databaseId" | head -n 1)
+            [ -n "$id" ] && break
+            sleep 5
+          done
+          [ -n "$id" ] || { echo "CI run for $sha on $branch did not start within 150 s"; exit 1; }
+          gh run watch "$id" --exit-status --interval 15
+      - name: squash-merge (only when pytest, check.py and CI passed and no reanchor is needed), then deploy Pages
+        id: merge
+        if: >-
+          steps.ci.outcome == 'success' && steps.tests.outcome == 'success' &&
+          steps.check.outcome == 'success' && steps.refresh.outputs.code == '0'
+        timeout-minutes: 3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.branch }}" --squash --delete-branch
+          gh workflow run pages.yml   # pushes by GITHUB_TOKEN don't trigger pages.yml
+      - name: fail the job if a check failed or a reanchor is needed (the alert step below then fires)
+        if: >-
+          always() && (steps.tests.outcome == 'failure' || steps.check.outcome == 'failure' ||
+          steps.ci.outcome == 'failure' || steps.refresh.outputs.code == '2')
+        run: exit 1
+      - name: alert (one open issue per failure streak; comment on it if already open)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # "Reanchor needed" only when nothing else failed: a PR, CI or merge failure keeps the failed title.
+          title="Weekly refresh failed"
+          if [ "${{ steps.refresh.outputs.code }}" = 2 ] && [ "${{ steps.tests.outcome }}" = success ] \
+             && [ "${{ steps.check.outcome }}" = success ] && [ "${{ steps.pr.outcome }}" != failure ] \
+             && [ "${{ steps.ci.outcome }}" != failure ] && [ "${{ steps.merge.outcome }}" != failure ]; then
+            title="Reanchor needed"
+          fi
+          url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          detail=$(grep '^reanchor needed' "$RUNNER_TEMP/refresh.log" 2>/dev/null || true)
+          n=$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')
+          if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $url $detail"
+          else gh issue create --title "$title" --body "Run: $url $detail"; fi
