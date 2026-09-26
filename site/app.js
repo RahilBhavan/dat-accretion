@@ -126,7 +126,7 @@ function drawMap() {
   s += '<line class="diag" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
   s += '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 14) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
   s += '<text class="label" x="' + (W - M.r - 8) + '" y="' + (H - M.b - 10) + '" text-anchor="end">BitMine\'s rotation adds here (m &lt; q)</text>';
-  s += '<text x="' + (X(hi) - 4) + '" y="' + (Y(hi) + 14) + '" text-anchor="end">m = q</text>';
+  s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';  // above-left, clear of the diagonal
   const order = pts.map((w, i) => i).sort((a, b) => pts[b].dollars_moved - pts[a].dollars_moved);  // small marks on top
   for (const i of order) {
     const w = pts[i], c = 'var(' + FIRM[w.firm].color + ')', r = rad(w), cx = X(w.q), cy = Y(w.m);

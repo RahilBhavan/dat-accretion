@@ -24,9 +24,10 @@ jobs:
             git worktree add --orphan -b data _data
           fi
       - name: fetch today's KPI row and raw JSON
+        timeout-minutes: 3   # a stalled API fails this step (alert fires) instead of cancelling the job (no alert)
         run: python -m dat.snapshot_kpi _data/data
-      # Step 6 adds `python check.py` to this job.
-      - name: commit and push (append-only; never force-push, the API keeps no history)
+      - name: commit and push the KPI row first (append-only; never force-push, the API keeps no history)
+        id: push_kpi
         working-directory: _data
         run: |
           git config user.name dat-bot
@@ -34,6 +35,30 @@ jobs:
           git add data
           git commit -m "data: KPI snapshot $(date -u +%F)"
           git push origin data
+      # The done check runs only once the row is pushed. Its step timeout (5 min) sits inside the job's 10, so a
+      # hang ends this step, not the job, and the steps below (including the alert) still run.
+      - name: done check
+        id: check
+        timeout-minutes: 5
+        continue-on-error: true
+        run: |
+          rm -f data/check.json
+          python check.py
+      - name: commit check.json (a fail record if check.py did not write one)
+        if: always() && steps.push_kpi.outcome == 'success'
+        working-directory: _data
+        run: |
+          if [ -s ../data/check.json ]; then
+            cp ../data/check.json data/check.json
+          else
+            printf '{"status": "fail", "run_at": "%s", "checks": [{"name": "check.py", "compared": "did not finish (timeout or crash)", "ok": false}]}\n' "$(date -u +%FT%TZ)" > data/check.json
+          fi
+          git add data/check.json
+          git commit -m "data: done check $(date -u +%F)"
+          git push origin data || { git pull --rebase origin data && git push origin data; }
+      - name: fail the job if the done check did not pass (the alert step below then fires)
+        if: always() && steps.check.outcome != 'success'
+        run: exit 1
       - name: alert (one open issue per failure streak; comment on it if already open)
         if: failure()
         env:
