@@ -66,6 +66,10 @@ KNOWN = [PARTS, AGG, TOTALED, NAV, BRINGING, BUY, REPO, DIRECT, DIRECT_PRICE, *B
 NEAR = (r'repurchas|buyback|\boffering\b|\bacquired?\b|at-the-market|registered direct|\bsold\b|\bATM\b|\bbought\b|purchas|'
         r'\bissu|redeem|\braised\b|\bproceeds\b|ETH holdings|ETH Holdings|Total ETH')
 CASH_ROW = 'Cash'  # balance sheet row label (in thousands)
+# 8-K items that can carry holdings or capital flows: 1.01 agreements, 2.02 results (the quarterly releases state
+# holdings and cash), 2.03 debt, 3.02 unregistered sales, 3.03 holders' rights, 7.01 Reg FD, 8.01 other events.
+# Other 8-Ks (e.g. 5.02 officers, 5.07 votes) are skipped whole, so their numbers never reach check_near.
+CAPITAL_ITEMS = {'1.01', '2.02', '2.03', '3.02', '3.03', '7.01', '8.01'}
 
 
 def check_near(paras, where):
@@ -158,6 +162,20 @@ def parse(html, filing, url):
             'direct': direct, 'sums': sums}
 
 
+def capital(f):
+    """True if the 8-K's EDGAR items include a capital-relevant item (CAPITAL_ITEMS)."""
+    return bool(CAPITAL_ITEMS & {i.strip() for i in f.get('items', '').split(',')})
+
+
+def parse_filing(f, urls, get):
+    """[(filing, url, parsed)] for each document of a capital-relevant 8-K; [] (with a printed skip line) otherwise.
+    get: url -> html. A capital-relevant 8-K with an unknown number still raises in parse()."""
+    if not capital(f):
+        print(f"skip {f['accession']} (filed {f['filed']}): items {f.get('items') or 'none'} (no capital item)")
+        return []
+    return [(f, u, parse(get(u), f, u)) for u in urls]
+
+
 def check_summaries(docs):
     """Each summary's units must match a detailed row of the same filing (a summary alone is not a flow)."""
     by = {}
@@ -218,8 +236,9 @@ def equity(html, url, start, end):
     raise ValueError(f'{url}: equity statement section {start} .. {end} not found')
 
 
-def build(docs, eq, eq_url, eq_period, prices):
-    """docs: [(filing, url, parsed)] oldest first. eq: equity() for eq_period (start, end ISO) or None.
+def build(docs, eqs, prices):
+    """docs: [(filing, url, parsed)] oldest first. eqs: [(10-Q url, (quarter start, end) ISO, equity())], one per
+    10-Q filed; each action takes net proceeds or treasury cost from the 10-Q of its own quarter.
     -> (actions, stated, notes). One stated row per holdings date on or after START."""
     from dat.prices import close_on_or_before
     check_summaries(docs)
@@ -242,14 +261,15 @@ def build(docs, eq, eq_url, eq_period, prices):
     def base(w, f, url):
         return {'firm': 'SBET', 'week_end': w, 'filed': f['filed'], 'filing_url': url}
 
-    in_q = lambda d: eq is not None and eq_period[0] < d <= eq_period[1]
-    q_repos = []
+    quarter = lambda d: next(((u, eq) for u, (s, e), eq in eqs if s < d <= e), (None, None))
+    q_repos = {}
     for f, url, r in docs:
         for closed, shares, price in r['direct']:
             if closed < START:
                 continue
             w = week_of(closed, 'registered direct offering')
-            got = [x for x in (eq['issue'] if in_q(closed) else []) if x[0] == closed]
+            eq_url, eq = quarter(closed)
+            got = [x for x in (eq['issue'] if eq else []) if x[0] == closed]
             if got and got[0][1] != shares:
                 raise ValueError(f'10-Q issue on {closed}: {got[0][1]} shares, 8-K says {shares}')
             usd, note = (got[0][2], f'usd: net proceeds, 10-Q equity statement ({eq_url})') if got else \
@@ -262,19 +282,22 @@ def build(docs, eq, eq_url, eq_period, prices):
             row = dict(base(week_of(b, 'repurchase'), f, url), action='buyback_common', ticker='SBET',
                        usd=fmt(shares * avg), units=fmt(shares), avg_price=fmt(avg), note='usd: shares × stated average price')
             acts.append(row)
-            if in_q(b):
-                q_repos.append(row)
+            if quarter(b)[1]:
+                q_repos.setdefault(quarter(b)[0], []).append(row)
         for a, b, units, avg in r['buys']:
             if b < START:
                 continue
             acts.append(dict(base(week_of(b, 'ETH purchase'), f, url), action='buy_coin', ticker='ETH', usd=fmt(units * avg),
                              units=fmt(units), avg_price=fmt(avg), note=''))
-    if eq is not None and eq['treasury'] and q_repos:  # one repurchase row in the quarter: take the 10-Q cost
+    for u, (_, _), eq in eqs:  # one repurchase row in the quarter: take that 10-Q's treasury cost
+        rows = q_repos.get(u, [])
+        if not (eq['treasury'] and rows):
+            continue
         shares, usd = eq['treasury']
-        if len(q_repos) == 1 and Decimal(q_repos[0]['units']) == shares:
-            q_repos[0].update(usd=fmt(usd), note=f'usd: treasury stock cost, 10-Q equity statement ({eq_url})')
+        if len(rows) == 1 and Decimal(rows[0]['units']) == shares:
+            rows[0].update(usd=fmt(usd), note=f'usd: treasury stock cost, 10-Q equity statement ({u})')
         else:
-            notes.append(f'10-Q treasury {shares} shares vs {len(q_repos)} filed repurchase rows: kept shares × average')
+            notes.append(f'{u}: treasury {shares} shares vs {len(rows)} filed repurchase rows: kept shares × average')
     stated, prev = [], None
     for w in weeks:
         f, url = src[w]
@@ -299,12 +322,9 @@ def main(data_dir='data'):
     from dat.prices import load
     docs = []
     for f in edgar.filings(CIK, since=START):
-        for url in [f['url']] + exhibits(f, CIK):
-            docs.append((f, url, parse(edgar.fetch(url), f, url)))
-    q = [f for f in edgar.filings(CIK, '10-Q', since=START)]
-    eq, eq_url, period = None, '', None
-    if q:
-        f = q[-1]
+        docs += parse_filing(f, [f['url']] + exhibits(f, CIK) if capital(f) else [], edgar.fetch)
+    eqs = []
+    for f in edgar.filings(CIK, '10-Q', since=START):  # every 10-Q, each for its own quarter
         html = edgar.fetch(f['url'])
         end = re.search(rf'For the quarterly period ended ({DATE})', ' '.join(v for k, v in blocks(html) if k == 'p'))
         if not end:
@@ -312,8 +332,8 @@ def main(data_dir='data'):
         e = dt.date.fromisoformat(iso(end.group(1)))
         s = dt.date(e.year, e.month - 2, 1) - dt.timedelta(days=1)  # prior quarter end
         label = lambda d: d.strftime('%B %-d, %Y')
-        eq, eq_url, period = equity(html, f['url'], label(s), label(e)), f['url'], (s.isoformat(), e.isoformat())
-    acts, stated, notes = build(docs, eq, eq_url, period, load(os.path.join(data_dir, 'prices.csv')))
+        eqs.append((f['url'], (s.isoformat(), e.isoformat()), equity(html, f['url'], label(s), label(e))))
+    acts, stated, notes = build(docs, eqs, load(os.path.join(data_dir, 'prices.csv')))
     acts.sort(key=lambda r: (r['week_end'], r['action'], r['ticker']))
     merge_write(os.path.join(data_dir, 'actions.csv'), ACTION_FIELDS, 'SBET', acts)
     merge_write(os.path.join(data_dir, 'stated.csv'), STATED_FIELDS, 'SBET', stated)

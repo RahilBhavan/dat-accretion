@@ -56,6 +56,8 @@ def sbet_notes(dates, last_filed):
         'SharpLink R is balance-sheet cash, stated only at quarter ends (2026-06-30 in this period). Other dates roll '
         'it by filed cash flows, so operating costs and staking revenue are not in it. SharpLink S uses the 10-Q counts '
         'for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks. SharpLink residuals are report only.',
+        'SharpLink\'s residuals come from shares added to S that no filing ties to an action: 49,265 performance '
+        'RSUs on 2026-06-30, and on 2026-08-03 the July RSU and performance RSU grants and award shares.',
     ]
 
 

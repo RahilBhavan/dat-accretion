@@ -1,6 +1,6 @@
 import pytest
 from decimal import Decimal
-from dat.parse_sbet import parse, build, check, equity, check_summaries
+from dat.parse_sbet import parse, build, check, equity, check_summaries, parse_filing
 
 # Snippets reproduce SharpLink's filings verbatim: 8-K 0001493152-26-031202 (filed 2026-06-30, Item 8.01 and
 # ex99-1), 8-K 0001493152-26-029804 (filed 2026-06-23), ex99-1 of 0001493152-26-036741 (filed 2026-08-10).
@@ -112,7 +112,7 @@ PRICES = [(d, 'SBET', 5.0) for d in ('2026-06-16', '2026-06-26', '2026-06-30', '
 
 def test_build_rows_per_filed_date():
     eq = {'issue': [('2026-06-23', Decimal(10_013_351), Decimal(73_331_000))], 'treasury': (Decimal(2_132_773), Decimal(10_022_000))}
-    acts, stated, notes = build(docs(), eq, '10q', ('2026-03-31', '2026-06-30'), PRICES)
+    acts, stated, notes = build(docs(), [('10q', ('2026-03-31', '2026-06-30'), eq)], PRICES)
     assert [s['week_end'] for s in stated] == ['2026-06-16', '2026-06-28', '2026-06-30', '2026-08-03']
     assert [s['usd_reserve'] for s in stated] == ['', '', '56195000', '']
     by = {(a['week_end'], a['action']): a for a in acts}
@@ -130,10 +130,42 @@ def test_action_after_last_holdings_date_raises():
     late = REPO.replace('June 24', 'August 24').replace('June 26', 'August 26')
     d.append(({'accession': 'a-9', 'filed': '2026-09-01'}, 'u9', parse(p(late), {'accession': 'a-9'}, 'u9')))
     with pytest.raises(ValueError, match='after the last stated holdings date'):
-        build(d, None, '', None, PRICES)
+        build(d, [], PRICES)
 
 
 def test_site_check_staleness_is_against_own_last_filing():
     parsed = [{'week_end': w, 'coins': Decimal(c)} for w, c in (('2026-06-30', 886_881), ('2026-08-03', 888_938))]
     assert check(parsed, [], site=(Decimal(888_938), '2026-08-03')) == 0  # passes however long SharpLink stays silent
     assert check(parsed, [], site=(Decimal(900_000), '2026-08-03')) == 1  # 1.2% off
+
+
+Q2_EQ = {'issue': [('2026-06-23', Decimal(10_013_351), Decimal(73_331_000))],
+         'treasury': (Decimal(2_132_773), Decimal(10_022_000))}
+
+
+def test_later_10q_keeps_q2_net_proceeds_and_treasury_cost():
+    q3 = {'issue': [], 'treasury': (Decimal(500_000), Decimal(3_000_000))}  # a Q3 10-Q with its own quarter's rows
+    eqs = [('q2', ('2026-03-31', '2026-06-30'), Q2_EQ), ('q3', ('2026-06-30', '2026-09-30'), q3)]
+    by = {a['action']: a for a in build(docs(), eqs, PRICES)[0]}
+    assert by['issue_common']['usd'] == '73331000' and 'q2' in by['issue_common']['note']
+    assert by['buyback_common']['usd'] == '10022000' and 'q2' in by['buyback_common']['note']
+
+
+# Non-capital 8-K text (repro): numbers that are not holdings or capital flows.
+GRANT = 'The Company granted Ms. Doe 250,000 restricted stock units issued under the 2025 Equity Incentive Plan.'
+VOTE = ('Stockholders approved an increase in authorized shares to 500,000,000 shares of Common Stock available '
+        'for issuance.')
+
+
+@pytest.mark.parametrize('items', ['5.02,9.01', '5.07'])
+def test_non_capital_8k_is_skipped(items, capsys):
+    f = {'accession': '0001493152-26-099999', 'filed': '2026-09-15', 'items': items}
+    assert parse_filing(f, ['u'], lambda u: p(GRANT, VOTE)) == []
+    assert f'skip 0001493152-26-099999 (filed 2026-09-15): items {items} (no capital item)' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('s', [GRANT, VOTE])
+def test_same_sentence_under_801_raises(s):
+    f = {'accession': '0001493152-26-099999', 'filed': '2026-09-15', 'items': '8.01,9.01'}
+    with pytest.raises(ValueError, match='unknown number'):
+        parse_filing(f, ['u'], lambda u: p(s))

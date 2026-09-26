@@ -204,7 +204,7 @@ function segPath(x, y0, y1, w, roundFar, up) {
 function weekTip(w, on) {
   const rows = stack(w).map(d => '<div class="row' + (d[0] === on ? ' on' : '') + '"><span><i class="sw" style="background:var(' + d[2] + ')'
     + (d[4] ? ';opacity:0.5' : '') + '"></i>' + d[1] + '</span><span>' + usd(d[3], true) + '</span></div>').join('');
-  return '<b>' + FIRM[w.firm].name + '</b>, week ending ' + w.week_end + rows
+  return '<b>' + FIRM[w.firm].name + '</b>, ' + (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end + rows
     + '<div class="row"><span>Coin price (not stacked)</span><span>' + usd(w.price, true) + '</span></div>'
     + '<div class="row"><span>In-the-money flips (not stacked)</span><span>' + usd(w.itm_flip, true) + '</span></div>'
     + '<div class="row on"><span>Observed change</span><span>' + usd(w.observed, true) + '</span></div>';
@@ -239,7 +239,7 @@ function drawBars(firm) {
   weeks.forEach((w, i) => {
     const x0 = M.l + i * bw, x = x0 + (bw - barW) / 2;
     s += '<rect class="col" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" x="' + x0 + '" y="' + M.t + '" width="' + bw + '" height="' + (H - M.t - M.b) + '" aria-label="'
-      + esc(FIRM[firm].name + ' week ending ' + w.week_end + ': observed ' + usd(w.observed, true)) + '"/>';
+      + esc(FIRM[firm].name + (firm === 'SBET' ? ' filed date ' : ' week ending ') + w.week_end + ': observed ' + usd(w.observed, true)) + '"/>';
     let up = 0, dn = 0;
     const st = stacks[i], lastUp = st.map(d => d[3] > 0).lastIndexOf(true), lastDn = st.map(d => d[3] < 0).lastIndexOf(true);
     st.forEach((d, j) => {
@@ -283,7 +283,7 @@ function barsLegend() {
 
 function table() {
   const cols = DATA.categories;
-  let h = '<thead><tr><th>firm</th><th>week ending</th><th>m</th><th>q</th><th>dollars moved</th>'
+  let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved</th>'
     + cols.map(c => '<th>' + CAT[c][0].toLowerCase() + '</th>').join('')
     + '<th>of which estimated issuance</th><th>coin price</th><th>in-the-money flips</th><th>observed</th><th>filing</th></tr></thead><tbody>';
   for (const w of DATA.weeks) {

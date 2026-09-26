@@ -79,8 +79,8 @@
 <rect x="273.7" y="252.3" width="5.9" height="5.9" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="192.0" y="304.0" width="5.5" height="5.5" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <path d="M356.9,372.0L361.0,379.0L352.9,379.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
-<path d="M356.9,382.0L361.0,389.0L352.9,389.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
-<path d="M356.9,342.3L361.0,349.3L352.9,349.3Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
+<path d="M356.9,381.9L361.0,388.9L352.9,388.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
+<path d="M356.9,340.9L361.0,347.9L352.9,347.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
 <circle cx="65.0" cy="480.0" r="6.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6"/>
 <text x="76" y="484">Strategy</text>
 <rect x="159.7" y="474.7" width="10.6" height="10.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834"/>

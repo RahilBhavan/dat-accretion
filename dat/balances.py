@@ -286,15 +286,17 @@ SBET_10Q = 'https://www.sec.gov/Archives/edgar/data/1981535/000149315226036620/f
 # Common outstanding: 6/30 balance sheet (221,054,539 issued - 4,071,231 treasury) and 8/03 cover.
 SBET_BASIC = [('2026-06-30', 216_983_308, '10-Q 6/30 balance sheet'), ('2026-08-03', 217_223_604, '10-Q cover 8/03')]
 SBET_RSU = 1_315_859  # unvested time-based RSUs at 6/30 (10-Q); no strike, always in S
-SBET_RSU_JULY = ('2026-07-31', 1_456_375)  # time-based RSUs granted in July 2026 (10-Q Note 14), in S from 7/31
+# (from, shares) added to S from that date. PSUs are in S per Strategy's definition (method.md).
+SBET_AWARDS_FROM = [('2026-06-30', 49_265),  # performance RSUs without a grant date, outstanding at 6/30 (10-Q)
+                    ('2026-07-31', 1_456_375),  # time-based RSUs granted in July 2026 (10-Q Note 14); 7/31 assumed
+                    ('2026-07-31', 728_183)]  # performance RSUs granted in July 2026 (10-Q Note 14); 7/31 assumed
 # (shares, strike, outstanding from) from the 10-Q; in S only while the SBET close is above the strike.
 SBET_DILUTIVE = [(80_000, 0.0001, ''),  # pre-funded warrants (Chairman)
                  (1_382_007, 6.15, ''), (691_004, 6.77, ''), (691_004, 7.38, ''), (691_004, 8.00, ''),  # Consensys
                  (2_764_013, 7.68, ''),  # placement agent warrants
                  (10_013_351, 8.15, '2026-06-23'),  # June 2026 investor warrants, issued at the offering's close
                  (3_146, 122.88, '')]  # options: weighted-average exercise price
-# Excluded: 728,183 performance RSUs granted in July (conditions set 6/30/2027); 252 warrants in the 10-Q total
-# (16,312,635) not itemized by tranche. D = 0 and F = 0: no debt, converts or preferred outstanding (10-Q 6/30).
+# Excluded: 252 warrants in the 10-Q total (16,312,635) not itemized by tranche. D = 0 and F = 0: no debt, converts or preferred outstanding (10-Q 6/30).
 
 
 def sbet_basic(actions, week):
@@ -306,7 +308,7 @@ def sbet_basic(actions, week):
 
 
 def sbet_awards(week):
-    return SBET_RSU + (SBET_RSU_JULY[1] if week >= SBET_RSU_JULY[0] else 0)
+    return SBET_RSU + sum(n for d, n in SBET_AWARDS_FROM if week >= d)
 
 
 def sbet_options(week):

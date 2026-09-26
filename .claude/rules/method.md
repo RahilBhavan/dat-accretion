@@ -197,12 +197,14 @@ m < 1) apply. The map draws SharpLink at q = 1, where m = q is m = 1.
 S (decided 2026-09-26): basic from the 10-Q counts, 216,983,308 at 6/30 (221,054,539 issued −
 4,071,231 treasury, balance sheet) and 217,223,604 at 8/03 (cover), rolled by filed issuance and
 buybacks (6/16: 209,102,730). No R-based estimate (BitMine's needs weekly R). Awards and warrants
-follow the in-the-money rule at the SBET close: RSUs 1,315,859 unvested at 6/30, plus 1,456,375
-time-based July grants from 7/31 (10-Q Note 14); warrants 80,000 pre-funded at $0.0001 (always
+follow the in-the-money rule at the SBET close. RSUs and PSUs are in S per Strategy's definition:
+1,315,859 time-based RSUs unvested at 6/30; 49,265 performance RSUs with no grant date yet, from
+6/30 (the 10-Q date that discloses them as outstanding); July grants of 1,456,375 time-based and
+728,183 performance RSUs (10-Q Note 14) from 7/31. Assumption: the 10-Q says only "In July
+2026", so 7/31 is taken as the grant date; only the 8/03 row depends on it. Warrants 80,000 pre-funded at $0.0001 (always
 in), Consensys 1,382,007 at $6.15, 691,004 each at $6.77, $7.38, $8.00; placement agent 2,764,013
 at $7.68; June 2026 investor 10,013,351 at $8.15 (from 6/23); options 3,146 at $122.88. Excluded:
-728,183 performance RSUs (metrics not set) and 252 warrants in the 10-Q total (16,312,635) not
-itemized by tranche. Pre-funded exercises and RSU vesting move shares between basic and awards,
+252 warrants in the 10-Q total (16,312,635) not itemized by tranche. Pre-funded exercises and RSU vesting move shares between basic and awards,
 so they leave S unchanged; 6/30 to 8/03 vestings (up to 240,296 shares) may be counted twice,
 about 0.11% of S. The 10-Q restates 12/31 outstanding as 196,707,797; the Q1 10-Q said
 198,646,255 (the Q2 10-Q's 12/31 "issued"); not used.
@@ -212,8 +214,14 @@ Actions since 6/01: issue_common 6/23, 10,013,351 shares at $7.49, usd = net $73
 $10,022K treasury cost from the 10-Q (shares × average = $10,002,705); buy_coin 10,000 ETH, usd =
 units × $1,611.04 = $16,110,400. Notes on the rows say where the usd comes from.
 
-Residuals are reported, not tested (no R check). 6/28 and 6/30 are zero by construction (R rolled
-by the same flows, carry inferred); 8/03 shows −$13.2M, the July RSU grants and award shares.
+Residuals are reported, not tested (no R check). 6/28 is zero by construction (R rolled by the
+same flows, carry inferred); 6/30 carries the 49,265 PSUs entering S; 8/03 carries the July RSU
+and PSU grants and award shares added to S. None of these is an action.
+
+8-Ks are read only when their EDGAR items include 1.01, 2.02, 2.03, 3.02, 3.03, 7.01 or 8.01;
+others (e.g. 5.02, 5.07) are skipped with a printed line. 2.02 is in the set because SharpLink's
+quarterly results releases state holdings and cash. Every 10-Q since 6/01 is read, each for its own
+quarter's equity statement.
 
 strategicethreserve.xyz lists SBET: currentReserve 888,938, snapshotDate 2026-08-03, equal to the
 filed figure (data.md gives the staleness rule).

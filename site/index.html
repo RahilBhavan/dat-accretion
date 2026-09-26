@@ -21,7 +21,7 @@
 
 <section id="map-section">
   <h2>Break-even map</h2>
-  <p class="explain">Each mark is one firm-week: x is the firm's preferred price over its $100 notional (q), y is net mNAV (m). The diagonal is m = q. SharpLink has no preferred, so its marks sit at q = 1, where the diagonal is m = 1. Mark area follows the dollars the firm moved that week (filed actions; carry and estimated issuance excluded). Select a mark to open its filing.</p>
+  <p class="explain">Each mark is one firm-week (for SharpLink, one filed holdings date): x is the firm's preferred price over its $100 notional (q), y is net mNAV (m). The diagonal is m = q. SharpLink has no preferred, so its marks sit at q = 1, where the diagonal is m = 1; for SharpLink the line is m = 1, and the lower-right label is about BitMine's rotation, not SharpLink. Mark area follows the dollars the firm moved that week or since the prior filed date (filed actions; carry and estimated issuance excluded). Select a mark to open its filing.</p>
   <div class="legend" id="map-legend"></div>
   <div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div>
 </section>
@@ -38,7 +38,7 @@
   <div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div>
   <details class="fold">
     <summary>Table</summary>
-    <p class="muted">USD value to common per week. Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
+    <p class="muted">USD value to common per week (for SharpLink, per filed holdings date). Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
     <div class="scroll-x"><table id="week-table"></table></div>
   </details>
 </section>
@@ -70,7 +70,7 @@
     </tbody>
   </table></div>
   <p>The break-even line is m = q. Strategy's rotation (1 and 4: issue common, retire preferred) adds while m &gt; q, so it stops when STRC trades above $100 × m. BitMine's rotation (3 and 2: issue preferred, buy back common) adds while m &lt; q, so it stops when BMNP trades below its liquidation preference × m. SharpLink has no preferred, so no rotation line applies: issuing common adds while m &gt; 1 and buying back common adds while m &lt; 1.</p>
-  <p>The bars use exact values, not the first-order formulas: each week's observed change in n is split in order into coin price, in-the-money flips, each action at its own disclosed price, carry (preferred dividends and convert interest), and a residual. Each step recomputes n. The residual is what the filings leave unexplained.</p>
+  <p>The bars use exact values, not the first-order formulas: each week's observed change in n is split in order into coin price, in-the-money flips, each action at its own disclosed price, carry (preferred dividends and convert interest; for SharpLink, inferred staking and LST accrual), and a residual. Each step recomputes n. The residual is what the filings leave unexplained.</p>
   <h3>Labeled caveats</h3>
   <ul id="notes"></ul>
   <h3>Data sources</h3>
