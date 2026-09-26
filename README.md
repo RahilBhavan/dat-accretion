@@ -1,7 +1,8 @@
 # dat-accretion
 
-Measures every capital action by Strategy and BitMine since June 2026 on one ruler: net coins per
-share, using Strategy's own definition applied to both firms. For each action it gives the
+Measures every capital action by Strategy, BitMine and SharpLink since June 2026 on one ruler: net
+coins per share, using Strategy's own definition applied to all three firms. SharpLink is measured
+only on the dates its filings state ETH holdings. For each action it gives the
 per-share effect per dollar and the price at which that effect changes sign.
 
 Status: v1 built. Page: https://rahilbhavan.github.io/dat-accretion/. Memo: `docs/memo.pdf`. Method: `docs/methodology.md`. Done check: `python check.py`. Problems hit while building: `docs/build-notes.md`.

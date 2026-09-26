@@ -10,7 +10,9 @@
 | BitMine 8-K ex99-1, CIK 1829311 | ETH held, buybacks, BMNP and direct offerings, staking | weekly |
 | BitMine May 31 10-Q | shares, balance sheet anchor | |
 | BitMine 9.50% preferred release + 424B | BMNP liquidation preference, dividend | verify in Step 0 |
-| `https://query1.finance.yahoo.com/v8/finance/chart/<TICKER>` | MSTR STRC STRK STRF STRD BMNR BMNP closes | |
+| SharpLink 8-Ks + ex99-1, CIK 1981535 | ETH held (stated dates only), offerings, buybacks, ETH purchases | irregular; last 8-K 2026-08-10 |
+| SharpLink Q2 10-Q | shares, cash, warrants, awards, net proceeds, treasury cost | anchor; reanchor on Q3 10-Q |
+| `https://query1.finance.yahoo.com/v8/finance/chart/<TICKER>` | MSTR STRC STRK STRF STRD BMNR BMNP SBET closes | |
 | CoinGecko | BTC, ETH daily closes | |
 | strategicethreserve.xyz | independent ETH holdings check | |
 
@@ -35,5 +37,8 @@
   from purchases.
 - strategicethreserve.xyz check: compare rolled ETH at the week matching the site's
   `snapshotDate` (the site lags), print both dates, fail if the snapshot is over 6 weeks old.
+  SharpLink (decided 2026-09-26): same 0.1% tolerance at the site's snapshotDate; the 6-week limit is measured
+  against SharpLink's own last filed holdings date, not the calendar, so the check passes while SharpLink
+  is not filing. The check prints how many days that filing is before today.
 - STRC retirement price (decided): the 8-K's disclosed average where given, else the daily
   close; `avg_price` records which.

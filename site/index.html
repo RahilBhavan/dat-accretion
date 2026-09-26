@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Net coins per share: Strategy and BitMine</title>
-<meta name="description" content="Every capital action by Strategy and BitMine since 2026-06-01, measured in net coins per share, and the preferred price where each rotation stops adding.">
+<title>Net coins per share: Strategy, BitMine and SharpLink</title>
+<meta name="description" content="Every capital action by Strategy, BitMine and SharpLink since 2026-06-01, measured in net coins per share, and the preferred price where each rotation stops adding.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <h1>Net coins per share: Strategy and BitMine</h1>
-  <p class="lede">Strategy's own net coins per share definition, applied to both firms. Every capital action since 2026-06-01, valued at disclosed prices.
+  <h1>Net coins per share: Strategy, BitMine and SharpLink</h1>
+  <p class="lede">Strategy's own net coins per share definition, applied to all three firms. Every capital action since 2026-06-01, valued at disclosed prices.
     <button type="button" id="theme" class="theme">theme</button></p>
 </header>
 
@@ -21,7 +21,7 @@
 
 <section id="map-section">
   <h2>Break-even map</h2>
-  <p class="explain">Each mark is one firm-week: x is the firm's preferred price over its $100 notional (q), y is net mNAV (m). The diagonal is m = q. Mark area follows the dollars the firm moved that week (filed actions; carry and estimated issuance excluded). Select a mark to open its filing.</p>
+  <p class="explain">Each mark is one firm-week: x is the firm's preferred price over its $100 notional (q), y is net mNAV (m). The diagonal is m = q. SharpLink has no preferred, so its marks sit at q = 1, where the diagonal is m = 1. Mark area follows the dollars the firm moved that week (filed actions; carry and estimated issuance excluded). Select a mark to open its filing.</p>
   <div class="legend" id="map-legend"></div>
   <div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div>
 </section>
@@ -34,6 +34,8 @@
   <div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div>
   <h3>BitMine</h3>
   <div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div>
+  <h3>SharpLink (filed holdings dates only)</h3>
+  <div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div>
   <details class="fold">
     <summary>Table</summary>
     <p class="muted">USD value to common per week. Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
@@ -43,18 +45,18 @@
 
 <section id="method">
   <h2>Method</h2>
-  <p>The metric is Strategy's own net coins per share definition, applied to both firms, taken from the glossary in Strategy's <a href="https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm" target="_blank" rel="noopener">2026-08-24 FWP</a>. Full note: <a href="https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md" target="_blank" rel="noopener">methodology</a>.</p>
+  <p>The metric is Strategy's own net coins per share definition, applied to all three firms, taken from the glossary in Strategy's <a href="https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm" target="_blank" rel="noopener">2026-08-24 FWP</a>. Full note: <a href="https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md" target="_blank" rel="noopener">methodology</a>.</p>
   <div class="formula">
     <p><span>N = C + (R − D − F) / p</span> <span>n = N / S</span> <span>m = s·S / (p·N) = s / (p·n)</span></p>
   </div>
   <dl class="symbols">
-    <dt>C</dt><dd>coins held (BTC or ETH)</dd>
-    <dt>R</dt><dd>USD assets: USD Reserve plus USD Cash (Strategy); cash and marketable securities (BitMine)</dd>
+    <dt>C</dt><dd>coins held (BTC or ETH; SharpLink includes LsETH and weETH as-if redeemed)</dd>
+    <dt>R</dt><dd>USD assets: USD Reserve plus USD Cash (Strategy); cash and marketable securities (BitMine); balance-sheet cash (SharpLink)</dd>
     <dt>D</dt><dd>notional of out-of-the-money converts and other debt</dd>
     <dt>F</dt><dd>notional of perpetual preferred</dd>
     <dt>S</dt><dd>fully diluted shares: common, awards, in-the-money converts</dd>
     <dt>p, s</dt><dd>coin close and common close</dd>
-    <dt>q</dt><dd>preferred close / $100 notional (STRC for Strategy, BMNP for BitMine)</dd>
+    <dt>q</dt><dd>preferred close / $100 notional (STRC for Strategy, BMNP for BitMine; SharpLink has no preferred)</dd>
   </dl>
   <p>Each action moves x dollars. With k = x / (p·S), the first-order change in n is:</p>
   <div class="scroll-x"><table class="plain">
@@ -67,7 +69,7 @@
       <tr><td>5</td><td>buy or sell coins</td><td>0</td><td>neutral on day one</td></tr>
     </tbody>
   </table></div>
-  <p>The break-even line is m = q. Strategy's rotation (1 and 4: issue common, retire preferred) adds while m &gt; q, so it stops when STRC trades above $100 × m. BitMine's rotation (3 and 2: issue preferred, buy back common) adds while m &lt; q, so it stops when BMNP trades below its liquidation preference × m.</p>
+  <p>The break-even line is m = q. Strategy's rotation (1 and 4: issue common, retire preferred) adds while m &gt; q, so it stops when STRC trades above $100 × m. BitMine's rotation (3 and 2: issue preferred, buy back common) adds while m &lt; q, so it stops when BMNP trades below its liquidation preference × m. SharpLink has no preferred, so no rotation line applies: issuing common adds while m &gt; 1 and buying back common adds while m &lt; 1.</p>
   <p>The bars use exact values, not the first-order formulas: each week's observed change in n is split in order into coin price, in-the-money flips, each action at its own disclosed price, carry (preferred dividends and convert interest), and a residual. Each step recomputes n. The residual is what the filings leave unexplained.</p>
   <h3>Labeled caveats</h3>
   <ul id="notes"></ul>
@@ -77,10 +79,11 @@
     <tbody>
       <tr><td><a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&amp;CIK=1050446&amp;type=8-K" target="_blank" rel="noopener">Strategy filings, EDGAR CIK 1050446</a></td><td>weekly 8-Ks (actions, holdings, USD Reserve and Cash); Q2 10-Q (shares, preferred, converts)</td></tr>
       <tr><td><a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&amp;CIK=1829311&amp;type=8-K" target="_blank" rel="noopener">BitMine filings, EDGAR CIK 1829311</a></td><td>weekly 8-K releases (ETH held, buybacks, BMNP); 10-Q (shares, balance sheet)</td></tr>
+      <tr><td><a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&amp;CIK=1981535&amp;type=8-K" target="_blank" rel="noopener">SharpLink filings, EDGAR CIK 1981535</a></td><td>8-K releases on the dates they state ETH held (offering, buybacks, ETH purchases); Q2 10-Q (shares, cash, net proceeds)</td></tr>
       <tr><td><a href="https://api.strategy.com/btc/bitcoinKpis" target="_blank" rel="noopener">Strategy KPI API</a></td><td>netSatsPerShare, mNAV; the done check compares against it</td></tr>
-      <tr><td><a href="https://finance.yahoo.com/quote/STRC/" target="_blank" rel="noopener">Yahoo Finance</a></td><td>daily closes: MSTR, STRC, STRK, STRF, STRD, BMNR, BMNP</td></tr>
+      <tr><td><a href="https://finance.yahoo.com/quote/STRC/" target="_blank" rel="noopener">Yahoo Finance</a></td><td>daily closes: MSTR, STRC, STRK, STRF, STRD, BMNR, BMNP, SBET</td></tr>
       <tr><td><a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko</a></td><td>BTC and ETH daily closes</td></tr>
-      <tr><td><a href="https://www.strategicethreserve.xyz/" target="_blank" rel="noopener">strategicethreserve.xyz</a></td><td>independent check of BitMine ETH holdings</td></tr>
+      <tr><td><a href="https://www.strategicethreserve.xyz/" target="_blank" rel="noopener">strategicethreserve.xyz</a></td><td>independent check of BitMine and SharpLink ETH holdings</td></tr>
     </tbody>
   </table></div>
   <h3>Done check</h3>

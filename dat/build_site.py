@@ -13,7 +13,8 @@ CATEGORIES = ['issue_common', 'buyback_common', 'issue_pref', 'retire_pref', 'co
 GROUP = {'est_issuance': 'issue_common', 'buy_coin': 'coins', 'sell_coin': 'coins'}  # attribution action -> bar
 SEPARATE = ('price', 'itm_flip')  # not stacked: tooltip and table only
 FIRMS = {'MSTR': {'name': 'Strategy', 'coin': 'BTC', 'unit': 'sats', 'pref': 'STRC', 'side': 'below'},
-         'BMNR': {'name': 'BitMine', 'coin': 'ETH', 'unit': 'ETH', 'pref': 'BMNP', 'side': 'above'}}
+         'BMNR': {'name': 'BitMine', 'coin': 'ETH', 'unit': 'ETH', 'pref': 'BMNP', 'side': 'above'},
+         'SBET': {'name': 'SharpLink', 'coin': 'ETH', 'unit': 'ETH', 'pref': None, 'side': None}}
 LIQ_PREF = 100  # STRC stated amount and BMNP liquidation preference, USD (method.md)
 BMNR_R_NOTE = ('BitMine R is its stated "total cash & marketable securities", so it includes marketable securities. '
                'BitMine\'s BTC holdings and equity stakes are excluded, as Strategy\'s definition counts only the coin '
@@ -39,6 +40,23 @@ NOTES = [
     'week. It is not in the bars.',
     'BitMine weeks before BMNP was issued (2026-05-31 and 2026-06-07) have no q, so they are not on the map.',
 ]
+
+
+def sbet_notes(dates, last_filed):
+    listed = ', '.join(dates[:-1]) + ' and ' + dates[-1]
+    return [
+        f'SharpLink states ETH holdings in its filings only on {listed}, and its last 8-K was filed {last_filed}. Its '
+        'marks and bars are per filed date, not per week; nothing is carried forward between them. Its first filed '
+        f'date, {dates[0]}, is its anchor.',
+        'SharpLink has no preferred, so it has no q and no rotation line. Its marks sit at q = 1 on the map, where the '
+        'line m = q is m = 1: the break-even for issuing or buying back common.',
+        'SharpLink C is its stated Total ETH Holdings: native ETH plus LsETH and weETH at the stated as-if-redeemed ETH '
+        'equivalence. The stated ETH change not explained by stated purchases is booked as carry, labeled inferred '
+        'staking and LST accrual. BitMine has no such row, because its "acquired" figure already includes staking.',
+        'SharpLink R is balance-sheet cash, stated only at quarter ends (2026-06-30 in this period). Other dates roll '
+        'it by filed cash flows, so operating costs and staking revenue are not in it. SharpLink S uses the 10-Q counts '
+        'for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks. SharpLink residuals are report only.',
+    ]
 
 
 def fnum(x):
@@ -81,11 +99,18 @@ def bmnr_r_note(url, online):
 
 def sentence(h):
     f = FIRMS[h['firm']]
+    if h['firm'] == 'SBET':
+        return (f"At a net mNAV of {h['m']:.3f} (filed date {h['week_end']}), SharpLink has no preferred, so no rotation "
+                "line applies: issuing common adds net ETH per share while m is above 1 and buying back common adds "
+                "while m is below 1.")
     return (f"At a net mNAV of {h['m']:.3f} (week ending {h['week_end']}), {f['name']}'s {f['pref']} rotation adds "
             f"net {f['unit']} per share while {f['pref']} trades {f['side']} ${h['break_even']:.2f}.")
 
 
 def close_sentence(h):
+    if h['firm'] == 'SBET':
+        return (f"SBET closed at ${h['s']:.2f} on {h['price_date']}. SharpLink's filings state ETH holdings only on "
+                f"{', '.join(h['dates'])}.")
     return f"{h['pref']} closed at ${h['pref_close']:.2f} on {h['price_date']} (q = {h['q']:.4f})."
 
 
@@ -109,7 +134,7 @@ def build(data_dir='data', online=False):
     all_w, all_a, all_act, all_bal, all_st = (read(path(f)) for f in
                                               ('weekly.csv', 'attribution.csv', 'actions.csv', 'balances.csv', 'stated.csv'))
     weeks, headline = [], []
-    for firm in ('MSTR', 'BMNR'):
+    for firm in ('MSTR', 'BMNR', 'SBET'):
         pick = lambda rows: [r for r in rows if r['firm'] == firm]
         wk = sorted(pick(all_w), key=lambda r: r['week_end'])
         weekly = {r['week_end']: {**r, 'p': float(r['p']), 's': float(r['s'])} for r in wk}
@@ -142,6 +167,12 @@ def build(data_dir='data', online=False):
             weeks.append(row)
             prev = cur
         last = wk[-1]
+        if firm == 'SBET':
+            h = {'firm': firm, 'name': FIRMS[firm]['name'], 'pref': None, 'week_end': last['week_end'],
+                 'price_date': last['price_date'], 'm': float(last['m']), 'break_even': None, 'q': None,
+                 'pref_close': None, 's': round(float(last['s']), 2), 'dates': [r['week_end'] for r in wk]}
+            headline.append({**h, 'sentence': sentence(h), 'close_sentence': close_sentence(h)})
+            continue
         m, q = float(last['m']), float(last['q'])
         h = {'firm': firm, 'name': FIRMS[firm]['name'], 'pref': FIRMS[firm]['pref'], 'week_end': last['week_end'],
              'price_date': last['price_date'], 'm': m, 'break_even': round(LIQ_PREF * m, 2), 'q': q,
@@ -150,6 +181,9 @@ def build(data_dir='data', online=False):
     bmnr_url = max((r for r in all_st if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])['filing_url']
     notes = [{'text': n, 'url': None} for n in NOTES]
     notes.insert(1, bmnr_r_note(bmnr_url, online))
+    sbet = sorted(r['week_end'] for r in all_st if r['firm'] == 'SBET')
+    last_8k = max(r['filed'] for r in all_st if r['firm'] == 'SBET')
+    notes += [{'text': n, 'url': None} for n in sbet_notes(sbet, last_8k)]
     check = load_check(path('check.json'))
     return {'generated_at': dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
             'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'notes': notes, 'check': check}

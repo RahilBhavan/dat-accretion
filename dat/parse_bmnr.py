@@ -240,15 +240,19 @@ SER_URL = 'https://www.strategicethreserve.xyz/'
 
 
 def ser_bmnr(html=None):
-    """(currentReserve ETH, snapshotDate) for ticker BMNR from strategicethreserve.xyz's server-rendered data."""
+    return ser('BMNR', html)
+
+
+def ser(ticker, html=None):
+    """(currentReserve ETH, snapshotDate) for `ticker` from strategicethreserve.xyz's server-rendered data."""
     if html is None:
         req = urllib.request.Request(SER_URL, headers={'User-Agent': 'dat-accretion rbhavanzim@gmail.com'})
         with urllib.request.urlopen(req, timeout=30) as r:
             html = r.read().decode('utf-8', errors='replace')
     t = html.replace('\\"', '"')
-    m = re.search(r'"ticker":"BMNR","currentReserve":(\d+(?:\.\d+)?)[^{}]*?"snapshotDate":"\$D(\d{4}-\d\d-\d\d)', t)
+    m = re.search(rf'"ticker":"{ticker}","currentReserve":(\d+(?:\.\d+)?)[^{{}}]*?"snapshotDate":"\$D(\d{{4}}-\d\d-\d\d)', t)
     if not m:
-        raise LookupError(f'{SER_URL}: no BMNR currentReserve/snapshotDate in page data')
+        raise LookupError(f'{SER_URL}: no {ticker} currentReserve/snapshotDate in page data')
     return Decimal(m.group(1)), m.group(2)
 
 
@@ -262,10 +266,10 @@ def merge_write(path, fields, firm, rows):
         w.writerows(sorted(keep + rows, key=lambda r: r['firm']))
 
 
-def exhibits(f):
+def exhibits(f, cik=CIK):
     """EX-99.* document URLs of a filing, from its index.json."""
     from dat import edgar
-    base = f"https://www.sec.gov/Archives/edgar/data/{CIK}/{f['accession'].replace('-', '')}/"
+    base = f"https://www.sec.gov/Archives/edgar/data/{cik}/{f['accession'].replace('-', '')}/"
     items = json.loads(edgar.fetch(base + 'index.json'))['directory']['item']
     return [base + i['name'] for i in items if re.fullmatch(r'ex99-?\d+\.html?', i['name'], re.I)]
 

@@ -4,11 +4,14 @@
 
 let DATA = null;
 const ACTIVE = {};  // bars: index of the week that holds the chart's one tab stop, per firm (kept across redraws)
-const FIRM = { MSTR: { name: 'Strategy', color: '--s1', shape: 'circle' }, BMNR: { name: 'BitMine', color: '--s2', shape: 'square' } };
+const FIRM = {
+  MSTR: { name: 'Strategy', color: '--s1', shape: 'circle' }, BMNR: { name: 'BitMine', color: '--s2', shape: 'square' },
+  SBET: { name: 'SharpLink', color: '--s7', shape: 'triangle' },
+};
 // Bar categories in the fixed palette order; residual uses the neutral token, not slot 7 (it is not an action).
 const CAT = {
   issue_common: ['Issue common', '--s1'], buyback_common: ['Buy back common', '--s2'], issue_pref: ['Issue preferred', '--s3'],
-  retire_pref: ['Retire preferred', '--s4'], coins: ['Coin trades', '--s5'], carry: ['Carry (dividends, interest)', '--s6'],
+  retire_pref: ['Retire preferred', '--s4'], coins: ['Coin trades', '--s5'], carry: ['Carry (dividends, interest, staking)', '--s6'],
   residual: ['Residual', '--neutral'],
 };
 const EST = 'Estimated issuance (BitMine)';
@@ -81,6 +84,10 @@ function bindTips(el, html) {
 }
 
 function markSvg(firm, cx, cy, r, cls, style) {
+  if (FIRM[firm].shape === 'triangle') {  // equilateral, area of the circle of radius r
+    const a = r * 2.694, h = a * 0.866, top = cy - h * 2 / 3;
+    return '<path class="' + cls + '" d="M' + cx + ',' + top + 'L' + (cx + a / 2) + ',' + (top + h) + 'L' + (cx - a / 2) + ',' + (top + h) + 'Z" style="' + style + '"/>';
+  }
   if (FIRM[firm].shape === 'circle') return '<circle class="' + cls + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" style="' + style + '"/>';
   const h = r * 0.886;  // square of equal area
   return '<rect class="' + cls + '" x="' + (cx - h) + '" y="' + (cy - h) + '" width="' + 2 * h + '" height="' + 2 * h + '" rx="1" style="' + style + '"/>';
@@ -98,7 +105,8 @@ function headline() {
 
 // ---- 2. break-even map ----
 function mapPoints() {
-  return DATA.weeks.filter(w => w.q != null && w.m != null);
+  // qx: map x. SharpLink has no preferred (q null); its marks sit at q = 1, where m = q is m = 1.
+  return DATA.weeks.filter(w => w.m != null && (w.q != null || w.firm === 'SBET')).map(w => ({ ...w, qx: w.q ?? 1 }));
 }
 
 function drawMap() {
@@ -106,7 +114,7 @@ function drawMap() {
   const pts = mapPoints();
   const W = el.clientWidth || 640, H = Math.round(Math.max(320, Math.min(480, W * 0.8)));
   const M = { l: 44, r: 14, t: 12, b: 40 };
-  const vals = pts.flatMap(w => [w.m, w.q]);
+  const vals = pts.flatMap(w => [w.m, w.qx]);
   // One domain for both axes so m = q is a true diagonal: [min − 0.05, max + 0.05] rounded out to 0.05.
   const lo = Math.floor((Math.min(...vals) - 0.05) * 20) / 20, hi = Math.ceil((Math.max(...vals) + 0.05) * 20) / 20;
   const X = v => M.l + (v - lo) / (hi - lo) * (W - M.l - M.r), Y = v => H - M.b - (v - lo) / (hi - lo) * (H - M.t - M.b);
@@ -129,20 +137,21 @@ function drawMap() {
   s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';  // above-left, clear of the diagonal
   const order = pts.map((w, i) => i).sort((a, b) => pts[b].dollars_moved - pts[a].dollars_moved);  // small marks on top
   for (const i of order) {
-    const w = pts[i], c = 'var(' + FIRM[w.firm].color + ')', r = rad(w), cx = X(w.q), cy = Y(w.m);
-    const label = FIRM[w.firm].name + ', week ending ' + w.week_end + ': m ' + fix(w.m, 3) + ', q ' + fix(w.q, 3) + '. Opens filing.';
+    const w = pts[i], c = 'var(' + FIRM[w.firm].color + ')', r = rad(w), cx = X(w.qx), cy = Y(w.m);
+    const label = FIRM[w.firm].name + (w.firm === 'SBET' ? ', filed date ' : ', week ending ') + w.week_end + ': m ' + fix(w.m, 3)
+      + (w.q == null ? ', no preferred (plotted at q = 1)' : ', q ' + fix(w.q, 3)) + '. Opens filing.';
     s += '<a href="' + esc(w.filing_urls[0]) + '" target="_blank" rel="noopener" data-tip="' + i + '" aria-label="' + esc(label) + '">'
       + markSvg(w.firm, cx, cy, Math.max(r, 10), 'hit', 'fill:transparent')
       + markSvg(w.firm, cx, cy, r, 'mark', 'fill:' + c + ';fill-opacity:0.45;stroke:' + c + ';stroke-width:1.5') + '</a>';
   }
   // Direct label on each firm's latest week: right, left, above, below at growing distance; the first box that stays
   // inside the plot and hits no mark or placed label wins. Box width is estimated at 6.3px per character (11px bold).
-  const boxes = pts.map(w => { const r = rad(w); return [X(w.q) - r, Y(w.m) - r, X(w.q) + r, Y(w.m) + r]; });
+  const boxes = pts.map(w => { const r = rad(w); return [X(w.qx) - r, Y(w.m) - r, X(w.qx) + r, Y(w.m) + r]; });
   const hit = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
   for (const firm of Object.keys(FIRM)) {
     const i = pts.map(p => p.firm).lastIndexOf(firm);
     if (i < 0) continue;
-    const w = pts[i], cx = X(w.q), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + w.week_end, tw = text.length * 6.3;
+    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + w.week_end, tw = text.length * 6.3;
     const cands = [4, 18, 36].flatMap(d => [[cx + r + d, cy + 4, 'start'], [cx - r - d, cy + 4, 'end'], [cx, cy - r - d - 1, 'middle'],
       [cx, cy + r + d + 9, 'middle']]);
     const box = ([x, y, a]) => { const x0 = a === 'start' ? x : a === 'end' ? x - tw : x - tw / 2; return [x0, y - 10, x0 + tw, y + 2]; };
@@ -156,9 +165,9 @@ function drawMap() {
   el.innerHTML = s + '</svg>';
   bindTips(el, t => {
     const w = pts[+t.dataset.tip];
-    return '<b>' + FIRM[w.firm].name + '</b>, week ending ' + w.week_end
+    return '<b>' + FIRM[w.firm].name + '</b>, ' + (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end
       + '<div class="row"><span>m (net mNAV)</span><span>' + fix(w.m, 3) + '</span></div>'
-      + '<div class="row"><span>q (preferred / notional)</span><span>' + fix(w.q, 4) + '</span></div>'
+      + '<div class="row"><span>q (preferred / notional)</span><span>' + (w.q == null ? 'no preferred, plotted at 1' : fix(w.q, 4)) + '</span></div>'
       + '<div class="row"><span>Dollars moved</span><span>' + usd(w.dollars_moved) + '</span></div>'
       + '<div class="row"><span>Value to common of actions</span><span>' + (w.actions_value == null ? 'anchor week' : usd(w.actions_value, true)) + '</span></div>'
       + '<div>Filing: ' + esc(fileName(w.filing_urls[0])) + '</div>';
@@ -214,7 +223,7 @@ function drawBars(firm) {
   const ticks = nice(lo / 1e6, hi / 1e6, 5).map(t => t * 1e6);
   lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
   const Y = v => M.t + (hi - v) / (hi - lo) * (H - M.t - M.b);
-  const bw = (W - M.l - M.r) / weeks.length, barW = Math.max(4, bw * 0.7);
+  const bw = (W - M.l - M.r) / weeks.length, barW = Math.min(48, Math.max(4, bw * 0.7));
   const hatch = 'hatch-' + firm;
   let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + FIRM[firm].name + ': weekly value to common by cause. Left and Right arrow keys move between weeks.">'
     + '<defs><pattern id="' + hatch + '" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
@@ -243,7 +252,7 @@ function drawBars(firm) {
     });
     if (i % every === 0) s += '<text x="' + (x0 + bw / 2) + '" y="' + (H - M.b + 14) + '" text-anchor="middle">' + w.week_end.slice(5) + '</text>';
   });
-  s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">week ending (2026)</text>';
+  s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">' + (firm === 'SBET' ? 'filed holdings date (2026)' : 'week ending (2026)') + '</text>';
   if (big) {  // the one direct label: largest segment in this chart
     const anchor = big.x < W / 3 ? 'start' : big.x > 2 * W / 3 ? 'end' : 'middle';
     const y = big.up ? Math.max(big.y - 6, 11) : Math.min(big.y + 14, H - M.b - 2);
@@ -301,6 +310,7 @@ function draw() {
   drawMap();
   drawBars('MSTR');
   drawBars('BMNR');
+  drawBars('SBET');
 }
 
 function theme() {

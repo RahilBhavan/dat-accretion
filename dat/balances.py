@@ -281,6 +281,76 @@ def build_bmnr(stated, actions, prices):
     return bal, weekly, lines
 
 
+# ---- SharpLink (SBET), method.md "SharpLink mapping": rows per filed holdings date, no preferred ----
+SBET_10Q = 'https://www.sec.gov/Archives/edgar/data/1981535/000149315226036620/form10-q.htm'
+# Common outstanding: 6/30 balance sheet (221,054,539 issued - 4,071,231 treasury) and 8/03 cover.
+SBET_BASIC = [('2026-06-30', 216_983_308, '10-Q 6/30 balance sheet'), ('2026-08-03', 217_223_604, '10-Q cover 8/03')]
+SBET_RSU = 1_315_859  # unvested time-based RSUs at 6/30 (10-Q); no strike, always in S
+SBET_RSU_JULY = ('2026-07-31', 1_456_375)  # time-based RSUs granted in July 2026 (10-Q Note 14), in S from 7/31
+# (shares, strike, outstanding from) from the 10-Q; in S only while the SBET close is above the strike.
+SBET_DILUTIVE = [(80_000, 0.0001, ''),  # pre-funded warrants (Chairman)
+                 (1_382_007, 6.15, ''), (691_004, 6.77, ''), (691_004, 7.38, ''), (691_004, 8.00, ''),  # Consensys
+                 (2_764_013, 7.68, ''),  # placement agent warrants
+                 (10_013_351, 8.15, '2026-06-23'),  # June 2026 investor warrants, issued at the offering's close
+                 (3_146, 122.88, '')]  # options: weighted-average exercise price
+# Excluded: 728,183 performance RSUs granted in July (conditions set 6/30/2027); 252 warrants in the 10-Q total
+# (16,312,635) not itemized by tranche. D = 0 and F = 0: no debt, converts or preferred outstanding (10-Q 6/30).
+
+
+def sbet_basic(actions, week):
+    """(basic shares, label): the latest anchor on or before week (else the first), rolled by filed issue/buyback units."""
+    d, level, label = max((a for a in SBET_BASIC if a[0] <= week), default=SBET_BASIC[0])
+    deltas = [(r['week_end'], SIGN[r['action']] * float(r['units'])) for r in actions
+              if r['action'] in ('issue_common', 'buyback_common')]
+    return rolled(level, d, deltas, week), label + ('' if d == week else ', rolled by filed issuance and buybacks')
+
+
+def sbet_awards(week):
+    return SBET_RSU + (SBET_RSU_JULY[1] if week >= SBET_RSU_JULY[0] else 0)
+
+
+def sbet_options(week):
+    return [(n, k) for n, k, since in SBET_DILUTIVE if since <= week]
+
+
+def sbet_reserve(stated, actions, week):
+    """(R, label): stated cash where the filing gives it, else rolled from the nearest stated cash by filed cash flows."""
+    from datetime import date
+    have = {s['week_end']: float(s['usd_reserve']) for s in stated if s['usd_reserve']}
+    if week in have:
+        return have[week], 'R = cash, balance sheet'
+    d = min(have, key=lambda x: abs((date.fromisoformat(x) - date.fromisoformat(week)).days))
+    flows = [(a['week_end'], SIGN[a['action']] * float(a['usd'])) for a in actions]
+    return rolled(have[d], d, flows, week), (f'R rolled from {d} balance-sheet cash by filed cash flows (operating costs '
+                                             'and staking revenue not itemized)')
+
+
+def build_sbet(stated, actions, prices):
+    """-> (balances rows, weekly rows, print lines) for SBET, one per filed holdings date."""
+    from dat.prices import close_on_or_before
+    bal, weekly, lines = [], [], []
+    for st in sorted(stated, key=lambda s: s['week_end']):
+        w = st['week_end']
+        pdate, s = close_on_or_before(prices, 'SBET', w)
+        d, p = close_on_or_before(prices, 'ETH', pdate)
+        if d != pdate:
+            raise LookupError(f'ETH: no close on {pdate} (SBET price date for {w})')
+        b, blab = sbet_basic(actions, w)
+        R, rlab = sbet_reserve(stated, actions, w)
+        x = net(float(st['coins']), R, [], [(0.0, k, n) for n, k in sbet_options(w)], b, sbet_awards(w), p, s)
+        in_s = x['S'] - b - sbet_awards(w)
+        bal.append({'firm': 'SBET', 'date': w, 'coins': st['coins'], 'usd_reserve': round(R), 'debt': 0, 'pref_notional': 0,
+                    'shares_diluted': round(x['S']),
+                    'source': f"filing {accession(st['filing_url'])}; filed holdings date (SharpLink states holdings only on "
+                              f"some dates); C = Total ETH Holdings incl. LsETH and weETH as-if redeemed; {rlab}; D = 0, "
+                              f"F = 0 (10-Q 6/30); S basic: {blab}; RSUs {sbet_awards(w):,}; warrants/options in S at "
+                              f"close {s:.2f}: {in_s:,.0f}; q blank (no preferred)"})
+        weekly.append({'firm': 'SBET', 'week_end': w, 'price_date': pdate, 'p': p, 's': s, 'q': '',
+                       'm': f"{x['mnav']:.6f}", 'n': f"{x['n']:.10g}"})
+        lines.append(f"SBET {w} basic={b:,.0f} S={x['S']:,.0f} R={R / 1e6:,.3f}M ({rlab}) m={x['mnav']:.4f}")
+    return bal, weekly, lines
+
+
 def read(path):
     with open(path, newline='') as f:
         return list(csv.DictReader(f))
@@ -305,10 +375,13 @@ def main(data_dir='data'):
     prices = load(os.path.join(data_dir, 'prices.csv'))
     bal, weekly, notes = build(stated, actions, prices)
     b_bal, b_weekly, b_lines = build_bmnr(firm(all_stated, 'BMNR'), firm(all_actions, 'BMNR'), prices)
-    write(os.path.join(data_dir, 'balances.csv'), BAL_FIELDS, b_bal + bal)  # firms sorted, as in actions.csv
-    write(os.path.join(data_dir, 'weekly.csv'), WEEK_FIELDS, b_weekly + weekly)
-    print(f'balances.csv {len(bal)} MSTR + {len(b_bal)} BMNR rows, weekly.csv {len(weekly)} MSTR + {len(b_weekly)} BMNR rows')
+    s_bal, s_weekly, s_lines = build_sbet(firm(all_stated, 'SBET'), firm(all_actions, 'SBET'), prices)
+    write(os.path.join(data_dir, 'balances.csv'), BAL_FIELDS, b_bal + bal + s_bal)  # firms sorted, as in actions.csv
+    write(os.path.join(data_dir, 'weekly.csv'), WEEK_FIELDS, b_weekly + weekly + s_weekly)
+    print(f'balances.csv {len(bal)} MSTR + {len(b_bal)} BMNR + {len(s_bal)} SBET rows, weekly.csv {len(weekly)} MSTR + '
+          f'{len(b_weekly)} BMNR + {len(s_weekly)} SBET rows (SBET: filed holdings dates only)')
     print('\n'.join(b_lines))
+    print('\n'.join(s_lines))
     print('BMNR: R not rolled; releases don\'t itemize flows')
     checks, bad = {c[0]: c[1:] for c in reserve_checks(stated, actions)}, []
     for st in sorted(stated, key=lambda s: s['week_end']):
@@ -327,7 +400,7 @@ def main(data_dir='data'):
         if not ok:
             bad.append(week)
     missing = [w['week_end'] for w in weekly if not (w['m'] and w['q'])]
-    missing += [w['week_end'] for w in b_weekly if not w['m']]
+    missing += [w['week_end'] for w in b_weekly + s_weekly if not w['m']]
     print(f'm and q (STRC) present for {len(weekly) - len(missing)}/{len(weekly)} weeks' + (f'; missing {missing}' if missing else ''))
     strc = dict(notes)[STRC_CHECK[0]]
     strc_ok = round(strc) == STRC_CHECK[1]
