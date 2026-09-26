@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why write decisions into .claude/rules/ instead of leaving them in the conversation?",
+      "options": [
+        "Rule files load faster than chat history",
+        "Later steps and the weekly refresh read the rules, not the conversation that made the decision",
+        "GitHub requires it for protected branches",
+        "The rules are shown on the public page"
+      ],
+      "correct": 1,
+      "explanation": "Decision P9: each decision goes into the rule file with its date, in the same PR, so the next agent sees it."
+    },
+    {
+      "stage": "pre",
+      "question": "Which of these is the reviewer's job?",
+      "options": [
+        "Implement the step",
+        "Decide open questions in the spec",
+        "Check a finished change adversarially, recomputing numbers by hand",
+        "Merge the PR"
+      ],
+      "correct": 2,
+      "explanation": "The reviewer never edits. It reruns tests, recomputes numbers and looks for silent failures, then sends must-fix items back through the orchestrator."
+    },
+    {
+      "stage": "post",
+      "question": "A dispatch says: \"Add BitMine support, keep it clean.\" What does the delegation contract say is missing?",
+      "options": [
+        "Exact files, an acceptance check and a style anchor",
+        "A deadline",
+        "The model name",
+        "A list of reviewers"
+      ],
+      "correct": 0,
+      "explanation": "Every runner or reviewer dispatch names exact files, a concrete acceptance check (command or observable outcome) and a file or function to match."
+    },
+    {
+      "stage": "post",
+      "question": "In PR #8, what did reviewer round 1 find in the snapshot workflow?",
+      "options": [
+        "A missing User-Agent on EDGAR requests",
+        "The data branch was force-pushed",
+        "The memo PDF was not built",
+        "check.py ran before the KPI commit, so a timeout would cancel the job and skip both the commit and the alert"
+      ],
+      "correct": 3,
+      "explanation": "GitHub cancels rather than fails a timed-out job. The fix committed the KPI row first and gave the check its own 5-minute step timeout."
+    },
+    {
+      "stage": "post",
+      "question": "filing-verifier checks a row whose usd appears in the filing's table, but in a different row than the CSV's ticker. What does it record?",
+      "options": [
+        "MATCH, since the number is in the filing",
+        "MISMATCH or NOT FOUND, since it matches by row label and ticker, not position",
+        "Nothing; it edits the CSV",
+        "PASS with a warning"
+      ],
+      "correct": 1,
+      "explanation": "Its instructions say to find figures by row label and ticker and record MATCH, MISMATCH or NOT FOUND. A number under another label is not a match."
+    }
+  ]
+}

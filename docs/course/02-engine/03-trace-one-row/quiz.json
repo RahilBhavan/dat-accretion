@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does it mean for Strategy to retire STRC preferred?",
+      "options": [
+        "It stops paying STRC dividends",
+        "It buys STRC shares back and cancels them, removing their $100 stated amount per share from the claims ahead of common",
+        "It converts STRC into MSTR common",
+        "It sells new STRC shares"
+      ],
+      "correct": 1,
+      "explanation": "A retirement is a repurchase. The notional that ranked ahead of common drops by $100 per share retired."
+    },
+    {
+      "stage": "pre",
+      "question": "Which column lets you go from an actions.csv row back to its source?",
+      "options": [
+        "note",
+        "avg_price",
+        "filing_url",
+        "week_end"
+      ],
+      "correct": 2,
+      "explanation": "Every actions.csv row carries filing_url, the EDGAR address of the filing it came from."
+    },
+    {
+      "stage": "post",
+      "question": "The 8-K for the week ending 2026-07-26 states 288,930 STRC shares repurchased for $25.0 million. What are the row's units and avg_price?",
+      "options": [
+        "units 288,930; avg_price $25.0",
+        "units 28,893,000; avg_price $86.526148",
+        "units 25,000,000; avg_price $100",
+        "units 28,893,000; avg_price $86.885"
+      ],
+      "correct": 1,
+      "explanation": "Units for preferred are notional dollars: 288,930 × $100. avg_price = 25,000,000 / 288,930 = $86.526148. $86.885 is the 7/24 close, used for the week's q, not the action's."
+    },
+    {
+      "stage": "post",
+      "question": "What is the 7/26 STRC retirement's value to common?",
+      "options": [
+        "$25,000,000",
+        "$3,895,000",
+        "$28,893,000",
+        "$3,893,000"
+      ],
+      "correct": 3,
+      "explanation": "(1/q − 1)·x = notional − cash = 28,893,000 − 25,000,000 = $3,893,000. $3,895,000 is the test anchor built on Bitcoin Magazine's $24.998M."
+    },
+    {
+      "stage": "post",
+      "question": "The attribution row uses q = 0.865261, but the map dot for the same week sits at q = 0.86885. Why?",
+      "options": [
+        "One of them is a bug",
+        "The attribution row uses the price actually paid; the map uses STRC's close on the week's price date, next to that week's m",
+        "The map rounds q to three digits",
+        "The map uses BitMine's BMNP price"
+      ],
+      "correct": 1,
+      "explanation": "Actions are valued at their own disclosed price (method.md step 3). The map compares each week's m with the market q on that week's price date, 2026-07-24."
+    }
+  ]
+}

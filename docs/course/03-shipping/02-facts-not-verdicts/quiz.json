@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Firm X, a made-up company, retired some of its made-up preferred XPRF. Which sentence about it fits the project's framing rules?",
+      "options": [
+        "Firm X's retirement was a wise move.",
+        "XPRF is a bargain at $86.",
+        "Firm X's retirement added $3.0M of value to common at the disclosed XPRF price of $86.",
+        "Expect XPRF to reach par soon."
+      ],
+      "correct": 2,
+      "explanation": "It states the effect at a disclosed price. The others grade a decision, use investment language or forecast a price."
+    },
+    {
+      "stage": "pre",
+      "question": "Where do the framing rules apply?",
+      "options": [
+        "Only the memo",
+        "Only the page headline",
+        "The site, the memo, the README, PR text and commit messages",
+        "Only code comments"
+      ],
+      "correct": 2,
+      "explanation": "framing.md lists all of them. PR #7 reports a scan of the page copy against it, and PR #8 a scan of the memo and methodology copy."
+    },
+    {
+      "stage": "post",
+      "question": "In the latest filed week, Strategy's net mNAV is 1.217. Where does the headline put STRC's break-even?",
+      "options": [
+        "$100.00",
+        "$121.71",
+        "$82.17",
+        "$1.217"
+      ],
+      "correct": 1,
+      "explanation": "Break-even is $100 × m. The rotation adds while STRC trades below $121.71 (the page uses m to more digits than 1.217)."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the memo title state \"0 of 15\" for BitMine rather than a sentence about the result?",
+      "options": [
+        "The memo has a character limit",
+        "The build's hypothesis that both rotations add did not hold for BitMine; a count states that without a verdict",
+        "BitMine had no filings",
+        "Counts are easier to compute than sentences"
+      ],
+      "correct": 1,
+      "explanation": "Decision M4 and build note #11: the title reports the counts; the footnote states the margin and the bias."
+    },
+    {
+      "stage": "post",
+      "question": "BitMine's closest week sits 0.53% above the line and its share estimate carries up to 0.43% upward bias. What does `closest()` in dat/memo.py do if a week's bias grows past its margin?",
+      "options": [
+        "Rounds the bias down",
+        "Prints a warning and continues",
+        "Raises ValueError and fails the build with \"rewrite the footnote\"",
+        "Drops the week from the count"
+      ],
+      "correct": 2,
+      "explanation": "It checks m × (1 − that week's bias) > q for every BitMine week and raises when any fails, so the title's count can't silently go wrong."
+    }
+  ]
+}

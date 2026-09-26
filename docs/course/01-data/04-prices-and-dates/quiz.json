@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "A week ends on Sunday. Bitcoin traded all weekend; MSTR last traded Friday. Why not use Sunday's BTC price with Friday's MSTR price?",
+      "options": [
+        "CoinGecko has no weekend data",
+        "m = s / (p·n) would compare two different moments, and the weekend coin move would show up in m with no action behind it",
+        "Sunday prices are always higher",
+        "MSTR's Friday close already includes Sunday's BTC price"
+      ],
+      "correct": 1,
+      "explanation": "Every ticker in a week uses the same price date, so p, s and q describe one moment."
+    },
+    {
+      "stage": "pre",
+      "question": "What is Yahoo's adjclose series?",
+      "options": [
+        "The last trade before the close",
+        "The close back-adjusted for dividends and splits, which changes after the fact",
+        "The average of open and close",
+        "The close in the exchange's time zone"
+      ],
+      "correct": 1,
+      "explanation": "Adjusted closes are rewritten when a dividend is paid. The preferreds here pay large dividends, so the project uses the quote close to keep past q values fixed."
+    },
+    {
+      "stage": "post",
+      "question": "data/prices.csv has no MSTR close on Friday 2026-06-19. Which BTC close does weekly.csv use for Strategy's week ending 2026-06-21?",
+      "options": [
+        "$63,255.49, the 2026-06-21 close",
+        "$63,489.81, the 2026-06-19 close",
+        "$62,897.24, the 2026-06-18 close",
+        "The average of 06-18 to 06-21"
+      ],
+      "correct": 2,
+      "explanation": "The price date is the last MSTR close on or before the week end: 2026-06-18. BTC is looked up at that same date."
+    },
+    {
+      "stage": "post",
+      "question": "Which CoinGecko point is the BTC close for 2026-05-25?",
+      "options": [
+        "00:00 UTC on 2026-05-25",
+        "16:00 New York time on 2026-05-25",
+        "00:00 UTC on 2026-05-26",
+        "The day's highest point"
+      ],
+      "correct": 2,
+      "explanation": "The close for day D is the point at 00:00 UTC on D+1, about 4 hours after the US equity close. tests/test_prices.py pins exactly this case."
+    },
+    {
+      "stage": "post",
+      "question": "STRC closed at $88.59 on the price date. What is q?",
+      "options": [
+        "88.59",
+        "0.8859",
+        "1.1288",
+        "It depends on STRC's dividend"
+      ],
+      "correct": 1,
+      "explanation": "q for STRC = STRC close / 100, its stated amount per share: 88.59 / 100 = 0.8859, the value in weekly.csv."
+    }
+  ]
+}

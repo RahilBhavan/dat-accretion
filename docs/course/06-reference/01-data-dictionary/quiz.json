@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "In actions.csv, what does the units column hold for a retire_pref row?",
+      "options": [
+        "The number of preferred shares retired",
+        "The notional dollars retired, at $100 per share",
+        "The cash paid",
+        "The coins bought with the cash"
+      ],
+      "correct": 1,
+      "explanation": "method.md: units are shares for common, notional dollars for preferred and coins for coin trades. The 2026-07-26 STRC row has units 28893000."
+    },
+    {
+      "stage": "pre",
+      "question": "Which file lives on the data branch, not on main?",
+      "options": [
+        "prices.csv",
+        "attribution.csv",
+        "staking.csv",
+        "kpi_snapshots.csv"
+      ],
+      "correct": 3,
+      "explanation": "The daily snapshot bot appends kpi_snapshots.csv and the raw JSON to the append-only data branch, since Strategy's KPI API keeps no history."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy's 9/20 8-K states a USD Reserve of $5.04B and USD Cash of $1.05B. What is usd_reserve in balances.csv for that date?",
+      "options": [
+        "5040000000",
+        "1050000000",
+        "6090000000",
+        "3990000000"
+      ],
+      "correct": 2,
+      "explanation": "balances.csv usd_reserve is R = USD Reserve + USD Cash, so 5.04B + 1.05B = 6,090,000,000."
+    },
+    {
+      "stage": "post",
+      "question": "On the MSTR 2026-09-20 retire_pref row, dn_exact is 8.995982580259701e-08 and usd is 174000000. What is dn_per_dollar?",
+      "options": [
+        "About 5.17e-16",
+        "About 1.57e+01",
+        "About 8.99e-08",
+        "It is blank for preferred rows"
+      ],
+      "correct": 0,
+      "explanation": "dn_per_dollar = dn_exact / usd = 8.996e-08 / 1.74e8 ≈ 5.17e-16, matching the file's 5.170104931183736e-16."
+    },
+    {
+      "stage": "post",
+      "question": "A MSTR carry row in actions.csv has usd -57400000. What does the sign mean?",
+      "options": [
+        "The parser failed to read the amount",
+        "Strategy received $57.4M",
+        "The row is a retirement of preferred",
+        "R fell by $57.4M, a dividend and interest payment"
+      ],
+      "correct": 3,
+      "explanation": "Action rows carry positive magnitudes, but carry rows are signed changes to R and C; a dividend paid is negative usd."
+    }
+  ]
+}

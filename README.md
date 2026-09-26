@@ -9,6 +9,7 @@ Status: v1 built. Page: https://rahilbhavan.github.io/dat-accretion/. Memo: `doc
 
 ## Docs
 
+- [`docs/course/`](docs/course/README.md): a 24-lesson course that teaches the project from scratch, with quizzes.
 - [`docs/overview.md`](docs/overview.md): what the project does and how the pieces fit. Start here.
 - [`docs/how-it-was-made.md`](docs/how-it-was-made.md): the build, step by step.
 - [`docs/decisions.md`](docs/decisions.md): every decision, why, and the alternative it rules out.

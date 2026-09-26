@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What makes a company a crypto treasury company in this project?",
+      "options": [
+        "It mines coins and sells them each week",
+        "It is a listed company whose main asset is a holding of coins, and it raises and returns capital around that holding",
+        "It runs a crypto exchange",
+        "It is a fund that tracks the coin price one for one"
+      ],
+      "correct": 1,
+      "explanation": "Strategy holds BTC, BitMine and SharpLink hold ETH. Their share prices float separately from the coin price, and each sells or retires securities and trades coins."
+    },
+    {
+      "stage": "pre",
+      "question": "What does it mean for preferred stock to be perpetual?",
+      "options": [
+        "It pays no dividend",
+        "It converts to common stock after one year",
+        "It has no maturity date",
+        "It can never be repurchased"
+      ],
+      "correct": 2,
+      "explanation": "Perpetual preferred has no maturity date. It still pays a dividend and ranks ahead of common; Strategy retired STRC in 9 weeks."
+    },
+    {
+      "stage": "post",
+      "question": "A BitMine release says 3.5M BMNP shares sold at $80 with net proceeds of $273.8M. What goes in the actions.csv row's usd and units?",
+      "options": [
+        "usd 273,800,000 and units 350,000,000",
+        "usd 280,000,000 and units 3,500,000",
+        "usd 350,000,000 and units 273,800,000",
+        "usd 273,800,000 and units 3,500,000"
+      ],
+      "correct": 0,
+      "explanation": "For preferred, usd is the cash received and units is notional dollars: 3.5M shares × $100 = $350,000,000."
+    },
+    {
+      "stage": "post",
+      "question": "Which action type has the most rows for Strategy in data/actions.csv?",
+      "options": [
+        "retire_pref",
+        "buy_coin",
+        "carry",
+        "issue_common"
+      ],
+      "correct": 3,
+      "explanation": "MSTR has 13 issue_common rows, 9 retire_pref, 5 buy_coin, 5 sell_coin and 4 carry."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy pays $57.4M of dividends and interest from its USD Reserve. How does actions.csv record it?",
+      "options": [
+        "As a sell_coin row",
+        "As a carry row with usd -57400000",
+        "As a retire_pref row",
+        "It is not recorded"
+      ],
+      "correct": 1,
+      "explanation": "Dividends and interest are carry rows, signed changes to R. The 2026-09-20 MSTR carry row is -57,400,000, ticker DIV_INT."
+    }
+  ]
+}

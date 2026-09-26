@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does a new Strategy 10-Q stop the weekly refresh from merging instead of being parsed automatically?",
+      "options": [
+        "EDGAR blocks automated 10-Q downloads",
+        "10-Qs are filed in PDF only",
+        "The refresh runs only on Mondays",
+        "Anchor counts come from filing sections the weekly parsers don't read, and a wrong anchor moves every week"
+      ],
+      "correct": 3,
+      "explanation": "Decision O4: refresh exits 2, the PR stays open and an issue asks a person to reanchor."
+    },
+    {
+      "stage": "pre",
+      "question": "SharpLink files holdings only on some dates. How did the project add it?",
+      "options": [
+        "Weekly rows with holdings carried forward",
+        "Rows only on the dates its filings state ETH holdings",
+        "Monthly rows interpolated between filings",
+        "Holdings taken from strategicethreserve.xyz"
+      ],
+      "correct": 1,
+      "explanation": "Decision L1: carried-forward weeks would show numbers no filing states, so SBET has rows on 6/16, 6/28, 6/30 and 8/03 only."
+    },
+    {
+      "stage": "post",
+      "question": "You move PREF_ANCHOR_DATE to 2026-09-30 with new Q3 notional values. Which weeks' F can change?",
+      "options": [
+        "Only weeks after 2026-09-30",
+        "Only the 2026-09-30 week",
+        "Every week, because rolled() backs out flows for weeks before the anchor",
+        "None; F is read from the 8-Ks"
+      ],
+      "correct": 2,
+      "explanation": "rolled() adds flows after the anchor and subtracts flows between a week and the anchor, so every week's level derives from the one anchor. The PR must diff every MSTR row."
+    },
+    {
+      "stage": "post",
+      "question": "Today STRC notional rolls to 9,316,191,300 at 2026-09-20. The Q3 10-Q states a different 9/30 figure and no 8-K reports STRC flows between 9/21 and 9/30. What should the reanchor PR do with the gap?",
+      "options": [
+        "State it in the PR as a flow no 8-K reported and trace it to a filing if one exists",
+        "Ignore it; the new anchor wins",
+        "Add a synthetic retire_pref row to close it",
+        "Keep the Q2 anchor"
+      ],
+      "correct": 0,
+      "explanation": "Every number must trace to a filing and there is no synthetic data (data.md). The gap between the old roll and the new anchor is reported, not filled with an invented action row."
+    },
+    {
+      "stage": "post",
+      "question": "You add firm XXXX with parser, balances builder and site entries, but forget dat/engine.py. What happens today?",
+      "options": [
+        "engine raises KeyError on XXXX",
+        "XXXX is skipped by engine.main(), and states() would send it to the SBET branch without an error if called",
+        "XXXX gets MSTR's converts",
+        "pytest fails on test_steps_order"
+      ],
+      "correct": 1,
+      "explanation": "engine.main() loops over ('BMNR', 'MSTR', 'SBET'), and states() ends in an else for SBET. That is why Project B makes each firm an explicit branch that raises on an unknown one."
+    }
+  ]
+}
