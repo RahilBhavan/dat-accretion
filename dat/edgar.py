@@ -16,20 +16,29 @@ class SECClient:
         self.user_agent = user_agent
         self.last_request = 0.0
 
+    RETRY = (429, 503)  # EDGAR sheds load with these; retried with backoff, then fail loudly
+    BACKOFF = (5, 15, 45)
+
     def get(self, url):
-        delay = 0.6 - (time.monotonic() - self.last_request)
-        if delay > 0:
-            time.sleep(delay)
-        self.last_request = time.monotonic()
-        request = urllib.request.Request(url, headers={'User-Agent': self.user_agent, 'Accept-Encoding': 'identity'})
-        try:
-            with urllib.request.urlopen(request, timeout=30) as response:
-                content = response.read(25_000_001)
-            if len(content) > 25_000_000:
-                raise RuntimeError('SEC response exceeded the 25 MB local limit')
-            return content
-        except (urllib.error.URLError, TimeoutError) as exc:
-            raise RuntimeError(f'SEC access failed; no synthetic substitute: {url}: {exc}') from exc
+        for wait in (*self.BACKOFF, None):
+            delay = 0.6 - (time.monotonic() - self.last_request)
+            if delay > 0:
+                time.sleep(delay)
+            self.last_request = time.monotonic()
+            request = urllib.request.Request(url, headers={'User-Agent': self.user_agent, 'Accept-Encoding': 'identity'})
+            try:
+                with urllib.request.urlopen(request, timeout=30) as response:
+                    content = response.read(25_000_001)
+                if len(content) > 25_000_000:
+                    raise RuntimeError('SEC response exceeded the 25 MB local limit')
+                return content
+            except urllib.error.HTTPError as exc:
+                if exc.code not in self.RETRY or wait is None:
+                    raise RuntimeError(f'SEC access failed; no synthetic substitute: {url}: {exc}') from exc
+                print(f'EDGAR {exc.code} on {url}; retry in {wait}s', flush=True)
+                time.sleep(wait)
+            except (urllib.error.URLError, TimeoutError) as exc:
+                raise RuntimeError(f'SEC access failed; no synthetic substitute: {url}: {exc}') from exc
 
 
 client = SECClient(UA)
