@@ -1,15 +1,15 @@
 {
  "status": "pass",
- "run_at": "2026-09-26T23:41:43Z",
+ "run_at": "2026-09-27T23:51:16Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 158,078.1157 vs API 157,908.9681: +0.107% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $84,400.00 (API latestPrice), MSTR $158.61 (Yahoo)",
+   "compared": "rebuilt 158,098.8753 vs API 157,929.9973: +0.107% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $84,445.00 (API latestPrice), MSTR $158.61 (Yahoo)",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2464 vs API 1.2464: +0.003% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $84,400.00 (API latestPrice), MSTR $158.61 (Yahoo)",
+   "compared": "rebuilt 1.2463 vs API 1.2462: +0.006% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $84,445.00 (API latestPrice), MSTR $158.61 (Yahoo)",
    "ok": true
   },
   {
@@ -19,7 +19,7 @@
   },
   {
    "name": "SharpLink ETH vs strategicethreserve.xyz",
-   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 54 days before today)",
+   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 55 days before today)",
    "ok": true
   },
   {
