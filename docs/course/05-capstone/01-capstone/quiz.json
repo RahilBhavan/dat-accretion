@@ -53,12 +53,12 @@
       "question": "You add firm XXXX with parser, balances builder and site entries, but forget dat/engine.py. What happens today?",
       "options": [
         "engine raises KeyError on XXXX",
-        "XXXX is skipped by engine.main(), and states() would send it to the SBET branch without an error if called",
+        "XXXX is skipped by engine.main(), and states() raises ValueError for it if called",
         "XXXX gets MSTR's converts",
         "pytest fails on test_steps_order"
       ],
       "correct": 1,
-      "explanation": "engine.main() loops over ('BMNR', 'MSTR', 'SBET'), and states() ends in an else for SBET. That is why Project B makes each firm an explicit branch that raises on an unknown one."
+      "explanation": "engine.main() loops over ('BMNR', 'MSTR', 'SBET'), so XXXX gets no attribution rows, and states() raises 'unknown firm' if anything calls it with XXXX. Adding the firm means a branch in states() and an entry in the loop."
     }
   ]
 }

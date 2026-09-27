@@ -119,7 +119,7 @@ Files, in the order the pipeline runs:
 | `dat/refresh.py` | the parser in `STEPS` before `dat.balances`; `(firm, CIK, anchor period)` in `ANCHORS` | SBET |
 | `tests/test_parse_xxxx.py`, `tests/test_refresh.py` | parser tests; the new `STEPS` list | `test_parse_sbet.py`, `test_steps_order` |
 
-One trap: `states()` in `dat/engine.py` ends in `else:  # SBET: ...`. A fourth firm would fall into that branch without an error. Give each firm an explicit branch and raise on an unknown one.
+`states()` in `dat/engine.py` has one explicit branch per firm and a final `else` that raises `ValueError(f'states: unknown firm {firm!r}; add its branch here')`. A new firm fails there until you add its branch.
 
 ### Step 4: Project B acceptance
 
@@ -149,4 +149,4 @@ decisions O4,S10,R3,L1,L7,L9,B3
 
 1. Run the Step 1 baseline snippet for `'2026-07-26'` and `'2026-08-30'`. Say which rows in `actions.csv` explain the class A change between them.
 2. Write the runner dispatch for Project A: exact files, the acceptance commands from Step 2, and `build_sbet` or the current constants block as the style anchor.
-3. For Project B, change the `else` in `states()` to an explicit `elif firm == 'SBET'` with a final `else` that raises, in a scratch branch. Run `.venv/bin/python -m pytest -q` and `.venv/bin/python -m dat.engine` and confirm `data/attribution.csv` is unchanged.
+3. For Project B, call `states('XYZ', ...)` the way `test_states_unknown_firm_raises` in `tests/test_engine.py` does and read the error. Then list every other place in `dat/` that names the three firms (`grep -n "'SBET'" dat/*.py`) and say which ones would also need a branch.
