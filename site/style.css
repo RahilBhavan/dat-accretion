@@ -96,7 +96,8 @@ section { border-top: 1px solid var(--border); padding: clamp(60px, 7vw, 96px) 0
 .tip .row.on { font-weight: 700; }
 .tip .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
 .firm-panel { margin-top: 14px; }
-.firm-heading { display: flex; align-items: center; gap: 12px; margin: 0 0 20px; }
+.firm-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 20px; }
+.firm-total { flex-basis: 100%; margin: 0; font-size: 12px; }
 .firm-heading h3 { margin: 0; }
 .firm-note { color: var(--muted); font-size: 12px; margin-left: auto; }
 .fold { border-radius: 10px; margin-top: 16px; padding: 0 20px; }

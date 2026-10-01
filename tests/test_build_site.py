@@ -52,6 +52,14 @@ def test_bars_sum_to_observed(site):
         assert total == pytest.approx(w['observed'], abs=1), (w['firm'], w['week_end'])
 
 
+def test_totals_sum_to_observed(site):
+    assert set(site['totals']) == {'MSTR', 'BMNR', 'SBET'}
+    for firm, x in site['totals'].items():
+        assert x['since'] == min(w['week_end'] for w in site['weeks'] if w['firm'] == firm)
+        total = x['actions'] + x['carry'] + x['est_issuance'] + x['residual'] + x['price'] + x['itm_flip']
+        assert total == pytest.approx(x['observed'], abs=1), firm
+
+
 def test_deterministic_apart_from_generated_at():
     a, b = build(), build()
     a.pop('generated_at'), b.pop('generated_at')

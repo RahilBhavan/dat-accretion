@@ -207,9 +207,19 @@ def build(data_dir='data', online=False):
     sbet = sorted(r['week_end'] for r in all_st if r['firm'] == 'SBET')
     last_8k = max(r['filed'] for r in all_st if r['firm'] == 'SBET')
     notes += [{'text': n, 'url': None} for n in sbet_notes(sbet, last_8k)]
+    totals = {}
+    for firm in FIRMS:  # actions = filed actions only: carry and estimated issuance are listed apart (method.md)
+        ws = [w for w in weeks if w['firm'] == firm]
+        att = [w for w in ws if w['value'] is not None]
+        x = {k: math.fsum(f(w) for w in att) for k, f in (
+            ('carry', lambda w: w['value']['carry']), ('est_issuance', lambda w: w['est_issuance']),
+            ('residual', lambda w: w['value']['residual']), ('observed', lambda w: w['observed']),
+            ('price', lambda w: w['price']), ('itm_flip', lambda w: w['itm_flip']))}
+        x['actions'] = math.fsum(w['actions_value'] for w in att) - x['carry'] - x['est_issuance']
+        totals[firm] = {**{k: cents(v) for k, v in x.items()}, 'since': ws[0]['week_end']}
     check = load_check(path('check.json'))
     return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(counts(all_w)),
-            'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'notes': notes, 'check': check}
+            'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'totals': totals, 'notes': notes, 'check': check}
 
 
 def main(data_dir='data', out='site/data.json'):

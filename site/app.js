@@ -195,7 +195,8 @@ function drawMap() {
 
 function mapLegend() {
   document.getElementById('map-legend').innerHTML = Object.entries(FIRM).map(([f, v]) =>
-    '<span>' + swatch(markSvg(f, 7, 7, 6, '', 'fill:var(' + v.color + ');fill-opacity:0.45;stroke:var(' + v.color + ')')) + v.name + '</span>').join('')
+    '<span>' + swatch(markSvg(f, 7, 7, 6, '', 'fill:var(' + v.color + ');fill-opacity:0.45;stroke:var(' + v.color + ')')) + v.name
+    + (f === 'SBET' ? ' (no preferred, so its marks sit at q = 1, where the line is m = 1)' : '') + '</span>').join('')
     + '<span>' + swatch('<line x1="1" y1="13" x2="13" y2="1" style="stroke:var(--fg);stroke-dasharray:3 2"/>') + 'm = q</span>'
     + '<span class="muted">Mark area: dollars moved that week (filed actions; carry and estimated issuance excluded)</span>';
 }
@@ -300,6 +301,14 @@ function barsLegend() {
     + (i === 1 ? '<path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--s1);stroke-width:2"/>' : '')) + label + '</span>').join('');
 }
 
+function totals() {  // one muted line per firm panel, from build_site totals
+  for (const [firm, x] of Object.entries(DATA.totals)) {
+    document.getElementById('bars-' + firm).closest('.firm-panel').querySelector('.firm-heading').insertAdjacentHTML('beforeend',
+      '<p class="firm-total muted">Since ' + esc(x.since) + ': filed actions ' + usd(x.actions, true) + ', carry ' + usd(x.carry, true)
+      + (x.est_issuance ? ', estimated issuance ' + usd(x.est_issuance, true) : '') + ', residual ' + usd(x.residual, true) + ' (value to common)</p>');
+  }
+}
+
 function table() {
   const cols = DATA.categories;
   let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved</th>'
@@ -359,6 +368,7 @@ fetch('data.json').then(r => r.json()).then(d => {
   headline();
   mapLegend();
   barsLegend();
+  totals();
   table();
   method();
   draw();
