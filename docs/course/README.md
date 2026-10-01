@@ -2,7 +2,7 @@
 
 A course that teaches this project from the ground up: the finance, parsing SEC filings, the math engine, shipping the page, and how it was built. Every lesson uses the repo's real code and data.
 
-Each lesson is a folder with `en.md` (the lesson) and `quiz.json` (two questions before reading, three after). Lessons follow one layout: Learning Objectives, The Problem, The Concept, Build It, Use It, Ship It, Decisions, Exercises. Blocks marked ```` ```widget ```` are interactive in the rendered course and plain text on GitHub.
+Each lesson is a folder with `en.md` (the lesson) and `quiz.json` (two questions before reading, three after). Lessons follow one layout: Learning Objectives, The Problem, The Concept, Build It, Use It, Ship It, Decisions, Exercises. The course is currently read on GitHub: `widget` blocks appear as plain-text exercises, and quizzes are available as JSON in each lesson folder.
 
 
 ## 00 · Foundations

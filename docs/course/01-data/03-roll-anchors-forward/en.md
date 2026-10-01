@@ -138,7 +138,7 @@ for w,k,d,f,t,ok in reserve_checks(st,ac)[7:]:
 ```
 
 ```
-2026-07-26 none d=+525.0M flow=+519.5M 
+2026-07-26 none d=+525.0M flow=+519.5M
 2026-08-02 reserve d=+250.0M flow=+250.0M tol=±55.0M ok=True
 2026-08-09 reserve d=+650.0M flow=+650.0M tol=±55.0M ok=True
 2026-08-16 reserve d=+150.0M flow=+149.1M tol=±10.0M ok=True

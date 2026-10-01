@@ -112,7 +112,7 @@ for r in csv.DictReader(open('data/actions.csv')):
 ```
 BMNR | 2026-05-31 | buy_coin | ETH | 53326823.227907 | 26497 | 2012.560789
 BMNR | 2026-06-14 | issue_pref | BMNP | 273800000 | 350000000 | 80
-BMNR | 2026-06-28 | carry | DIV | -1108334.5 | 0 | 
+BMNR | 2026-06-28 | carry | DIV | -1108334.5 | 0 |
 BMNR | 2026-07-19 | buyback_common | BMNR | 85885800 | 5500000 | 15.6156
 MSTR | 2026-05-31 | issue_common | MSTR | 128300000 | 801994 | 159.976259
 MSTR | 2026-05-31 | sell_coin | BTC | 2500000 | 32 | 77135
