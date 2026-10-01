@@ -6,25 +6,12 @@ from memo.html (README, "Memo"); refresh.yml builds it weekly, CI does not.
 """
 import html, math, os, sys
 from dat.balances import read, bmnr_s_bias
-from dat.build_site import build, FIRMS
+from dat.build_site import build, FIRMS, ADDS, counts, title  # noqa: F401 (ADDS re-exported)
 
 PAGE = 'https://rahilbhavan.github.io/dat-accretion/'
 REPO = 'https://github.com/RahilBhavan/dat-accretion'
 FWP = 'https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm'
 COLOR = {'MSTR': '#2a78d6', 'BMNR': '#eb6834', 'SBET': '#4a3aa7'}
-ADDS = {'MSTR': lambda m, q: m > q, 'BMNR': lambda m, q: m < q}  # method.md: the rotation's adding side of m = q
-
-
-def counts(weekly):
-    """{firm: (weeks on the adding side, weeks with m and q, first week, last week)} from weekly.csv rows.
-    SBET (no preferred): (filed dates with m below 1, filed dates, first, last)."""
-    out = {}
-    for firm in ('MSTR', 'BMNR'):
-        ws = sorted((r for r in weekly if r['firm'] == firm and r['m'] and r['q']), key=lambda r: r['week_end'])
-        out[firm] = (sum(ADDS[firm](float(r['m']), float(r['q'])) for r in ws), len(ws), ws[0]['week_end'], ws[-1]['week_end'])
-    ws = sorted((r for r in weekly if r['firm'] == 'SBET' and r['m']), key=lambda r: r['week_end'])
-    out['SBET'] = (sum(float(r['m']) < 1 for r in ws), len(ws), ws[0]['week_end'], ws[-1]['week_end'])
-    return out
 
 
 def week_biases(data_dir, weekly):
@@ -54,12 +41,6 @@ def closest(weekly, biases):
     return (f"Closest weeks to the line: {near['MSTR']}; {near['BMNR']}. BitMine's estimated share count carries a "
             f"known upward bias of up to {b:.2%} of S by {asof} (staked ETH costed as purchases), which raises "
             "m by the same proportion; removing it leaves m above q in every BitMine week.")
-
-
-def title(c):
-    (a, n, _, _), (b, k, _, _), (x, y, _, _) = c['MSTR'], c['BMNR'], c['SBET']
-    return (f"Strategy's STRC rotation sat on its adding side of the break-even line in {a} of {n} filed weeks; "
-            f"BitMine's BMNP rotation in {b} of {k}; SharpLink, with no preferred, had m below 1 on {x} of {y} filed dates")
 
 
 def mark(firm, cx, cy, r, style):

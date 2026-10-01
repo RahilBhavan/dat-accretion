@@ -21,6 +21,20 @@ def test_headline_break_even_is_100_m(site):
         assert f"${h['break_even']:.2f}." in h['sentence']
 
 
+def test_title_is_memo_title(site):
+    with open('docs/memo.md') as f:
+        assert site['title'] == f.readline().rstrip('\n').removeprefix('# ')
+
+
+def test_headline_gap(site):
+    h = {x['firm']: x for x in site['headline']}
+    for firm in ('MSTR', 'BMNR'):
+        x = h[firm]
+        assert x['gap'] == round(x['pref_close'] - x['break_even'], 2)
+        assert (x['gap'] < 0) == (x['pref_close'] < x['break_even'])
+    assert 'gap' not in h['SBET']
+
+
 def test_every_map_point_links_to_a_filing(site):
     # app.js mapPoints: q and m present, or SharpLink (no preferred, drawn at q = 1)
     points = [w for w in site['weeks'] if w['m'] is not None and (w['q'] is not None or w['firm'] == 'SBET')]
@@ -36,6 +50,14 @@ def test_bars_sum_to_observed(site):
         assert set(w['value']) == set(site['categories'])
         total = sum(w['value'].values()) + w['price'] + w['itm_flip']
         assert total == pytest.approx(w['observed'], abs=1), (w['firm'], w['week_end'])
+
+
+def test_totals_sum_to_observed(site):
+    assert set(site['totals']) == {'MSTR', 'BMNR', 'SBET'}
+    for firm, x in site['totals'].items():
+        assert x['since'] == min(w['week_end'] for w in site['weeks'] if w['firm'] == firm)
+        total = x['actions'] + x['carry'] + x['est_issuance'] + x['residual'] + x['price'] + x['itm_flip']
+        assert total == pytest.approx(x['observed'], abs=1), firm
 
 
 def test_deterministic_apart_from_generated_at():
