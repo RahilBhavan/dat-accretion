@@ -21,6 +21,20 @@ def test_headline_break_even_is_100_m(site):
         assert f"${h['break_even']:.2f}." in h['sentence']
 
 
+def test_title_is_memo_title(site):
+    with open('docs/memo.md') as f:
+        assert site['title'] == f.readline().rstrip('\n').removeprefix('# ')
+
+
+def test_headline_gap(site):
+    h = {x['firm']: x for x in site['headline']}
+    for firm in ('MSTR', 'BMNR'):
+        x = h[firm]
+        assert x['gap'] == round(x['pref_close'] - x['break_even'], 2)
+        assert (x['gap'] < 0) == (x['pref_close'] < x['break_even'])
+    assert 'gap' not in h['SBET']
+
+
 def test_every_map_point_links_to_a_filing(site):
     # app.js mapPoints: q and m present, or SharpLink (no preferred, drawn at q = 1)
     points = [w for w in site['weeks'] if w['m'] is not None and (w['q'] is not None or w['firm'] == 'SBET')]
