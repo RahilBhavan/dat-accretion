@@ -3,39 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f8fa">
 <title>Net coins per share: Strategy, BitMine and SharpLink</title>
 <meta name="description" content="Every capital action by Strategy, BitMine and SharpLink since 2026-06-01, measured in net coins per share, and the preferred price where each rotation stops adding.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>Net coins per share: Strategy, BitMine and SharpLink</h1>
-  <p class="lede">Strategy's own net coins per share definition, applied to all three firms. Every capital action since 2026-06-01, valued at disclosed prices.
-    <button type="button" id="theme" class="theme">theme</button></p>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="site-bar">
+  <a class="brand" href="#top" aria-label="DAT Accretion, back to top"><span class="brand-mark" aria-hidden="true">D<span>·</span></span><span>DAT <strong>Accretion</strong></span></a>
+  <nav aria-label="Primary navigation"><a href="#map-section">Break-even map</a><a href="#bars-section">Attribution</a><a href="#method">Method</a><a href="#downloads">Downloads</a></nav>
+  <button type="button" id="theme" class="theme">Theme</button>
+</div>
+<main id="main">
+<header id="top" class="hero">
+  <h1 id="title">loading</h1>
+  <p class="lede">Strategy's own net coins per share definition, applied to all three firms. Every capital action since 2026-06-01, valued at disclosed prices.</p>
 </header>
 
-<section id="headline" aria-live="polite">
-  <h2>Break-even, latest filed week</h2>
+<section id="headline" aria-live="polite" class="overview">
+  <div class="section-heading"><div><span class="section-index">01 / Snapshot</span><h2>Break-even, latest filed week</h2></div><p>Each firm's latest filed week or date.</p></div>
   <div id="headline-text"><p class="muted">loading</p></div>
 </section>
 
 <section id="map-section">
-  <h2>Break-even map</h2>
-  <p class="explain">Each mark is one firm-week (for SharpLink, one filed holdings date): x is the firm's preferred price over its $100 notional (q), y is net mNAV (m). The diagonal is m = q. SharpLink has no preferred, so its marks sit at q = 1, where the diagonal is m = 1; for SharpLink the line is m = 1, and the lower-right label is about BitMine's rotation, not SharpLink. Mark area follows the dollars the firm moved that week or since the prior filed date (filed actions; carry and estimated issuance excluded). Select a mark to open its filing.</p>
+  <div class="section-heading"><div><span class="section-index">02 / Thresholds</span><h2>Break-even map</h2></div><p>Each mark represents a firm and a reporting week.</p></div>
+  <p class="explain">x is the preferred close over its $100 notional (q); y is net mNAV (m). One mark per firm-week, or per filed holdings date for SharpLink.</p>
+  <p class="explain">The diagonal is m = q. Strategy's rotation adds above it; BitMine's adds below it.</p>
+  <p class="explain">Mark area follows the dollars moved in filed actions (carry and estimated issuance excluded). Select a mark to open its filing.</p>
   <div class="legend" id="map-legend"></div>
-  <div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div>
+  <div class="chart-panel"><div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
 </section>
 
 <section id="bars-section">
-  <h2>Weekly change in net coins per share, as value to common</h2>
+  <div class="section-heading"><div><span class="section-index">03 / Attribution</span><h2>Weekly change in net coins per share, as value to common</h2></div><p>Each firm on its own scale.</p></div>
   <p class="explain">Each bar splits a week's change in n by cause, in USD at that week's S and p (value to common = Δn × S × p). Each firm has its own scale. Coin price moves and in-the-money flips are left out of the bars and listed in the tooltip and table.</p>
   <div class="legend" id="bars-legend"></div>
-  <h3>Strategy</h3>
-  <div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div>
-  <h3>BitMine</h3>
-  <div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div>
-  <h3>SharpLink (filed holdings dates only)</h3>
-  <div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div>
+  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol mstr">MSTR</span><h3>Strategy</h3></div><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol bmnr">BMNR</span><h3>BitMine</h3></div><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol sbet">SBET</span><h3>SharpLink</h3><span class="firm-note">Filed holdings dates only</span></div><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
   <details class="fold">
     <summary>Table</summary>
     <p class="muted">USD value to common per week (for SharpLink, per filed holdings date). Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
@@ -44,11 +50,13 @@
 </section>
 
 <section id="method">
-  <h2>Method</h2>
+  <div class="section-heading"><div><span class="section-index">04 / Method</span><h2>Method</h2></div><p>One definition for all three firms.</p></div>
   <p>The metric is Strategy's own net coins per share definition, applied to all three firms, taken from the glossary in Strategy's <a href="https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm" target="_blank" rel="noopener">2026-08-24 FWP</a>. Full note: <a href="https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md" target="_blank" rel="noopener">methodology</a>.</p>
   <div class="formula">
     <p><span>N = C + (R − D − F) / p</span> <span>n = N / S</span> <span>m = s·S / (p·N) = s / (p·n)</span></p>
   </div>
+  <details class="fold">
+    <summary>Symbols</summary>
   <dl class="symbols">
     <dt>C</dt><dd>coins held (BTC or ETH; SharpLink includes LsETH and weETH as-if redeemed)</dd>
     <dt>R</dt><dd>USD assets: USD Reserve plus USD Cash (Strategy); cash and marketable securities (BitMine); balance-sheet cash (SharpLink)</dd>
@@ -58,6 +66,9 @@
     <dt>p, s</dt><dd>coin close and common close</dd>
     <dt>q</dt><dd>preferred close / $100 notional (STRC for Strategy, BMNP for BitMine; SharpLink has no preferred)</dd>
   </dl>
+  </details>
+  <details class="fold">
+    <summary>The five formulas</summary>
   <p>Each action moves x dollars. With k = x / (p·S), the first-order change in n is:</p>
   <div class="scroll-x"><table class="plain">
     <thead><tr><th>#</th><th>action</th><th>Δn</th><th>adds when</th></tr></thead>
@@ -69,11 +80,13 @@
       <tr><td>5</td><td>buy or sell coins</td><td>0</td><td>neutral on day one</td></tr>
     </tbody>
   </table></div>
+  </details>
   <p>The break-even line is m = q. Strategy's rotation (1 and 4: issue common, retire preferred) adds while m &gt; q, so it stops when STRC trades above $100 × m. BitMine's rotation (3 and 2: issue preferred, buy back common) adds while m &lt; q, so it stops when BMNP trades below its liquidation preference × m. SharpLink has no preferred, so no rotation line applies: issuing common adds while m &gt; 1 and buying back common adds while m &lt; 1.</p>
   <p>The bars use exact values, not the first-order formulas: each week's observed change in n is split in order into coin price, in-the-money flips, each action at its own disclosed price, carry (preferred dividends and convert interest; for SharpLink, inferred staking and LST accrual), and a residual. Each step recomputes n. The residual is what the filings leave unexplained.</p>
   <h3>Labeled caveats</h3>
   <ul id="notes"></ul>
-  <h3>Data sources</h3>
+  <details class="fold">
+    <summary>Data sources</summary>
   <div class="scroll-x"><table class="plain">
     <thead><tr><th>source</th><th>use</th></tr></thead>
     <tbody>
@@ -86,18 +99,20 @@
       <tr><td><a href="https://www.strategicethreserve.xyz/" target="_blank" rel="noopener">strategicethreserve.xyz</a></td><td>independent check of BitMine and SharpLink ETH holdings</td></tr>
     </tbody>
   </table></div>
+  </details>
   <h3>Done check</h3>
   <div id="check"></div>
 </section>
 
 <section id="downloads">
-  <h2>Downloads</h2>
+  <div class="section-heading"><div><span class="section-index">05 / Data</span><h2>Downloads</h2></div><p>The CSVs behind every figure on this page.</p></div>
   <ul>
     <li><a href="data/actions.csv">actions.csv</a>: every capital action with its filing</li>
     <li><a href="data/balances.csv">balances.csv</a>: weekly C, R, D, F, S per firm</li>
     <li><a href="data/attribution.csv">attribution.csv</a>: weekly change in n by cause</li>
   </ul>
 </section>
+</main>
 
 <footer class="muted" id="footer"></footer>
 <script src="app.js"></script>
