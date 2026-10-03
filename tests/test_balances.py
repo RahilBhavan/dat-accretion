@@ -1,6 +1,6 @@
 import pytest
 from decimal import Decimal
-from dat.balances import net, CONVERTS, pref_notional, class_a, reserve_checks, PREF_ANCHOR, bmnr_flows, bmnr_basic, BMNR_A0, BMNR_A1
+from dat.balances import net, CONVERTS, pref_notional, class_a, reserve_checks, PREF_ANCHOR, bmnr_flows, bmnr_basic, BMNR_A0, BMNR_A1, build_bmnr
 
 # 8-K filed 2026-09-21 (acc 0001193125-26-396093; file named mstr-20260914.htm)
 COINS = 846_000  # https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm
@@ -132,3 +132,9 @@ def test_bmnr_buyback_in_anchor_week_raises():
     with pytest.raises(ValueError, match='holds the 2026-07-09 anchor'):
         bmnr_basic(weeks, {'2026-07-12': (0, 0, 100)}, dict.fromkeys(weeks, 10.0),
                    [act('2026-07-12', 'buyback_common', 'BMNR', units='5')])
+
+
+def test_bmnr_follow_on_bmnp_sale_raises():
+    rows = [act('2026-06-14', 'issue_pref', 'BMNP', units='350000000'), act('2026-09-20', 'issue_pref', 'BMNP', units='1')]
+    with pytest.raises(ValueError, match='follow-on BMNP sale'):
+        build_bmnr([], rows, [])
