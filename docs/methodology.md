@@ -70,7 +70,7 @@ table's formulas; exact values use the cash actually received, so issue fees sho
 
 | decision | reason |
 |---|---|
-| Strategy R is taken as each 8-K states it, not rolled forward. From 2026-08-02 the roll is a check within each filing's rounding (half the last disclosed digit of each figure). | Filings round R to $10-50M and, before August, do not itemize flows into it. Before 2026-08-02 the unexplained change lands in the residual, labeled. |
+| Strategy R is taken as each 8-K states it, not rolled forward. From 2026-08-02 the roll is a check within each filing's rounding (half the last disclosed digit of each figure). | Filings round R to the nearest $1M, $10M or $100M and, before August, do not itemize flows into it. Before 2026-08-02 the unexplained change lands in the residual, labeled. |
 | Before 2026-08-23 Strategy R is the USD Reserve alone. | USD Cash was first disclosed that week, funded by that week's MSTR sale proceeds (8-K filed 2026-08-24). |
 | The 2026-06-30 quarter-end holdings row carries R from the prior 8-K. | No balance is stated for that date. |
 | Strategy's preferred and class A share counts start from the Q2 10-Q and roll by each 8-K's sales and repurchases. | The weekly 8-Ks give flows, not levels. |
