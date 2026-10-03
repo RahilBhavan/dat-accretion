@@ -131,7 +131,7 @@ grep -nE "<script|<link" site/index.html
 
 - `.github/workflows/pages.yml` runs `python -m dat.build_site` on each push to `main` and deploys `site/` with the CSVs under `data/`, but only when the latest `check.json` on the `data` branch has status `pass` (PR #17).
 - Since PR #18 the page opens with the memo's title as its h1, built by the same `counts()`/`title()` code, then one card per firm with the preferred close against break-even: STRC stops adding above $100 × m, BMNP adds above $100 × m, and SharpLink's card gives m and the date of its last filed holdings.
-- Since PR #20 the cards are bullet tracks: the preferred close, a tick at break-even, and the gap in dollars. A "By week" chart shows each week's preferred close against its break-even, $100 × m, for STRC and BMNP.
+- Since PR #20 the cards are bullet tracks: the preferred close, a tick at break-even, and the gap. A "By week" chart shows each week's preferred close against its break-even, $100 × m, for STRC and BMNP, and SharpLink's m against 1.
 - Since PR #20 the attribution bars use five colours, with a tick for each week's net change and a totals strip per firm.
 - Each bar panel shows totals since the firm's anchor week, as value to common: filed actions, carry, estimated issuance (BitMine only) and residual. Carry and estimated issuance stay out of "filed actions" because `method.md` says carry rows are not actions.
 - `dat/memo.py` draws a static light-theme copy of the same map for the memo, with the same domain rule.
