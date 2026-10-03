@@ -87,15 +87,15 @@ line for both rotations.
 1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). Its h1 is the memo's title. Below
    it:
    - one card per firm for the latest filed week, drawn as a bullet track: the preferred close, a tick at
-     break-even, and the gap in dollars (#20). STRC stops adding above $100 × m; BMNP adds above $100 × m.
+     break-even, and the gap (#20). STRC stops adding above $100 × m; BMNP adds above $100 × m.
      SharpLink's card gives m and the date of its last filed holdings.
-   - a "By week" chart: each week's preferred close against its break-even, $100 × m, for STRC and BMNP
+   - a "By week" chart: each week's preferred close against its break-even, $100 × m, for STRC and BMNP, and SharpLink's m against 1
      (#20).
    - the break-even map. Every dot links to its SEC filing.
    - weekly attribution bars in five colours, with a tick for each week's net change and a totals strip per
      firm since its anchor week: filed actions, carry, estimated issuance (BitMine only) and residual, as
      value to common (#20).
-   - the method, folded, and CSV downloads.
+   - the method (symbols, formulas and sources fold; caveats and the done check stay open) and CSV downloads.
 2. **A one-page memo** (`docs/memo.md`, `docs/memo.pdf`): the finding as counts, the ruler, the line, and
    where each firm sits in its latest filed week.
 3. **The data and the engine**: CSVs under `data/`, the Python that builds them, and `check.py`, which

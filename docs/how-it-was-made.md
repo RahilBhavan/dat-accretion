@@ -162,8 +162,8 @@ the build if removing that bias would move any week across the line.
   stops instead of relying on a weekly recheck by hand. Rebuilt `balances.csv`, `weekly.csv` and
   `attribution.csv` came out identical.
 - **Site redesign (#20)**: a "By week" chart shows each week's preferred close against its break-even
-  ($100 × m) for STRC and BMNP. Firm cards became bullet tracks with the close, a break-even tick and the
-  gap in dollars. Attribution bars use five colours, with a tick for each week's net change and a totals
+  ($100 × m) for STRC and BMNP, and SharpLink's m against 1. Firm cards became bullet tracks with the close, a break-even tick and the
+  gap. Attribution bars use five colours, with a tick for each week's net change and a totals
   strip per firm. The map gained a touch pin and 24 px hit targets. Only `site/` changed. At 375 px, in
   light and dark, there is no horizontal scroll, and all 37 map marks link to an sec.gov filing.
 - **Social cards (#19)**: `python -m dat.social` turns the page's `build()` output into 1200x675 SVG
