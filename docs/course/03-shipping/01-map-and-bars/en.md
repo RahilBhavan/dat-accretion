@@ -129,7 +129,9 @@ grep -nE "<script|<link" site/index.html
 
 ## Use It
 
-- `.github/workflows/pages.yml` runs `python -m dat.build_site` on each push to `main` and deploys `site/` with the CSVs under `data/`.
+- `.github/workflows/pages.yml` runs `python -m dat.build_site` on each push to `main` and deploys `site/` with the CSVs under `data/`, but only when the latest `check.json` on the `data` branch has status `pass` (PR #17).
+- Since PR #18 the page opens with the memo's title as its h1, built by the same `counts()`/`title()` code, then one card per firm with the preferred close against break-even: STRC stops adding above $100 × m, BMNP adds above $100 × m, and SharpLink's card gives m and the date of its last filed holdings.
+- Each bar panel shows totals since the firm's anchor week, as value to common: filed actions, carry, estimated issuance (BitMine only) and residual. Carry and estimated issuance stay out of "filed actions" because `method.md` says carry rows are not actions.
 - `dat/memo.py` draws a static light-theme copy of the same map for the memo, with the same domain rule.
 - The table view and the Downloads section give the same numbers as the charts.
 
@@ -142,20 +144,27 @@ The acceptance check for Step 5 was "375px wide, no horizontal scroll; every dot
 {"w":1280,"sw":1280,"dots":33,"tabstops0":2,"arrowMoves":true}
 ```
 
-`w` equal to `sw` means the scroll width equals the viewport: no horizontal scroll. That run had 33 dots, before SharpLink was added in PR #10. The offline tests on the page data:
+`w` equal to `sw` means the scroll width equals the viewport: no horizontal scroll. That run had 33 dots, before SharpLink was added in PR #10. The same check after the PR #18 redesign:
+
+```
+375 light {"scrollWidth":375,"inner":375,"marks":37,"marksLinked":37,"overflowing":[]} errors: none
+375 dark  {"scrollWidth":375,"inner":375,"marks":37,"marksLinked":37,"overflowing":[]} errors: none
+```
+
+The 37 marks are 18 Strategy weeks, 15 BitMine weeks with a BMNP price and 4 SharpLink dates. The offline tests on the page data:
 
 ```
 .venv/bin/python -m pytest -q tests/test_build_site.py
 ```
 
 ```
-11 passed in 0.11s
+14 passed in 0.10s
 ```
 
 ## Decisions
 
 ```widget
-decisions M6,M7,M8,M9,M11
+decisions M6,M7,M8,M9,M11,M12,M13,M14
 ```
 
 ## What Went Wrong

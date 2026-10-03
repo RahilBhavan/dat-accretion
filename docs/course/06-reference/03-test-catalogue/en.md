@@ -17,7 +17,7 @@ The suite runs offline. Tests that read `data/*.csv` use the committed files; `t
 
 ```
 tests/test_balances.py: 12
-tests/test_build_site.py: 11
+tests/test_build_site.py: 14
 tests/test_check.py: 6
 tests/test_edgar.py: 3
 tests/test_engine.py: 16
@@ -30,13 +30,13 @@ tests/test_refresh.py: 6
 tests/test_snapshot_kpi.py: 5
 ```
 
-That is 137 collected tests (counts include each parameter case). The full run:
+That is 140 collected tests (counts include each parameter case). The full run:
 
 ```
 .venv/bin/python -m pytest -q
-........................................................................ [ 52%]
-.................................................................        [100%]
-137 passed in 0.45s
+........................................................................ [ 51%]
+....................................................................     [100%]
+140 passed in 0.33s
 ```
 
 Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one test with `-k strc_anchor`. `.github/workflows/ci.yml` runs the same suite (`python -m pytest -q tests`) as the `tests` check that protects `main` (decision P4), and `refresh.yml` runs it again before each weekly merge. A **fixture** here is plain test input; a **parameterized** test runs once per listed case.
@@ -60,8 +60,11 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | test | guards against |
 |---|---|
 | `test_headline_break_even_is_100_m` | a headline whose break-even is not $100 × m, or a SharpLink headline with a break-even or an em dash |
+| `test_title_is_memo_title` | the page's h1 differing from the memo's title (decision M12) |
+| `test_headline_gap` | a card's gap that is not preferred close minus break-even, or a gap on SharpLink's card |
 | `test_every_map_point_links_to_a_filing` | a map dot without an `https://www.sec.gov/` link, or SharpLink missing its 4 dates |
 | `test_bars_sum_to_observed` | bars plus price plus itm_flip not summing to the observed change within $1 |
+| `test_totals_sum_to_observed` | a firm's totals since its anchor week not summing to the observed change within $1 (decision M13) |
 | `test_deterministic_apart_from_generated_at` | two builds of the same data differing |
 | `test_excluded_holdings_0921` | the page's sentence on BitMine's excluded BTC and stakes misreading the 9/21 release (decision B1) |
 | `test_excluded_holdings_missing_is_omitted` | a crash when the holdings sentence or cached release is missing |

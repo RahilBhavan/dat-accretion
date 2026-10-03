@@ -140,6 +140,6 @@ ValueError: mNav: expected a finite number > 0, got '1.19'
 
 ## Exercises
 
-1. Run `.venv/bin/python -m pytest -q -k "raises"` (it selects 44 of 137 tests) and match five of them to rows on this page.
+1. Run `.venv/bin/python -m pytest -q -k "raises"` (it selects 44 of 140 tests) and match five of them to rows on this page.
 2. In `tests/test_parse_mstr.py`, `test_hypothetical_or_negated_reserve_flow_raises` feeds `parse()` the sentence "Strategy may use up to $50.0 million of the USD Reserve to pay future dividends." Predict the message from the tables above, then write a third sentence of your own that should raise the same error and add it to the test's parameter list.
 3. Delete the 2026-09-20 row from a copy of `data/staking.csv` in a scratch data directory, run `.venv/bin/python -c "from dat.balances import bmnr_s_bias; print(bmnr_s_bias('<dir>', '2026-09-20'))"`, and find the message above. The directory needs `balances.csv`, `prices.csv` and `staking.csv`.

@@ -26,7 +26,7 @@ Automation brings its own failure modes. A job that merges bad data is worse tha
 |---|---|---|
 | `snapshot.yml` | daily 21:30 UTC | saves the KPI row to the `data` branch, then runs `check.py` and commits `check.json` |
 | `refresh.yml` | Tuesday 14:00 UTC | reruns the pipeline, opens a `refresh/<date>` PR, merges it when everything passes |
-| `pages.yml` | push to `main`, a finished `snapshot` run, or by hand | builds the site with the latest `check.json` and deploys it |
+| `pages.yml` | push to `main`, a finished `snapshot` run, or by hand | builds the site with the latest `check.json` and deploys it only when its status is `pass` (PR #17) |
 | `ci.yml` | pull request, push to `main`, or by hand | `python -m pytest -q tests`; its job `tests` is the required check on `main` |
 
 The `data` branch is append-only. The bot never force-pushes it, because a lost KPI row cannot be fetched again.
@@ -168,7 +168,7 @@ tests/test_edgar.py::test_404_fails_at_once PASSED                       [100%]
 
 - The `data` branch holds `kpi_snapshots.csv`, the raw JSON per day in `data/kpi/`, and `check.json`.
 - Refresh PRs carry the `last week:` line, any `reanchor needed:` lines and the full `check.py` output in their body.
-- The page's done-check status comes from the latest `check.json` on `data`.
+- The page's done-check status comes from the latest `check.json` on `data`. Since PR #17 a missing or failing check fails the Pages run, so the live page keeps its last passing build and the failed run is the signal.
 
 ## Ship It
 
@@ -177,7 +177,7 @@ Four workflow files and `dat/refresh.py`. Offline check: `.venv/bin/python -m py
 ## Decisions
 
 ```widget
-decisions P6,O1,O2,O3,O4,O5,O6,O7,O8
+decisions P6,O1,O2,O3,O4,O5,O6,O7,O8,O10
 ```
 
 ## What Went Wrong
