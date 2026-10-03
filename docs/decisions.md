@@ -1,7 +1,7 @@
 # Decisions
 
 Every decision that shapes the code or the numbers, why it was made, and what it replaced. Dates are when
-the decision was settled; all fall on 2026-09-25 or 2026-09-26. Where a decision is also a working rule, the
+the decision was settled; all fall on 2026-09-25, 2026-09-26 or 2026-10-01. Where a decision is also a working rule, the
 rule lives in `.claude/rules/` and the code follows the rule file. Problems that forced a decision are
 numbered in [`build-notes.md`](build-notes.md) and cited here as "notes #n". The last column names the
 alternative each decision rules out; where the build reversed an earlier choice, the row says so.
@@ -114,6 +114,9 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | M9 | Map dots are links to filings; each bar chart is one tab stop with arrow keys; every chart has a table view; the seven-color palette is validated in light and dark. | Keyboard and screen-reader access, and every mark traces to a filing. | Hover-only charts. |
 | M10 | The memo PDF is printed by headless Chrome from `docs/memo.html`. | No new dependency; the CI runner already has Chrome. | A PDF library. |
 | M11 | Fallbacks and estimates are labeled on the page itself, not only in the methodology. | A reader of one chart should see which numbers are estimated. | A methods page only. |
+| M12 | The page's h1 is the memo's title, from the same `counts()`/`title()` code, now in `dat/build_site.py` and re-exported by `dat/memo.py` (#18). | Page and memo state the same counts. | A separate page headline. |
+| M13 | Bar panel totals keep carry and BitMine's estimated issuance out of "filed actions"; each shows as its own total (#18). | `method.md`: carry rows are not actions, and estimated issuance is not an `actions.csv` row. | One total for all non-price parts. |
+| M14 | The page computes SharpLink's day count (days from its last filed holdings to the build), not `build()` (#18). | `build()` stays independent of the clock. | Writing the day count into `data.json`. |
 
 ## Automation
 
@@ -128,3 +131,4 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | O7 | EDGAR requests send a User-Agent with a contact address and stay under 10 per second (0.6 s throttle); filings are cached in `data/raw/`, gitignored, and across refresh runs. | SEC fair-access rules. The cache makes reruns fast and rebuildable. | Unthrottled fetches. |
 | O8 | The repo setting "Allow GitHub Actions to create and approve pull requests" is on. | `refresh.yml` needs it to open and merge its PR. Turned on with the user's approval. | Merging refresh PRs by hand. |
 | O9 | CSVs are written with `\n` line endings. | Python's `csv` default is CRLF, which git flagged (notes #17). | Default endings. |
+| O10 | `pages.yml` deploys only when the latest `data/check.json` on the `data` branch has status `pass` (#17). | A missing or failing check used to deploy, and the page showed the failure. Trade-off: the page now stops updating instead, and the failing Pages run is the signal. The non-pass branch in `site/app.js` stays for local builds. | Deploying with `\|\| true` and showing the failure on the page. |
