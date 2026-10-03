@@ -174,7 +174,7 @@ This step produced `dat/engine.py`, `data/attribution.csv` (198 rows) and `tests
 ## Decisions
 
 ```widget
-decisions A1,A2,R8,B4,S7
+decisions A1,A2,R8,B4,S7,A9
 ```
 
 ## What Went Wrong

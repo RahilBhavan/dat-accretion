@@ -3,7 +3,7 @@
 > Every test in `tests/`, one line each: what it guards against.
 
 **Type:** Reference
-**Files:** `tests/test_*.py` (12 files), `.claude/rules/method.md` (Test anchors)
+**Files:** `tests/test_*.py` (13 files), `.claude/rules/method.md` (Test anchors)
 **Prerequisites:** None
 **Time:** ~20 minutes
 
@@ -16,11 +16,11 @@ The suite runs offline. Tests that read `data/*.csv` use the committed files; `t
 ```
 
 ```
-tests/test_balances.py: 12
+tests/test_balances.py: 13
 tests/test_build_site.py: 14
 tests/test_check.py: 6
 tests/test_edgar.py: 3
-tests/test_engine.py: 16
+tests/test_engine.py: 17
 tests/test_memo.py: 4
 tests/test_parse_bmnr.py: 21
 tests/test_parse_mstr.py: 29
@@ -28,15 +28,16 @@ tests/test_parse_sbet.py: 19
 tests/test_prices.py: 5
 tests/test_refresh.py: 6
 tests/test_snapshot_kpi.py: 5
+tests/test_social.py: 2
 ```
 
-That is 140 collected tests (counts include each parameter case). The full run:
+That is 144 collected tests (counts include each parameter case). The full run:
 
 ```
 .venv/bin/python -m pytest -q
-........................................................................ [ 51%]
-....................................................................     [100%]
-140 passed in 0.33s
+........................................................................ [ 50%]
+........................................................................ [100%]
+144 passed in 0.38s
 ```
 
 Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one test with `-k strc_anchor`. `.github/workflows/ci.yml` runs the same suite (`python -m pytest -q tests`) as the `tests` check that protects `main` (decision P4), and `refresh.yml` runs it again before each weekly merge. A **fixture** here is plain test input; a **parameterized** test runs once per listed case.
@@ -54,6 +55,7 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_bmnr_flows_unexplained` | wrong unexplained ΔR for BitMine, the input to its share estimate |
 | `test_bmnr_basic_scales_to_anchor_then_accumulates` | BitMine S not landing on the 7/09 anchor exactly, or negative cash adding shares (decision B3) |
 | `test_bmnr_buyback_in_anchor_week_raises` | a buyback in the anchor week being rolled without a split |
+| `test_bmnr_follow_on_bmnp_sale_raises` | a second BMNP `issue_pref` row building on, when q = close/100 no longer holds after a follow-on sale (decision B10) |
 
 ## test_build_site.py
 
@@ -101,6 +103,7 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_first_order_matches_exact` (2 cases) | first order more than 1% from the exact recompute for an action under 1% of market cap (decision R8) |
 | `test_identity_two_weeks` | attribution rows in the wrong order or not summing to observed Δn (decision A1) |
 | `test_residual_test` | the <5% / rounding / FAIL verdicts on an 8/30-like week (decision A3) |
+| `test_states_unknown_firm_raises` | a firm `states()` does not name being built as SharpLink (decision A9) |
 
 ## test_memo.py
 
@@ -193,6 +196,13 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_row` | a KPI row with wrong fields or order |
 | `test_bad_net_sats` (3 cases) | a missing, zero or string value being saved |
 | `test_save_appends` | overwriting instead of appending, or losing the raw JSON (decision P6) |
+
+## test_social.py
+
+| test | guards against |
+|---|---|
+| `test_main_writes_cards_and_posts` | cards whose figures differ from the page's totals and counts, a wrong replay frame count, or an em dash or banned word in any generated string (decision M15) |
+| `test_usd_format` | dollar labels on the cards with the wrong rounding, sign or minus character |
 
 ## Exercises
 

@@ -137,7 +137,7 @@ Files, in the order the pipeline runs:
 
 ## Ship It
 
-Each project ships as one PR against `main` with its acceptance output in the body. The shared check: `.venv/bin/python -m pytest -q` (140 passed on the current tree), then `.venv/bin/python check.py` with network.
+Each project ships as one PR against `main` with its acceptance output in the body. The shared check: `.venv/bin/python -m pytest -q` (144 passed on the current tree), then `.venv/bin/python check.py` with network.
 
 ## Decisions
 

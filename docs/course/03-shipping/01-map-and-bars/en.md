@@ -39,7 +39,7 @@ flowchart LR
 map
 ```
 
-**The bars.** One chart per firm. Each bar stacks the week's value to common in seven categories: issue common, buy back common, issue preferred, retire preferred, coin trades, carry, residual. BitMine's estimated issuance is hatched inside issue common. The price and flip parts go in the tooltip and the table, not the stack.
+**The bars.** One chart per firm. Each bar stacks the week's value to common in seven categories: issue common, buy back common, issue preferred, retire preferred, coin trades, carry, residual. Since PR #20 they share five colours: common, preferred, coin trades, carry, and a neutral residual. BitMine's estimated issuance is hatched inside issue common. The price and flip parts go in the tooltip and the table, not the stack.
 
 ## Build It
 
@@ -131,6 +131,8 @@ grep -nE "<script|<link" site/index.html
 
 - `.github/workflows/pages.yml` runs `python -m dat.build_site` on each push to `main` and deploys `site/` with the CSVs under `data/`, but only when the latest `check.json` on the `data` branch has status `pass` (PR #17).
 - Since PR #18 the page opens with the memo's title as its h1, built by the same `counts()`/`title()` code, then one card per firm with the preferred close against break-even: STRC stops adding above $100 × m, BMNP adds above $100 × m, and SharpLink's card gives m and the date of its last filed holdings.
+- Since PR #20 the cards are bullet tracks: the preferred close, a tick at break-even, and the gap in dollars. A "By week" chart shows each week's preferred close against its break-even, $100 × m, for STRC and BMNP.
+- Since PR #20 the attribution bars use five colours, with a tick for each week's net change and a totals strip per firm.
 - Each bar panel shows totals since the firm's anchor week, as value to common: filed actions, carry, estimated issuance (BitMine only) and residual. Carry and estimated issuance stay out of "filed actions" because `method.md` says carry rows are not actions.
 - `dat/memo.py` draws a static light-theme copy of the same map for the memo, with the same domain rule.
 - The table view and the Downloads section give the same numbers as the charts.
@@ -151,6 +153,13 @@ The acceptance check for Step 5 was "375px wide, no horizontal scroll; every dot
 375 dark  {"scrollWidth":375,"inner":375,"marks":37,"marksLinked":37,"overflowing":[]} errors: none
 ```
 
+And after the PR #20 redesign, which added the "By week" chart:
+
+```
+375 light {"scrollWidth":375,"inner":375,"marks":37,"marksLinked":37,"weeks":39,"h1Bottom":294,"firstCardTop":656,"overflowing":[]} errors: none
+375 dark {"scrollWidth":375,"inner":375,"marks":37,"marksLinked":37,"weeks":39,"h1Bottom":294,"firstCardTop":656,"overflowing":[]} errors: none
+```
+
 The 37 marks are 18 Strategy weeks, 15 BitMine weeks with a BMNP price and 4 SharpLink dates. The offline tests on the page data:
 
 ```
@@ -164,7 +173,7 @@ The 37 marks are 18 Strategy weeks, 15 BitMine weeks with a BMNP price and 4 Sha
 ## Decisions
 
 ```widget
-decisions M6,M7,M8,M9,M11,M12,M13,M14
+decisions M6,M7,M8,M9,M11,M12,M13,M14,M15
 ```
 
 ## What Went Wrong

@@ -182,7 +182,7 @@ PR #5 shipped the BitMine parser, balances and weekly rows. The offline checks:
 ## Decisions
 
 ```widget
-decisions B1,B2,B3,B4,B5,B6,B7,B9,M5
+decisions B1,B2,B3,B4,B5,B6,B7,B9,B10,M5
 ```
 
 ## What Went Wrong

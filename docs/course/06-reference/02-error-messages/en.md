@@ -111,6 +111,7 @@ ValueError: mNav: expected a finite number > 0, got '1.19'
 | `{t}: no close on {date} (MSTR / BMNR / SBET price date for ...)` (four sites) | a STRC, BTC, ETH or other close missing on the week's price date | Rerun `dat.prices`. |
 | `buyback in week {w}, which holds the 2026-07-09 anchor: cannot tell if it is before or after the cover count; split the week by trade date before rolling` | a BitMine buyback in the anchor week | Split the week by trade date (decision B3). |
 | `BMNR {w}: no staking estimate in staking.csv (release gives no staked ETH or yield); the S bias cannot be computed` | a BitMine week without an `eth_est` | Read the release; the memo footnote needs it (decision M5). |
+| `follow-on BMNP sale found (issue_pref weeks {issues}): the liquidation preference now floats to max($100, last sale, 10-day average) per method.md; update q before building` | a second BMNP `issue_pref` row in actions (#15) | Read the release for the sale terms; q = close/100 no longer holds, so decide the new q with the user (decision B10). |
 | exit 1 | an R check fails (`reserve check FAILED: [weeks]`), a week lacks m or q, or the STRC notional check fails | Read the printed line for the week (decision S4). |
 
 ## dat.engine
@@ -118,6 +119,7 @@ ValueError: mNav: expected a finite number > 0, got '1.19'
 | message | trigger | what to do |
 |---|---|---|
 | `unknown action {act}` | an actions.csv `action` outside the enum | Fix the parser row; the enum is in method.md. |
+| `states: unknown firm {firm!r}; add its branch here` | `states()` called with a firm other than MSTR, BMNR or SBET (#15) | Add the firm's branch to `states()` (decision A9). |
 | exit 1 | rows do not sum to observed Δn (`identity FAILED`) or rebuilt n differs from weekly.csv | Rerun `dat.balances`; then debug `attribute()`. |
 
 ## dat.memo
@@ -140,6 +142,6 @@ ValueError: mNav: expected a finite number > 0, got '1.19'
 
 ## Exercises
 
-1. Run `.venv/bin/python -m pytest -q -k "raises"` (it selects 44 of 140 tests) and match five of them to rows on this page.
+1. Run `.venv/bin/python -m pytest -q -k "raises"` (it selects 46 of 144 tests) and match five of them to rows on this page.
 2. In `tests/test_parse_mstr.py`, `test_hypothetical_or_negated_reserve_flow_raises` feeds `parse()` the sentence "Strategy may use up to $50.0 million of the USD Reserve to pay future dividends." Predict the message from the tables above, then write a third sentence of your own that should raise the same error and add it to the test's parameter list.
 3. Delete the 2026-09-20 row from a copy of `data/staking.csv` in a scratch data directory, run `.venv/bin/python -c "from dat.balances import bmnr_s_bias; print(bmnr_s_bias('<dir>', '2026-09-20'))"`, and find the message above. The directory needs `balances.csv`, `prices.csv` and `staking.csv`.
