@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Whose definition of net coins per share does the project use for all three firms?",
+      "options": [
+        "BitMine's",
+        "The SEC's",
+        "Strategy's, from the glossary in its 2026-08-24 FWP",
+        "The project's own first draft"
+      ],
+      "correct": 2,
+      "explanation": "Decision R1: one ruler across firms, and it is the firm's own."
+    },
+    {
+      "stage": "pre",
+      "question": "Why did the daily KPI snapshot ship before any parser?",
+      "options": [
+        "Strategy's KPI API keeps no history, so each missed day is lost for good",
+        "It was the easiest step",
+        "The parsers needed its output",
+        "GitHub Actions required it"
+      ],
+      "correct": 0,
+      "explanation": "Decision P7, and the same reason keeps the data branch append-only (P6)."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy has $9.3B of STRC notional and STRC trades at $98.51. What goes into F for STRC?",
+      "options": [
+        "About $9.18B, notional × 0.9851",
+        "Zero, STRC is equity",
+        "Notional plus accrued dividends",
+        "About $9.3B, the notional"
+      ],
+      "correct": 3,
+      "explanation": "Decision R1: F is notional, not trading price or accrued dividends. The price enters separately as q = 0.9851."
+    },
+    {
+      "stage": "post",
+      "question": "Why does SharpLink get a carry row for staking while BitMine gets none?",
+      "options": [
+        "SharpLink stakes and BitMine does not",
+        "SharpLink states purchases separately in ETH and dollars, while BitMine's 'acquired' already includes staking",
+        "BitMine's staking is taxed",
+        "Carry rows are only for firms without preferred"
+      ],
+      "correct": 1,
+      "explanation": "Decisions B2 and L4: a BitMine staking row double counted (site check +0.52%); SharpLink's stated change minus stated purchases is observable (6/28 +949 ETH)."
+    },
+    {
+      "stage": "post",
+      "question": "A new 10-Q for BitMine appears on EDGAR. What does the weekly refresh do?",
+      "options": [
+        "Parses the balance sheet and reanchors automatically",
+        "Ignores it until the 10-K",
+        "Rebuilds the data, exits 2, leaves its PR open and opens an issue for a person to reanchor",
+        "Deletes the estimated share rows"
+      ],
+      "correct": 2,
+      "explanation": "Decision O4: anchor counts come from sections the weekly parsers don't read, and a wrong anchor moves every later week."
+    }
+  ]
+}

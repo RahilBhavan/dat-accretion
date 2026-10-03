@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What happens to n = N / S if a firm sells new shares for cash between filings and S is held flat?",
+      "options": [
+        "Nothing, since the cash is not in N",
+        "n falls",
+        "m becomes negative",
+        "N rises with the cash but S misses the new shares, so n is overstated"
+      ],
+      "correct": 3,
+      "explanation": "The cash arrives in R and raises N, but the shares that paid for it are missing from S. That is why BitMine's S is estimated from unexplained cash."
+    },
+    {
+      "stage": "pre",
+      "question": "What is ETH staking?",
+      "options": [
+        "Selling ETH forward at a fixed price",
+        "Locking ETH to help run the network in return for ETH rewards",
+        "Borrowing ETH against shares",
+        "Converting ETH to cash each week"
+      ],
+      "correct": 1,
+      "explanation": "Staked ETH earns more ETH. BitMine's releases don't separate those rewards from purchases, which is the source of the bias in its estimated S."
+    },
+    {
+      "stage": "post",
+      "question": "For the week ending 2026-08-23, BitMine's unexplained change in R is +$312.2M and the BMNR close on the price date is $22.83. How many shares does the estimate add?",
+      "options": [
+        "About 13.68M",
+        "About 1.37M",
+        "About 136.8M",
+        "None, because the week is after the 7/09 anchor"
+      ],
+      "correct": 0,
+      "explanation": "312.2M / 22.83 ≈ 13.68M shares, unscaled because the week is after the 7/09 anchor. build_bmnr prints est_added=13,677,162."
+    },
+    {
+      "stage": "post",
+      "question": "Why does BitMine have no staking carry rows?",
+      "options": [
+        "BitMine does not stake ETH",
+        "Staking rewards are too small to matter",
+        "'ETH acquired' equals the stated holdings change in 13 of 16 weeks, so it already includes staking; adding rows counted it twice (+0.52% vs the site, against −0.0006% without)",
+        "Strategy's definition forbids carry rows"
+      ],
+      "correct": 2,
+      "explanation": "Decision B2 reversed the first plan after looking at the weekly data (build notes #6 and #15). The estimate stays in staking.csv only to size the S bias."
+    },
+    {
+      "stage": "post",
+      "question": "Which direction is the known bias in BitMine's estimated S, and why?",
+      "options": [
+        "Down, because buybacks are not counted",
+        "Up about 5%, because the 7/09 anchor is too high",
+        "There is no bias once the estimates are scaled",
+        "Up about 0.43% by 2026-09-20, because staked ETH is costed as a cash purchase, which inflates unexplained cash"
+      ],
+      "correct": 3,
+      "explanation": "'Acquired' includes staking, so ETH cost is overstated, unexplained ΔR is overstated, and so are the estimated shares. bmnr_s_bias() computes 0.0043 from staking.csv; the 10-K reanchor removes it."
+    }
+  ]
+}

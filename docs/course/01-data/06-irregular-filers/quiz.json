@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "SharpLink states ETH holdings on 2026-06-30 and next on 2026-08-03. What should the weekly rows between them show?",
+      "options": [
+        "The 6/30 figure carried forward each week",
+        "A straight line from 886,881 to 888,938",
+        "Nothing: SharpLink has rows only on dates a filing states its holdings",
+        "BitMine's weekly growth rate applied to SharpLink"
+      ],
+      "correct": 2,
+      "explanation": "Decision L1: carried-forward weeks would show numbers no filing states, so SharpLink has four rows, one per filed holdings date."
+    },
+    {
+      "stage": "pre",
+      "question": "What is LsETH or weETH in SharpLink's holdings?",
+      "options": [
+        "A liquid staking token: a tradable receipt for staked ETH, counted at its as-if-redeemed ETH value",
+        "A US dollar stablecoin",
+        "A convertible note",
+        "A share class of SharpLink"
+      ],
+      "correct": 0,
+      "explanation": "SharpLink's Total ETH Holdings are native ETH plus these tokens converted at the protocol rate on the measurement date, and the parser checks the parts sum to the total."
+    },
+    {
+      "stage": "post",
+      "question": "SharpLink states 875,776 ETH on 6/16 and 886,725 on 6/28, and bought 10,000 ETH between. What is the 6/28 carry row?",
+      "options": [
+        "+10,949 ETH",
+        "+949 ETH",
+        "−949 ETH",
+        "0, because SharpLink has no staking"
+      ],
+      "correct": 1,
+      "explanation": "Carry = stated change − stated purchases = 10,949 − 10,000 = 949 ETH, labeled 'inferred staking/LST accrual'."
+    },
+    {
+      "stage": "post",
+      "question": "With SBET at $6.22 on 8/03, which warrants enter S?",
+      "options": [
+        "All warrant tranches, since they are outstanding",
+        "None, since warrants are not shares",
+        "The 80,000 pre-funded at $0.0001 and the 1,382,007 Consensys at $6.15",
+        "Only the June 2026 investor warrants at $8.15"
+      ],
+      "correct": 2,
+      "explanation": "Warrants and options are in S only while the SBET close is above their strike. $6.22 is above $0.0001 and $6.15 and below the others, giving 1,462,007 shares."
+    },
+    {
+      "stage": "post",
+      "question": "SharpLink's last filed holdings date is 2026-08-03 and the site's snapshotDate is also 2026-08-03. On 2026-09-26, why does the staleness check still pass?",
+      "options": [
+        "The six-week limit is measured against SharpLink's own last filed date, not today",
+        "The check is skipped for SharpLink",
+        "54 days is under the 60-day limit",
+        "The site updates SharpLink daily"
+      ],
+      "correct": 0,
+      "explanation": "Decision L10: the snapshot is 0 days before SharpLink's last filing, inside the 42-day limit. Measured from today, the check would fail every run while SharpLink is not filing, with nothing wrong."
+    }
+  ]
+}

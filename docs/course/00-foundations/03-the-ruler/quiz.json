@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does the project measure actions in net coins per share rather than in dollars?",
+      "options": [
+        "Dollars can't be computed from SEC filings",
+        "A per-share coin measure puts a $100M action at a large firm and a small firm on the same scale, net of claims ahead of common",
+        "Strategy's filings report everything in bitcoin",
+        "Dollar figures change with the coin price and coin figures never do"
+      ],
+      "correct": 1,
+      "explanation": "The ruler has to compare actions across firms of different sizes and net out debt and preferred. Net coins per share does both, and Strategy already defines it."
+    },
+    {
+      "stage": "pre",
+      "question": "Where does the definition of net coins per share come from?",
+      "options": [
+        "The project spec's own first draft",
+        "An industry standard from the SEC",
+        "The glossary in Strategy's 2026-08-24 FWP",
+        "BitMine's weekly releases"
+      ],
+      "correct": 2,
+      "explanation": "Step 0 found the spec's first draft differed from Strategy's glossary in three ways, and the engine adopted Strategy's version for all three firms."
+    },
+    {
+      "stage": "post",
+      "question": "MSTR closes at $153.92. The 2030A convert has an $800M face and a $149.77 conversion price. Where does it go?",
+      "options": [
+        "$800M into D",
+        "$800M into F",
+        "About 5.34M shares into S, and nothing into D",
+        "It is left out of the calculation"
+      ],
+      "correct": 2,
+      "explanation": "The share price is above the conversion price, so the note is in the money: it leaves D and face ÷ conversion price = 800M / 149.77 ≈ 5.34M shares join S."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy holds 846,000 BTC, and R − D − F = −$14.12B at a BTC price of $80,874. What is N?",
+      "options": [
+        "846,000 BTC",
+        "About 671,441 BTC",
+        "About 1,020,559 BTC",
+        "About 54.3 billion BTC"
+      ],
+      "correct": 1,
+      "explanation": "N = C + (R − D − F)/p = 846,000 − 14.12B / 80,874 ≈ 846,000 − 174,559 = 671,441 BTC."
+    },
+    {
+      "stage": "post",
+      "question": "m = 1.217 means:",
+      "options": [
+        "Each share owns 1.217 BTC",
+        "The market price of a share is 21.7% above the net coin value per share",
+        "STRC trades at $121.70",
+        "Strategy's preferred is 21.7% of its balance sheet"
+      ],
+      "correct": 1,
+      "explanation": "m = s / (p·n): the share price over the dollar value of the net coins one share owns. $153.92 / $126.47 = 1.217."
+    }
+  ]
+}

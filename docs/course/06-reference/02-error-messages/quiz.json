@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "EDGAR returns HTTP 404 for a filing URL. What does dat.edgar do?",
+      "options": [
+        "Raises RuntimeError at once, with no retry",
+        "Retries three times with 5, 15 and 45 s waits",
+        "Returns an empty document",
+        "Uses a cached copy from another filing"
+      ],
+      "correct": 0,
+      "explanation": "Only 429 and 503 are retried (decision O6); every other error raises 'SEC access failed; no synthetic substitute' at once."
+    },
+    {
+      "stage": "pre",
+      "question": "Why do the parsers raise on an unknown row label instead of skipping it?",
+      "options": [
+        "Skipping is slower",
+        "Python cannot skip table rows",
+        "A new security or moved table should fail loudly, not land in the wrong column",
+        "The SEC requires it"
+      ],
+      "correct": 2,
+      "explanation": "Decision S1 and data.md: parse by row label, and an unknown label raises; never skip a row silently."
+    },
+    {
+      "stage": "post",
+      "question": "`close_on_or_before(prices, 'MSTR', '2026-01-10')` raises `LookupError: MSTR: no close in [2026-01-03, 2026-01-10]`. Why?",
+      "options": [
+        "MSTR was not trading that day",
+        "prices.csv starts on 2026-05-25, so no MSTR close falls in the 7 days up to the date",
+        "The ticker should be STRC",
+        "Yahoo is offline"
+      ],
+      "correct": 1,
+      "explanation": "The function looks back at most 7 days and prices.csv begins 2026-05-25, so nothing is found and it raises rather than guess."
+    },
+    {
+      "stage": "post",
+      "question": "dat.refresh exits with code 2. What happened?",
+      "options": [
+        "A pipeline step raised",
+        "The tests failed",
+        "The data is unchanged",
+        "The pipeline finished, and a 10-Q or 10-K for a period after the anchors needs a manual reanchor"
+      ],
+      "correct": 3,
+      "explanation": "Exit codes: 0 done, 1 a step failed, 2 done with reanchor needed. refresh.yml leaves the PR open and opens an issue (decision O4)."
+    },
+    {
+      "stage": "post",
+      "question": "A BitMine release shows holdings rising from 5,956,378 to 5,983,940 ETH but has no 'we acquired N ETH' sentence. What happens?",
+      "options": [
+        "build() raises ValueError: unknown source of the change",
+        "The 27,562 ETH is booked as staking carry",
+        "The week is skipped",
+        "The purchase is inferred from the change"
+      ],
+      "correct": 0,
+      "explanation": "Decision B8: a holdings change with no parsed purchase raises, so a missed purchase sentence cannot pass silently."
+    }
+  ]
+}

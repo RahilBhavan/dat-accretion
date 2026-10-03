@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Which filing type does the project read for Strategy's weekly ATM sales and STRC repurchases?",
+      "options": [
+        "10-Q",
+        "424B",
+        "8-K",
+        "FWP"
+      ],
+      "correct": 2,
+      "explanation": "Strategy files an 8-K, a current report, each week with ATM, BTC and repurchase tables. The 10-Q supplies the quarterly anchors."
+    },
+    {
+      "stage": "pre",
+      "question": "What should a parser do when a filing table has a row label it has never seen?",
+      "options": [
+        "Raise an error",
+        "Skip the row",
+        "Read the row by its column position",
+        "Fill the row with the prior week's value"
+      ],
+      "correct": 0,
+      "explanation": "An unknown label raises (decision S1). A skipped row would silently change every week after it."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy's 8-K shows STRC Stock: 1,431,212 shares repurchased for $136.4M. What is units in the retire_pref row?",
+      "options": [
+        "1,431,212",
+        "136,400,000",
+        "95.30384",
+        "143,121,200"
+      ],
+      "correct": 3,
+      "explanation": "For preferred, units is notional dollars: 1,431,212 shares × $100 = $143,121,200."
+    },
+    {
+      "stage": "post",
+      "question": "A filing states the USD Reserve as $5.10 billion. What is usd_reserve_prec in stated.csv?",
+      "options": [
+        "1,000,000",
+        "10,000,000",
+        "100,000,000",
+        "5,100,000,000"
+      ],
+      "correct": 1,
+      "explanation": "_prec is the unit in the last disclosed digit: $5.10 billion is stated to the nearest $0.01 billion, $10,000,000."
+    },
+    {
+      "stage": "post",
+      "question": "Which pair of rules does dat/edgar.py follow for SEC fair access?",
+      "options": [
+        "No User-Agent, and 10 parallel requests",
+        "A browser User-Agent, and no delay",
+        "A User-Agent with a contact email, and at least 0.6 s between requests",
+        "An API key, and one request per minute"
+      ],
+      "correct": 2,
+      "explanation": "SECClient refuses a User-Agent without an email and waits 0.6 s between requests, under the SEC's 10 per second."
+    }
+  ]
+}

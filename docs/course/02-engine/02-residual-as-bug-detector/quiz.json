@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the residual row in data/attribution.csv?",
+      "options": [
+        "Observed Δn minus the sum of every other row for that week",
+        "The change in n from the coin price",
+        "The dividends paid that week",
+        "The first-order error of the largest action"
+      ],
+      "correct": 0,
+      "explanation": "The residual is whatever the price, flip, action, carry and estimated issuance rows leave unexplained, so all rows sum to the observed change."
+    },
+    {
+      "stage": "pre",
+      "question": "Why can a Strategy week leave a small residual even when nothing is wrong?",
+      "options": [
+        "The coin price is rounded to the dollar",
+        "The engine uses float32",
+        "Strategy files its 8-Ks late",
+        "The 8-Ks round R to the last printed digit ($4.0 billion, $5.10 billion) and, before August, did not itemize every flow into the reserve"
+      ],
+      "correct": 3,
+      "explanation": "Rounded disclosures and unitemized flows land in the residual. The rounding branch of the test exists for that reason."
+    },
+    {
+      "stage": "post",
+      "question": "The week ending 2026-08-30 has a $10.6M residual on an observed $106.9M change, with R rounding of ±$20.0M. What does the test return?",
+      "options": [
+        "FAIL, because 9.9% is above 5%",
+        "PASS on the under-5% branch",
+        "PASS on the rounding branch",
+        "Report only, because the week is before 2026-08-02"
+      ],
+      "correct": 2,
+      "explanation": "10.6 / 106.9 = 9.9%, above 5%, but $10.6M is within the ±$20.0M rounding tolerance, so `residual_test` returns (True, 'rounding')."
+    },
+    {
+      "stage": "post",
+      "question": "Strategy sold $2,006.5M of MSTR stock in the week ending 2026-08-23, used $136.4M for STRC repurchases and $300.0M for the USD Reserve. How much went to USD Cash, per the 8-K?",
+      "options": [
+        "$1,590.0M",
+        "$1,570.1M",
+        "$1,706.5M",
+        "$2,006.5M"
+      ],
+      "correct": 1,
+      "explanation": "The 8-K says the remaining net proceeds went to USD Cash: 2,006.5 − 136.4 − 300.0 = 1,570.1. That equaled the residual the old disclosure row produced."
+    },
+    {
+      "stage": "post",
+      "question": "Which weeks does the residual test apply to?",
+      "options": [
+        "Every week for all three firms",
+        "Strategy weeks from 2026-08-02, where R is checked; other weeks report their residual, labeled",
+        "Only BitMine weeks, because its share count is estimated",
+        "Only weeks with a preferred retirement"
+      ],
+      "correct": 1,
+      "explanation": "Decisions A3 and A4: the test needs a checked R. Earlier Strategy weeks, BitMine weeks and SharpLink dates report only."
+    }
+  ]
+}
