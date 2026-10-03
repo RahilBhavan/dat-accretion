@@ -7,6 +7,14 @@ per-share effect per dollar and the price at which that effect changes sign.
 
 Status: v1 built. Page: https://rahilbhavan.github.io/dat-accretion/. Memo: `docs/memo.pdf`. Method: `docs/methodology.md`. Done check: `python check.py`. Problems hit while building: `docs/build-notes.md`.
 
+## Docs
+
+- [`docs/overview.md`](docs/overview.md): what the project does and how the pieces fit. Start here.
+- [`docs/how-it-was-made.md`](docs/how-it-was-made.md): the build, step by step.
+- [`docs/decisions.md`](docs/decisions.md): every decision, why, and the alternative it rules out.
+- [`docs/methodology.md`](docs/methodology.md): definitions, formulas and labeled estimates.
+- [`docs/build-notes.md`](docs/build-notes.md): problems hit while building.
+
 ## Layout
 
 - `dat/`: one module per step, run as `python -m dat.<module>`

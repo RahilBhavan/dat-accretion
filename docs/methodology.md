@@ -70,7 +70,7 @@ table's formulas; exact values use the cash actually received, so issue fees sho
 
 | decision | reason |
 |---|---|
-| Strategy R is taken as each 8-K states it, not rolled forward. From 2026-08-02 the roll is a check within each filing's rounding (half the last disclosed digit of each figure). | Filings round R to $10-50M and, before August, do not itemize flows into it. Before 2026-08-02 the unexplained change lands in the residual, labeled. |
+| Strategy R is taken as each 8-K states it, not rolled forward. From 2026-08-02 the roll is a check within each filing's rounding (half the last disclosed digit of each figure). | Filings round R to the nearest $1M, $10M or $100M and, before August, do not itemize flows into it. Before 2026-08-02 the unexplained change lands in the residual, labeled. |
 | Before 2026-08-23 Strategy R is the USD Reserve alone. | USD Cash was first disclosed that week, funded by that week's MSTR sale proceeds (8-K filed 2026-08-24). |
 | The 2026-06-30 quarter-end holdings row carries R from the prior 8-K. | No balance is stated for that date. |
 | Strategy's preferred and class A share counts start from the Q2 10-Q and roll by each 8-K's sales and repurchases. | The weekly 8-Ks give flows, not levels. |
@@ -86,7 +86,7 @@ table's formulas; exact values use the cash actually received, so issue fees sho
 | SharpLink rows exist only on the dates its filings state ETH holdings (2026-06-16, 06-28, 06-30, 08-03); nothing is carried forward between them. | SharpLink files no weekly holdings update; its last 8-K was filed 2026-08-10. |
 | SharpLink C is its stated Total ETH Holdings: native ETH plus LsETH and weETH at the stated as-if-redeemed equivalence. | The filings state the total and its three parts; the parser checks that the parts sum to the total. |
 | SharpLink carry rows: the stated ETH change less stated purchases, labeled inferred staking and LST accrual. | SharpLink states its purchases separately (unlike BitMine, whose "acquired" figure includes staking). |
-| SharpLink R is 2026-06-30 balance-sheet cash, rolled to other dates by filed cash flows. S uses the 10-Q counts for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks, plus RSUs, performance RSUs and in-the-money warrants (July grants taken as of 7/31, an assumption). Issue and buyback USD come from the 10-Q equity statement. | Releases state no cash; the 10-Q gives net proceeds and treasury cost. Operating costs and staking revenue are not in R. |
+| SharpLink R is 2026-06-30 balance-sheet cash, rolled to other dates by filed cash flows. S uses the 10-Q counts for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks, plus RSUs, performance RSUs and in-the-money warrants (July grants taken as of 7/31, an assumption). Issue and buyback USD come from the 10-Q equity statement. | Cash is stated only for 2026-06-30; the 10-Q gives net proceeds and treasury cost. Operating costs and staking revenue are not in R. |
 | SharpLink has no preferred, so no q and no rotation line: issuing common adds while m > 1, buying back common while m < 1. Its map marks sit at q = 1. Its residuals are reported, not tested. | 10-Q 6/30: no preferred, debt or converts outstanding. |
 
 ## Data sources
