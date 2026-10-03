@@ -1,7 +1,7 @@
 import math
 import pytest
 from dat.balances import CONVERTS, STRK_CONV, AWARDS
-from dat.engine import dn_first_order, strategy_rotation, bitmine_rotation, state_net, apply, attribute, residual_test
+from dat.engine import dn_first_order, strategy_rotation, bitmine_rotation, state_net, apply, attribute, residual_test, states
 
 P, S = 64_092.65, 388_176_305  # MSTR 7/26 week: weekly.csv p, balances.csv shares_diluted
 
@@ -71,3 +71,8 @@ def test_residual_test():
     assert residual_test(-3e6 * to_dn, obs, tol) == (True, '<5%')
     assert residual_test(-10.6e6 * to_dn, obs, tol) == (True, 'rounding')
     assert residual_test(-25e6 * to_dn, obs, tol) == (False, 'FAIL')
+
+
+def test_states_unknown_firm_raises():
+    with pytest.raises(ValueError, match="unknown firm 'XYZ'"):
+        states('XYZ', [{'date': '2026-09-20', 'coins': '1', 'usd_reserve': '0'}], {'2026-09-20': {'p': 1.0, 's': 1.0}}, [], [])

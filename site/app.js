@@ -3,15 +3,18 @@
 // stays 11px on phones; they redraw on resize and on theme change.
 
 let DATA = null;
-const ACTIVE = {};  // bars: index of the week that holds the chart's one tab stop, per firm (kept across redraws)
+const ACTIVE = {};  // index of the column that holds a chart's one tab stop, per chart element id (kept across redraws)
 const FIRM = {
   MSTR: { name: 'Strategy', color: '--s1', shape: 'circle' }, BMNR: { name: 'BitMine', color: '--s2', shape: 'square' },
   SBET: { name: 'SharpLink', color: '--s7', shape: 'triangle' },
 };
-// Bar categories in the fixed palette order; residual uses the neutral token, not slot 7 (it is not an action).
+// Bar categories: label and colour group. Five colours (--c1..--c4 kept clear of the firm colours); residual uses the
+// neutral token (it is not an action). The tooltip and table still list every category.
+const GROUP = { common: ['Common', '--c1'], pref: ['Preferred', '--c2'], coins: ['Coin trades', '--c3'],
+  carry: ['Carry (dividends, interest, staking)', '--c4'], residual: ['Residual', '--neutral'] };
 const CAT = {
-  issue_common: ['Issue common', '--s1'], buyback_common: ['Buy back common', '--s2'], issue_pref: ['Issue preferred', '--s3'],
-  retire_pref: ['Retire preferred', '--s4'], coins: ['Coin trades', '--s5'], carry: ['Carry (dividends, interest, staking)', '--s6'],
+  issue_common: ['Issue common', '--c1'], buyback_common: ['Buy back common', '--c1'], issue_pref: ['Issue preferred', '--c2'],
+  retire_pref: ['Retire preferred', '--c2'], coins: ['Coin trades', '--c3'], carry: ['Carry (dividends, interest, staking)', '--c4'],
   residual: ['Residual', '--neutral'],
 };
 const EST = 'Estimated issuance (BitMine)';
@@ -98,31 +101,121 @@ function swatch(inner) {
 }
 
 // ---- 1. headline ----
-// Two ticks on one scale spanning price and break-even with 10% padding: price in the firm color, break-even in --fg.
+// Bullet track: a grey band on the side where the program adds, a tick at break-even, a dot in the firm colour at the
+// close. Scale spans both values with 30% padding. SharpLink: m against 1 (buyback side below, issue side above).
 function track(h) {
-  const lo = Math.min(h.pref_close, h.break_even), hi = Math.max(h.pref_close, h.break_even), pad = (hi - lo) * 0.1 || 1;
-  const at = v => ((v - lo + pad) / (hi - lo + 2 * pad) * 100).toFixed(1) + '%';
-  return '<div class="snapshot-track" aria-hidden="true"><span style="left:' + at(h.pref_close) + ';background:var(' + FIRM[h.firm].color + ')"></span>'
-    + '<span style="left:' + at(h.break_even) + ';background:var(--fg)"></span></div>';
+  const sbet = h.break_even == null, v = sbet ? h.m : h.pref_close, be = sbet ? 1 : h.break_even;
+  const lo = Math.min(v, be), hi = Math.max(v, be), pad = (hi - lo) * 0.3 || 0.1, a = lo - pad, b = hi + pad;
+  const pct = x => (x - a) / (b - a) * 100;
+  const pos = x => { const p = pct(x); return 'left:' + p.toFixed(1) + '%;transform:translateX(' + (p < 22 ? '0' : p > 78 ? '-100%' : '-50%') + ')'; };
+  const bandLeft = h.firm === 'BMNR' ? pct(be) : 0, bandW = h.firm === 'BMNR' ? 100 - pct(be) : pct(be);
+  const beLabel = sbet ? 'm = 1' : 'Break-even $' + be.toFixed(2), vLabel = sbet ? 'm ' + v.toFixed(3) : h.pref + ' $' + v.toFixed(2);
+  const sides = sbet ? ['Buyback adds', 'Issuance adds'] : h.firm === 'MSTR' ? ['Rotation adds', ''] : ['', 'Rotation adds'];
+  return '<div class="bullet" role="img" aria-label="' + esc(vLabel + ', ' + beLabel) + '">'
+    + '<div class="bullet-top"><span style="' + pos(be) + '">' + esc(beLabel) + '</span></div>'
+    + '<div class="bullet-track"><i class="band" style="left:' + bandLeft.toFixed(1) + '%;width:' + bandW.toFixed(1) + '%"></i>'
+    + '<i class="tick" style="left:' + pct(be).toFixed(1) + '%"></i><i class="dot" style="left:' + pct(v).toFixed(1) + '%;background:var(' + FIRM[h.firm].color + ')"></i></div>'
+    + '<div class="bullet-bottom"><span style="' + pos(v) + '">' + esc(vLabel) + '</span></div>'
+    + '<div class="bullet-sides"><span>' + sides[0] + '</span><span>' + sides[1] + '</span></div></div>';
 }
 
 function headline() {
   document.getElementById('title').textContent = DATA.title;
   document.getElementById('headline-text').innerHTML = '<div class="snapshot-grid">' + DATA.headline.map(h => {
     const symbol = h.firm.toLowerCase(), sbet = h.break_even == null;
-    const value = sbet ? 'm ' + h.m.toFixed(3) : h.pref + ' $' + h.pref_close.toFixed(2);
-    // MSTR's rotation adds while STRC is below break-even; BMNR's while BMNP is above it.
-    const days = Math.round((Date.parse(DATA.generated_at.slice(0, 10)) - Date.parse(h.week_end)) / 864e5);
-    const line = sbet ? 'Holdings as of ' + h.week_end + ' (' + days + ' days before build)'
-      : (h.firm === 'MSTR' ? 'Stops adding above $' : 'Adds above $') + h.break_even.toFixed(2) + ' · $' + Math.abs(h.gap).toFixed(2) + (h.gap < 0 ? ' below' : ' above');
-    return '<article class="snapshot-card"><div class="snapshot-top"><span class="firm-symbol ' + symbol + '">' + esc(h.firm) + '</span><span class="snapshot-date">' + esc(h.week_end) + '</span></div>'
-      + '<h3>' + esc(h.name) + '</h3><p class="snapshot-value">' + esc(value) + '</p><p class="snapshot-label">' + esc(line) + '</p>'
-      + (sbet ? '' : track(h)) + '<div class="snapshot-rule"></div><p class="snapshot-context">' + esc(h.sentence) + '</p>'
-      + (sbet ? '' : '<p class="snapshot-meta">Net mNAV <strong>' + h.m.toFixed(3) + '</strong></p>') + '</article>';
+    const value = sbet ? 'm ' + h.m.toFixed(3) : '$' + h.pref_close.toFixed(2);
+    const gap = sbet ? Math.abs(h.m - 1).toFixed(3) + (h.m < 1 ? ' below' : ' above') + ' 1'
+      : '$' + Math.abs(h.gap).toFixed(2) + (h.gap < 0 ? ' below' : ' above') + ' break-even $' + h.break_even.toFixed(2);
+    return '<article class="snapshot-card"><div class="snapshot-top"><span class="firm-symbol ' + symbol + '">' + esc(h.firm) + '</span><span class="snapshot-date">' + esc(sbet ? 'net mNAV' : h.pref + ' close') + '</span></div>'
+      + '<h3>' + esc(h.name) + '</h3><p class="snapshot-value">' + esc(value) + '</p><p class="snapshot-label">' + esc(gap) + '</p>'
+      + track(h) + '<p class="snapshot-asof">As of ' + esc(h.price_date) + (sbet ? ' (filed holdings date ' + esc(h.week_end) + ')' : ', net mNAV ' + h.m.toFixed(3)) + '</p>'
+      + '<div class="snapshot-rule"></div><p class="snapshot-context">' + esc(h.sentence) + '</p></article>';
   }).join('') + '</div><p class="snapshot-footnote">' + DATA.headline.map(h => esc(h.close_sentence)).join(' ') + '</p>';
 }
 
-// ---- 2. break-even map ----
+// ---- 2. preferred close against break-even, by week ----
+// One tab stop per chart: Left/Right (Home/End) move between .col elements and the tooltip follows focus.
+function colKeys(el) {
+  el.onkeydown = ev => {
+    const cols = [...el.querySelectorAll('.col')], i = cols.indexOf(ev.target);
+    const step = { ArrowLeft: -1, ArrowRight: 1, Home: -Infinity, End: Infinity }[ev.key];
+    if (i < 0 || step == null) return;
+    ev.preventDefault();
+    const j = Math.max(0, Math.min(cols.length - 1, i + step));
+    cols[i].setAttribute('tabindex', '-1');
+    cols[j].setAttribute('tabindex', '0');
+    ACTIVE[el.id] = j;
+    cols[j].focus();
+  };
+}
+
+function drawPref(firm) {
+  const el = document.getElementById('pref-' + firm), sbet = firm === 'SBET', h = DATA.headline.find(x => x.firm === firm);
+  // close: preferred close in dollars (SharpLink: m); be: break-even, 100 × m (SharpLink: 1).
+  const pts = DATA.weeks.filter(w => w.firm === firm && w.m != null && (sbet || w.q != null))
+    .map(w => ({ w, t: Date.parse(w.week_end), close: sbet ? w.m : w.q * 100, be: sbet ? 1 : w.m * 100 }));
+  const W = el.clientWidth || 640, H = W < 500 ? 220 : 260, M = { l: 48, r: W < 500 ? 70 : 92, t: 14, b: 32 };
+  const vals = pts.flatMap(p => [p.close, p.be]), ticks = nice(Math.min(...vals), Math.max(...vals), 4);
+  const lo = ticks[0], hi = ticks[ticks.length - 1], t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+  const X = t => M.l + (t - t0) / (t1 - t0 || 1) * (W - M.l - M.r), Y = v => M.t + (hi - v) / (hi - lo) * (H - M.t - M.b);
+  const fmt = v => sbet ? v.toFixed(2) : '$' + v.toFixed(0), c = 'var(' + FIRM[firm].color + ')';
+  const label = sbet ? 'm' : h.pref + ' close';
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + esc(FIRM[firm].name + ': ' + label + ' and break-even by '
+    + (sbet ? 'filed date' : 'week') + '. Left and Right arrow keys move between ' + (sbet ? 'dates.' : 'weeks.')) + '">';
+  for (const t of ticks) {
+    s += '<line class="grid" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
+    s += '<text x="' + (M.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + fmt(t) + '</text>';
+  }
+  s += '<line class="axis" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + (H - M.b) + '" y2="' + (H - M.b) + '"/>';
+  const line = k => pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p[k]).toFixed(1)).join('');
+  s += '<path class="gapband" d="' + line('close') + pts.slice().reverse().map(p => 'L' + X(p.t).toFixed(1) + ',' + Y(p.be).toFixed(1)).join('') + 'Z"/>';
+  // Columns: each point owns the span halfway to its neighbours.
+  const mid = i => i < 0 ? M.l : i >= pts.length - 1 ? W - M.r : (X(pts[i].t) + X(pts[i + 1].t)) / 2;
+  const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? pts.length - 1, pts.length - 1);
+  const minGap = 44;
+  let lastTick = -Infinity;
+  pts.forEach((p, i) => {
+    const x0 = mid(i - 1), x1 = mid(i);
+    s += '<rect class="col" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" x="' + x0 + '" y="' + M.t + '" width="' + Math.max(1, x1 - x0) + '" height="' + (H - M.t - M.b)
+      + '" aria-label="' + esc(FIRM[firm].name + (sbet ? ' filed date ' : ' week ending ') + p.w.week_end + ': ' + label + ' ' + fix(p.close, sbet ? 3 : 2) + ', break-even ' + fix(p.be, sbet ? 0 : 2)) + '"/>';
+    const x = X(p.t);
+    if (x - lastTick >= minGap && (i === pts.length - 1 || W - M.r - x >= minGap / 2 || sbet)) {
+      s += '<text x="' + x + '" y="' + (H - M.b + 14) + '" text-anchor="middle">' + p.w.week_end.slice(5) + '</text>';
+      lastTick = x;
+    }
+  });
+  s += '<path class="be-line" d="' + line('be') + '"/><path d="' + line('close') + '" style="fill:none;stroke:' + c + ';stroke-width:2;pointer-events:none"/>';
+  if (sbet) s += pts.map(p => markSvg(firm, X(p.t), Y(p.close), 5, 'dot', 'fill:' + c)).join('');
+  // Direct labels at the right end, two lines each, pushed apart if closer than 26px.
+  const last = pts[pts.length - 1], xr = W - M.r + 6;
+  let yc = Y(last.close), yb = Y(last.be);
+  if (Math.abs(yc - yb) < 26) { const m = (yc + yb) / 2, d = yc <= yb ? -13 : 13; yc = m + d; yb = m - d; }
+  const two = (y, a, b, st) => '<text class="label" x="' + xr + '" y="' + (y - 2) + '"' + st + '>' + a + '</text><text x="' + xr + '" y="' + (y + 10) + '">' + b + '</text>';
+  s += two(yc, sbet ? 'm' : esc(h.pref), sbet ? last.close.toFixed(3) : '$' + last.close.toFixed(2), ' style="fill:' + c + '"');
+  s += two(yb, 'Break-even', sbet ? 'm = 1' : '$' + last.be.toFixed(2), '');
+  s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">' + (sbet ? 'filed holdings date (2026)' : 'week ending (2026)') + '</text>';
+  el.innerHTML = s + '</svg>';
+  bindTips(el, t => {
+    const p = pts[+t.dataset.tip], g = p.close - p.be;
+    const gap = sbet ? Math.abs(g).toFixed(3) + (g < 0 ? ' below 1' : ' above 1') : '$' + Math.abs(g).toFixed(2) + (g < 0 ? ' below' : ' above');
+    return '<b>' + FIRM[firm].name + '</b>, ' + (sbet ? 'filed date ' : 'week ending ') + p.w.week_end
+      + '<div class="row"><span>' + (sbet ? 'm (net mNAV)' : esc(h.pref) + ' close') + '</span><span>' + (sbet ? p.close.toFixed(3) : '$' + p.close.toFixed(2)) + '</span></div>'
+      + '<div class="row"><span>Break-even' + (sbet ? '' : ' (100 × m)') + '</span><span>' + (sbet ? '1' : '$' + p.be.toFixed(2)) + '</span></div>'
+      + '<div class="row on"><span>Gap</span><span>' + gap + '</span></div>'
+      + '<div>Filing: ' + esc(fileName(p.w.filing_urls[0])) + '</div>';
+  });
+  colKeys(el);
+  const n = new Set(pts.flatMap(p => p.w.filing_urls)).size;
+  document.getElementById('src-' + firm).innerHTML = 'Source: ' + n + ' SEC filings; closes from Yahoo Finance. Data: <a href="data/attribution.csv">attribution.csv</a>';
+}
+
+function prefLegend() {
+  document.getElementById('pref-legend').innerHTML = '<span>' + swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--muted);stroke-width:2"/>') + 'Preferred close, in the firm colour (SharpLink: m)</span>'
+    + '<span>' + swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--fg);stroke-dasharray:3 2"/>') + 'Break-even, $100 × m (SharpLink: 1)</span>'
+    + '<span>' + swatch('<rect x="1" y="3" width="12" height="8" style="fill:var(--neutral);fill-opacity:0.22"/>') + 'Gap between them</span>';
+}
+
+// ---- 3. break-even map ----
 function mapPoints() {
   // qx: map x. SharpLink has no preferred (q null); its marks sit at q = 1, where m = q is m = 1.
   return DATA.weeks.filter(w => w.m != null && (w.q != null || w.firm === 'SBET')).map(w => ({ ...w, qx: w.q ?? 1 }));
@@ -153,14 +246,14 @@ function drawMap() {
   s += '<line class="diag" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
   s += '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 14) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
   s += '<text class="label" x="' + (W - M.r - 8) + '" y="' + (H - M.b - 10) + '" text-anchor="end">BitMine\'s rotation adds here (m &lt; q)</text>';
-  s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';  // above-left, clear of the diagonal
+  if (W >= 500) s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';  // above-left, clear of the diagonal; narrow: legend only
   const order = pts.map((w, i) => i).sort((a, b) => pts[b].dollars_moved - pts[a].dollars_moved);  // small marks on top
   for (const i of order) {
     const w = pts[i], c = 'var(' + FIRM[w.firm].color + ')', r = rad(w), cx = X(w.qx), cy = Y(w.m);
     const label = FIRM[w.firm].name + (w.firm === 'SBET' ? ', filed date ' : ', week ending ') + w.week_end + ': m ' + fix(w.m, 3)
       + (w.q == null ? ', no preferred (plotted at q = 1)' : ', q ' + fix(w.q, 3)) + '. Opens filing.';
     s += '<a href="' + esc(w.filing_urls[0]) + '" target="_blank" rel="noopener" data-tip="' + i + '" aria-label="' + esc(label) + '">'
-      + markSvg(w.firm, cx, cy, Math.max(r, 10), 'hit', 'fill:transparent')
+      + markSvg(w.firm, cx, cy, Math.max(r, 12), 'hit', 'fill:transparent')
       + markSvg(w.firm, cx, cy, r, 'mark', 'fill:' + c + ';fill-opacity:0.45;stroke:' + c + ';stroke-width:1.5') + '</a>';
   }
   // Direct label on each firm's latest week: right, left, above, below at growing distance; the first box that stays
@@ -182,7 +275,7 @@ function drawMap() {
     s += '<text class="label" x="' + pick[0] + '" y="' + pick[1] + '" text-anchor="' + pick[2] + '">' + text + '</text>';
   }
   el.innerHTML = s + '</svg>';
-  bindTips(el, t => {
+  const tipHtml = t => {
     const w = pts[+t.dataset.tip];
     return '<b>' + FIRM[w.firm].name + '</b>, ' + (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end
       + '<div class="row"><span>m (net mNAV)</span><span>' + fix(w.m, 3) + '</span></div>'
@@ -190,7 +283,22 @@ function drawMap() {
       + '<div class="row"><span>Dollars moved</span><span>' + usd(w.dollars_moved) + '</span></div>'
       + '<div class="row"><span>Value to common of actions</span><span>' + (w.actions_value == null ? 'anchor week' : usd(w.actions_value, true)) + '</span></div>'
       + '<div>Filing: ' + esc(fileName(w.filing_urls[0])) + '</div>';
-  });
+  };
+  bindTips(el, tipHtml);
+  // Touch: the first tap on a mark pins its details below the chart instead of navigating; a second tap on the same
+  // mark, or the pin's link, opens the filing. Mouse and keyboard follow the link directly.
+  const pin = el.closest('.chart-panel').querySelector('.pin');
+  let touch = false;
+  el.onpointerdown = ev => { touch = ev.pointerType === 'touch'; };
+  el.onclick = ev => {
+    const a = ev.target.closest('a[data-tip]');
+    if (!a || !touch || pin.dataset.tip === a.dataset.tip) return;
+    ev.preventDefault();
+    hideTip(el.parentElement);
+    pin.dataset.tip = a.dataset.tip;
+    pin.innerHTML = tipHtml(a) + '<a href="' + a.getAttribute('href') + '" target="_blank" rel="noopener">View filing</a>';
+    pin.hidden = false;
+  };
 }
 
 function mapLegend() {
@@ -201,12 +309,12 @@ function mapLegend() {
     + '<span class="muted">Mark area: dollars moved that week (filed actions; carry and estimated issuance excluded)</span>';
 }
 
-// ---- 3. attribution bars ----
+// ---- 4. attribution bars ----
 function stack(w) {
   // [key, label, color var, value, hatched]; issue_common splits into filed and estimated parts.
   const v = w.value, est = w.est_issuance || 0;
-  const out = [['issue_common', CAT.issue_common[0], '--s1', v.issue_common - est, false]];
-  if (est) out.push(['est_issuance', EST, '--s1', est, true]);
+  const out = [['issue_common', CAT.issue_common[0], '--c1', v.issue_common - est, false]];
+  if (est) out.push(['est_issuance', EST, '--c1', est, true]);
   for (const k of Object.keys(CAT).slice(1)) out.push([k, CAT[k][0], CAT[k][1], v[k], false]);
   return out.filter(d => Math.abs(d[3]) >= 0.005);
 }
@@ -247,14 +355,14 @@ function drawBars(firm) {
   const hatch = 'hatch-' + firm;
   let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + FIRM[firm].name + ': weekly value to common by cause. Left and Right arrow keys move between weeks.">'
     + '<defs><pattern id="' + hatch + '" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
-    + '<rect width="6" height="6" style="fill:var(--s1);fill-opacity:0.25"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--s1);stroke-width:3"/></pattern></defs>';
+    + '<rect width="6" height="6" style="fill:var(--c1);fill-opacity:0.25"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--c1);stroke-width:3"/></pattern></defs>';
   for (const t of ticks) {
     s += '<line class="' + (t === 0 ? 'axis' : 'grid') + '" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
     s += '<text x="' + (M.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + usd(t) + '</text>';
   }
   if (!ticks.includes(0)) s += '<line class="axis" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>';
   const every = Math.ceil(44 / bw);
-  const active = ACTIVE[firm] = Math.min(ACTIVE[firm] ?? weeks.length - 1, weeks.length - 1);
+  const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? weeks.length - 1, weeks.length - 1);
   let big = null;
   weeks.forEach((w, i) => {
     const x0 = M.l + i * bw, x = x0 + (bw - barW) / 2;
@@ -268,52 +376,54 @@ function drawBars(firm) {
       const fill = d[4] ? 'url(#' + hatch + ')' : 'var(' + d[2] + ')';
       s += '<path class="seg" data-tip="' + i + '" data-cat="' + d[0] + '" d="' + segPath(x, Y(a), Y(b), barW, j === (v > 0 ? lastUp : lastDn), v > 0)
         + '" style="fill:' + fill + '"/>';
-      if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x: x + barW / 2, y: Y(b), up: v > 0 };
+      if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x, y: (Y(a) + Y(b)) / 2, week: w.week_end };
     });
+    if (st.length) s += '<line class="net" x1="' + (x - 3) + '" x2="' + (x + barW + 3) + '" y1="' + Y(up + dn) + '" y2="' + Y(up + dn) + '"/>';
     if (i % every === 0) s += '<text x="' + (x0 + bw / 2) + '" y="' + (H - M.b + 14) + '" text-anchor="middle">' + w.week_end.slice(5) + '</text>';
   });
   s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">' + (firm === 'SBET' ? 'filed holdings date (2026)' : 'week ending (2026)') + '</text>';
-  if (big) {  // the one direct label: largest segment in this chart
-    const anchor = big.x < W / 3 ? 'start' : big.x > 2 * W / 3 ? 'end' : 'middle';
-    const y = big.up ? Math.max(big.y - 6, 11) : Math.min(big.y + 14, H - M.b - 2);
-    s += '<text class="label" x="' + big.x + '" y="' + y + '" text-anchor="' + anchor + '">' + big.label + ' ' + usd(big.v, true) + '</text>';
+  if (big) {  // the one direct label: largest segment in this chart, beside its bar at the segment's middle (clear of the net tick)
+    // Narrow charts have no room beside a bar; the label moves to the plot's top-left corner with its week.
+    const right = big.x < W * 0.6, x = W < 500 ? M.l + 4 : right ? big.x + barW + 6 : big.x - 6;
+    s += '<text class="label" x="' + x + '" y="' + (W < 500 ? M.t + 4 : big.y + 4) + '" text-anchor="' + (W < 500 || right ? 'start' : 'end') + '">'
+      + (W < 500 ? 'Largest: ' + big.week.slice(5) + ' ' : '') + big.label + ' ' + usd(big.v, true) + '</text>';
   }
   el.innerHTML = s + '</svg>';
   bindTips(el, t => weekTip(weeks[+t.dataset.tip], t.dataset.cat));
-  // One tab stop per chart; Left/Right (Home/End) move between weeks and the tooltip follows focus.
-  el.onkeydown = ev => {
-    const cols = [...el.querySelectorAll('.col')], i = cols.indexOf(ev.target);
-    const step = { ArrowLeft: -1, ArrowRight: 1, Home: -Infinity, End: Infinity }[ev.key];
-    if (i < 0 || step == null) return;
-    ev.preventDefault();
-    const j = Math.max(0, Math.min(cols.length - 1, i + step));
-    cols[i].setAttribute('tabindex', '-1');
-    cols[j].setAttribute('tabindex', '0');
-    ACTIVE[firm] = j;
-    cols[j].focus();
-  };
+  colKeys(el);
 }
 
 function barsLegend() {
-  const items = Object.entries(CAT).map(([k, [label, c]]) => [label, 'fill:var(' + c + ')']);
-  items.splice(1, 0, [EST, 'fill:var(--s1);fill-opacity:0.3']);
-  document.getElementById('bars-legend').innerHTML = items.map(([label, st], i) => '<span>' + swatch('<rect x="1" y="1" width="12" height="12" rx="2" style="' + st + '"/>'
-    + (i === 1 ? '<path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--s1);stroke-width:2"/>' : '')) + label + '</span>').join('');
+  const items = Object.values(GROUP).map(([label, c]) => swatch('<rect x="1" y="1" width="12" height="12" rx="2" style="fill:var(' + c + ')"/>') + label);
+  items.splice(1, 0, swatch('<rect x="1" y="1" width="12" height="12" rx="2" style="fill:var(--c1);fill-opacity:0.3"/><path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--c1);stroke-width:2"/>')
+    + EST + ', part of common');
+  items.push(swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--fg);stroke-width:2"/>') + 'Net of the stacked causes');
+  document.getElementById('bars-legend').innerHTML = items.map(x => '<span>' + x + '</span>').join('');
 }
 
-function totals() {  // one muted line per firm panel, from build_site totals
+// Under each firm's bars: a diverging strip of the totals since the first week, by cause. Bars grow from a shared
+// zero; observed in the firm colour, the rest neutral.
+function totals() {
   for (const [firm, x] of Object.entries(DATA.totals)) {
-    document.getElementById('bars-' + firm).closest('.firm-panel').querySelector('.firm-heading').insertAdjacentHTML('beforeend',
-      '<p class="firm-total muted">Since ' + esc(x.since) + ': filed actions ' + usd(x.actions, true) + ', carry ' + usd(x.carry, true)
-      + (x.est_issuance ? ', estimated issuance ' + usd(x.est_issuance, true) : '') + ', residual ' + usd(x.residual, true) + ' (value to common)</p>');
+    const rows = [['Filed actions', x.actions], ...(x.est_issuance ? [['Estimated issuance', x.est_issuance]] : []), ['Carry', x.carry],
+      ['Residual', x.residual], ['Coin price', x.price], ['In-the-money flips', x.itm_flip], ['Observed', x.observed]];
+    const lo = Math.min(0, ...rows.map(r => r[1])), hi = Math.max(0, ...rows.map(r => r[1])), pct = v => (v - lo) / (hi - lo || 1) * 100;
+    const html = rows.map(([label, v], i) => {
+      const obs = i === rows.length - 1, a = pct(Math.min(0, v)), b = pct(Math.max(0, v));
+      return '<div class="strip-row' + (obs ? ' obs' : '') + '"><span>' + label + '</span><span class="strip-bar"><i class="zero" style="left:' + pct(0).toFixed(1) + '%"></i>'
+        + '<i style="left:' + a.toFixed(1) + '%;width:' + Math.max(b - a, 0.4).toFixed(1) + '%;background:var(' + (obs ? FIRM[firm].color : '--neutral') + ')"></i></span>'
+        + '<span class="strip-val">' + usd(v, true) + '</span></div>';
+    }).join('');
+    document.getElementById('bars-' + firm).closest('.firm-panel').insertAdjacentHTML('beforeend',
+      '<div class="strip"><p class="strip-title">Since ' + esc(x.since) + ', value to common by cause</p>' + html + '</div>');
   }
 }
 
 function table() {
   const cols = DATA.categories;
-  let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved</th>'
-    + cols.map(c => '<th>' + CAT[c][0].toLowerCase() + '</th>').join('')
-    + '<th>of which estimated issuance</th><th>coin price</th><th>in-the-money flips</th><th>observed</th><th>filing</th></tr></thead><tbody>';
+  let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved ($)</th>'
+    + cols.map(c => '<th>' + CAT[c][0].toLowerCase() + ' ($)</th>').join('')
+    + '<th>of which estimated issuance ($)</th><th>coin price ($)</th><th>in-the-money flips ($)</th><th>observed ($)</th><th>filing</th></tr></thead><tbody>';
   for (const w of DATA.weeks) {
     const v = w.value || {};
     h += '<tr><td>' + FIRM[w.firm].name + '</td><td>' + w.week_end + '</td><td>' + fix(w.m, 3) + '</td><td>' + fix(w.q, 4) + '</td><td>' + usd(w.dollars_moved) + '</td>'
@@ -324,7 +434,7 @@ function table() {
   document.getElementById('week-table').innerHTML = h + '</tbody>';
 }
 
-// ---- 4. method: notes and check ----
+// ---- 5. method: notes and check ----
 function method() {
   document.getElementById('notes').innerHTML = DATA.notes.map(n => '<li>' + esc(n.text)
     + (n.url ? ' <a href="' + esc(n.url) + '" target="_blank" rel="noopener">Release</a>.' : '') + '</li>').join('');
@@ -338,6 +448,9 @@ function method() {
 }
 
 function draw() {
+  drawPref('MSTR');
+  drawPref('BMNR');
+  drawPref('SBET');
   drawMap();
   drawBars('MSTR');
   drawBars('BMNR');
@@ -366,6 +479,7 @@ theme();
 fetch('data.json').then(r => r.json()).then(d => {
   DATA = d;
   headline();
+  prefLegend();
   mapLegend();
   barsLegend();
   totals();
