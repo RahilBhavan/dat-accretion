@@ -1,7 +1,7 @@
 # Decisions
 
 Every decision that shapes the code or the numbers, why it was made, and what it replaced. Dates are when
-the decision was settled; all fall on 2026-09-25, 2026-09-26 or 2026-10-01. Where a decision is also a working rule, the
+the decision was settled; all fall on 2026-09-25, 2026-09-26, 2026-10-01 or 2026-10-03. Where a decision is also a working rule, the
 rule lives in `.claude/rules/` and the code follows the rule file. Problems that forced a decision are
 numbered in [`build-notes.md`](build-notes.md) and cited here as "notes #n". The last column names the
 alternative each decision rules out; where the build reversed an earlier choice, the row says so.
@@ -70,6 +70,7 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | B7 | One release dated "As of June 28" is assigned to 2026-07-05, listed in `KNOWN_DATE_ERRATA`. | The release's own staking sentence and dateline give July 5 (notes #9). | Trusting the header date. |
 | B8 | A BitMine holdings change with no parsed purchase raises. | A missed purchase sentence would otherwise pass silently. | Inferring the purchase from the change. |
 | B9 | The ETH check compares against strategicethreserve.xyz at the site's own snapshot date and fails if the snapshot is over six weeks old. The site's data is read from its page. | The site has no API and lags about four weeks (notes #8). | The spec's check on the latest date, which could not pass. |
+| B10 | A second BMNP `issue_pref` row in actions stops `build_bmnr()` with an error (#15). | After BitMine's first follow-on BMNP sale the liquidation preference floats to max($100, last sale price, 10-day average) (`method.md`), so q = close/100 no longer holds. | A manual recheck of each week's release. |
 
 ## SharpLink data
 
@@ -98,6 +99,7 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | A6 | Numbers written in docs come from a test's pinned output, not a separate run. | Step 0 percentages were first written from a different API snapshot than the test pinned (notes #13). | Copying from a console session. |
 | A7 | Test anchors: the Bitcoin Magazine STRC week ($24.998M retiring $28.893M notional adds $3.895M) to the dollar; each formula is zero at m = 1 or q = 1; each rotation is zero at m = q; first order within 1% of exact for an action under 1% of market cap. | A public figure to reproduce, plus identities any correct engine satisfies. | Tests only against our own outputs. |
 | A8 | The data row for 7/26 uses the 8-K's rounded $25.0M ($3.893M); the test uses $24.998M ($3.895M). | Data follows the filing; the test anchors to the published figure. | Editing the data to match the article. |
+| A9 | `states()` in `dat/engine.py` raises `ValueError` on an unknown firm (#15). | Its last branch was `else:  # SBET`, so any firm it did not name was built as SharpLink without an error. | A fall-through default. |
 
 ## Page and memo
 
@@ -117,6 +119,7 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | M12 | The page's h1 is the memo's title, from the same `counts()`/`title()` code, now in `dat/build_site.py` and re-exported by `dat/memo.py` (#18). | Page and memo state the same counts. | A separate page headline. |
 | M13 | Bar panel totals keep carry and BitMine's estimated issuance out of "filed actions"; each shows as its own total (#18). | `method.md`: carry rows are not actions, and estimated issuance is not an `actions.csv` row. | One total for all non-price parts. |
 | M14 | The page computes SharpLink's day count (days from its last filed holdings to the build), not `build()` (#18). | `build()` stays independent of the clock. | Writing the day count into `data.json`. |
+| M15 | `dat.social` writes cards, replay frames and draft posts to the gitignored `private/social/`, uses only the standard library, and leaves rendering (Playwright, Chromium, ffmpeg) to a script outside the package. Posting is manual. A test scans every generated string for em dashes and banned words (#19). | The repo gains no dependency, nothing posts on its own, and the drafts follow `framing.md` like the page. | Committing the output; a rendering dependency in the package; automated posting. |
 
 ## Automation
 
