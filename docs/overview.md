@@ -1,7 +1,15 @@
 # Overview: what this project is and how it works
 
 Start here. This page explains the question the project answers, the one number it measures everything
-with, what it produces, and how the code turns SEC filings into the page. The other documents go deeper:
+with, what it produces, and how the code turns SEC filings into the page.
+
+**In short.** Strategy, BitMine and SharpLink each sell, buy back and retire stock to change how much
+crypto stands behind each share. This project measures every such action since 2026-06-01 with
+Strategy's own net coins per share definition, applied to all three firms, and shows the price at which
+each program stops adding. Every figure links to the SEC filing it came from. Read the
+[page](https://rahilbhavan.github.io/dat-accretion/) first, then come back here for how it works.
+
+The other documents go deeper:
 
 | document | read it for |
 |---|---|
@@ -76,13 +84,49 @@ line for both rotations.
 
 ## What it produces
 
-1. **A public page** (https://rahilbhavan.github.io/dat-accretion/): a figures-only headline per firm, the
-   break-even map, weekly attribution bars, the method, and CSV downloads. Every map dot links to its SEC
-   filing.
+1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). Its h1 is the memo's title. Below
+   it:
+   - one card per firm for the latest filed week, with the preferred close against break-even. STRC stops
+     adding above $100 × m; BMNP adds above $100 × m. SharpLink's card gives m and the date of its last
+     filed holdings.
+   - the break-even map. Every dot links to its SEC filing.
+   - weekly attribution bars, with totals since each firm's anchor week: filed actions, carry, estimated
+     issuance (BitMine only) and residual, as value to common.
+   - the method, folded, and CSV downloads.
 2. **A one-page memo** (`docs/memo.md`, `docs/memo.pdf`): the finding as counts, the ruler, the line, and
    where each firm sits in its latest filed week.
 3. **The data and the engine**: CSVs under `data/`, the Python that builds them, and `check.py`, which
    compares the rebuilt numbers against live sources.
+
+## Who it is for and how to use it
+
+The page answers one question with a price, so a reader can check the answer against the filings
+instead of taking anyone's view of it.
+
+| reader | start at | what they get |
+|---|---|---|
+| holders and analysts of MSTR, BMNR, SBET | the firm cards and the break-even map | the preferred price at which each rotation stops adding net coins per share, and where the latest filed week sits against it |
+| finance teams at the three firms | `actions.csv` and `attribution.csv` | their own filings measured with Strategy's own definition, one row per action, each linked to its filing, so a wrong number can be pointed to a line |
+| journalists and researchers | the memo and the CSVs | a weekly series since 2026-06-01 in which every number traces to a filing URL, and a done check that says when the page last passed |
+| engineers working with SEC filings | `dat/` and `tests/` | a worked pattern: parse prose filings by row label and fail loudly, roll quarterly anchors forward inside stated tolerances, split each week's change into parts and report what is left |
+
+### Reading one week
+
+1. Pick a dot on the map. Its position is that week's q (across) and m (up); the diagonal is m = q.
+2. Open its filing from the dot's link and find the action rows in `actions.csv` for that week.
+3. In `attribution.csv`, the week's parts (price, convert flips, each action, carry, residual) sum to
+   the observed change in net coins per share. The bars show the same parts as value to common.
+
+### What it does not tell you
+
+- Whether any decision was right. The project states effects at disclosed prices and where break-even
+  sits, nothing more.
+- Where prices go next. There are no forecasts or targets.
+- Exact values between filings for everything. BitMine's share count is estimated between filings and
+  biased upward by its staking (see `docs/methodology.md`); SharpLink has rows only on the dates it
+  files holdings; first-order values are labeled where they stand in for exact ones.
+- A live value when the done check fails. The page then keeps its last passing build until the check
+  passes again.
 
 ## How the pipeline works
 
@@ -125,12 +169,15 @@ CSVs ──> dat/build_site.py ──> site/data.json ──> site/ (static HTML
 |---|---|---|
 | `snapshot.yml` | daily, 21:30 UTC | saves Strategy's KPI API values to the `data` branch (the API keeps no history), then runs `check.py` |
 | `refresh.yml` | Tuesdays, 14:00 UTC | reparses new filings, rebuilds every CSV, the memo and the site, opens a PR, and merges it only when tests, `check.py` and CI pass |
-| `pages.yml` | each push to `main`, after each snapshot run, and when the refresh dispatches it | deploys the page |
+| `pages.yml` | each push to `main`, after each snapshot run, and when the refresh dispatches it | deploys the page, only when the latest `data/check.json` on the `data` branch has status `pass` (#17) |
 | `ci.yml` | each PR, each push to `main`, and on refresh branches | runs pytest |
 
 A failure in the scheduled jobs opens one GitHub issue per failure streak. When a firm files a new 10-Q or
 10-K, the refresh exits 2 and leaves its PR open: a person updates the anchor share counts and balances by
 hand.
+
+If the latest done check on the `data` branch is missing or not `pass`, the Pages run fails and the live
+page keeps its last passing build (#17).
 
 ## How the numbers are checked
 
@@ -144,4 +191,4 @@ hand.
   SharpLink), a read-only agent matched every changed row of `actions.csv` and `stated.csv` to its filing
   before merge. Weekly refresh PRs merge on the automated checks alone.
 
-`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 137 offline tests.
+`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 140 offline tests.

@@ -146,6 +146,17 @@ the build if removing that bias would move any week across the line.
 - **Retry (#12)**: the first refresh run, started by hand, failed on one HTTP 503 from EDGAR. The client now retries
   429 and 503 three times with backoff, then fails loudly as before.
 
+### After v1, part 2: Pages gate and a figures-first page (#17, #18)
+
+- **Pages gate (#17)**: the Pages job copied `data/check.json` from the `data` branch with `|| true`, so a
+  missing or failing check still deployed and the page showed the failure. The step now fails unless the
+  check's status is `pass`, so the live page keeps its last passing build. The page stops updating
+  instead of showing a failure, and the failing Pages run is the signal.
+- **Figures-first page (#18)**: the h1 is now the memo's title, built by the same code. Each firm gets a
+  card with its preferred close against break-even, and each bar panel shows totals since the anchor week.
+  The slogan hero and buttons are gone, and the method section folds. At 375 px there is no horizontal
+  scroll, and each of the 37 map marks links to an sec.gov filing.
+
 ## Plan against result
 
 | spec said | result | why |

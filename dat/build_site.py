@@ -15,6 +15,7 @@ SEPARATE = ('price', 'itm_flip')  # not stacked: tooltip and table only
 FIRMS = {'MSTR': {'name': 'Strategy', 'coin': 'BTC', 'unit': 'sats', 'pref': 'STRC', 'side': 'below'},
          'BMNR': {'name': 'BitMine', 'coin': 'ETH', 'unit': 'ETH', 'pref': 'BMNP', 'side': 'above'},
          'SBET': {'name': 'SharpLink', 'coin': 'ETH', 'unit': 'ETH', 'pref': None, 'side': None}}
+ADDS = {'MSTR': lambda m, q: m > q, 'BMNR': lambda m, q: m < q}  # method.md: the rotation's adding side of m = q
 LIQ_PREF = 100  # STRC stated amount and BMNP liquidation preference, USD (method.md)
 BMNR_R_NOTE = ('BitMine R is its stated "total cash & marketable securities", so it includes marketable securities. '
                'BitMine\'s BTC holdings and equity stakes are excluded, as Strategy\'s definition counts only the coin '
@@ -59,6 +60,24 @@ def sbet_notes(dates, last_filed):
         'SharpLink\'s residuals come from shares added to S that no filing ties to an action: 49,265 performance '
         'RSUs on 2026-06-30, and on 2026-08-03 the July RSU and performance RSU grants and award shares.',
     ]
+
+
+def counts(weekly):
+    """{firm: (weeks on the adding side, weeks with m and q, first week, last week)} from weekly.csv rows.
+    SBET (no preferred): (filed dates with m below 1, filed dates, first, last)."""
+    out = {}
+    for firm in ('MSTR', 'BMNR'):
+        ws = sorted((r for r in weekly if r['firm'] == firm and r['m'] and r['q']), key=lambda r: r['week_end'])
+        out[firm] = (sum(ADDS[firm](float(r['m']), float(r['q'])) for r in ws), len(ws), ws[0]['week_end'], ws[-1]['week_end'])
+    ws = sorted((r for r in weekly if r['firm'] == 'SBET' and r['m']), key=lambda r: r['week_end'])
+    out['SBET'] = (sum(float(r['m']) < 1 for r in ws), len(ws), ws[0]['week_end'], ws[-1]['week_end'])
+    return out
+
+
+def title(c):
+    (a, n, _, _), (b, k, _, _), (x, y, _, _) = c['MSTR'], c['BMNR'], c['SBET']
+    return (f"Strategy's STRC rotation sat on its adding side of the break-even line in {a} of {n} filed weeks; "
+            f"BitMine's BMNP rotation in {b} of {k}; SharpLink, with no preferred, had m below 1 on {x} of {y} filed dates")
 
 
 def fnum(x):
@@ -136,6 +155,7 @@ def build(data_dir='data', online=False):
     all_w, all_a, all_act, all_bal, all_st = (read(path(f)) for f in
                                               ('weekly.csv', 'attribution.csv', 'actions.csv', 'balances.csv', 'stated.csv'))
     weeks, headline = [], []
+    now = dt.datetime.now(dt.timezone.utc)
     for firm in ('MSTR', 'BMNR', 'SBET'):
         pick = lambda rows: [r for r in rows if r['firm'] == firm]
         wk = sorted(pick(all_w), key=lambda r: r['week_end'])
@@ -179,6 +199,7 @@ def build(data_dir='data', online=False):
         h = {'firm': firm, 'name': FIRMS[firm]['name'], 'pref': FIRMS[firm]['pref'], 'week_end': last['week_end'],
              'price_date': last['price_date'], 'm': m, 'break_even': round(LIQ_PREF * m, 2), 'q': q,
              'pref_close': round(LIQ_PREF * q, 2)}
+        h['gap'] = round(h['pref_close'] - h['break_even'], 2)  # negative: preferred below break-even
         headline.append({**h, 'sentence': sentence(h), 'close_sentence': close_sentence(h)})
     bmnr_url = max((r for r in all_st if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])['filing_url']
     notes = [{'text': n, 'url': None} for n in NOTES]
@@ -186,9 +207,19 @@ def build(data_dir='data', online=False):
     sbet = sorted(r['week_end'] for r in all_st if r['firm'] == 'SBET')
     last_8k = max(r['filed'] for r in all_st if r['firm'] == 'SBET')
     notes += [{'text': n, 'url': None} for n in sbet_notes(sbet, last_8k)]
+    totals = {}
+    for firm in FIRMS:  # actions = filed actions only: carry and estimated issuance are listed apart (method.md)
+        ws = [w for w in weeks if w['firm'] == firm]
+        att = [w for w in ws if w['value'] is not None]
+        x = {k: math.fsum(f(w) for w in att) for k, f in (
+            ('carry', lambda w: w['value']['carry']), ('est_issuance', lambda w: w['est_issuance']),
+            ('residual', lambda w: w['value']['residual']), ('observed', lambda w: w['observed']),
+            ('price', lambda w: w['price']), ('itm_flip', lambda w: w['itm_flip']))}
+        x['actions'] = math.fsum(w['actions_value'] for w in att) - x['carry'] - x['est_issuance']
+        totals[firm] = {**{k: cents(v) for k, v in x.items()}, 'since': ws[0]['week_end']}
     check = load_check(path('check.json'))
-    return {'generated_at': dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-            'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'notes': notes, 'check': check}
+    return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(counts(all_w)),
+            'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'totals': totals, 'notes': notes, 'check': check}
 
 
 def main(data_dir='data', out='site/data.json'):

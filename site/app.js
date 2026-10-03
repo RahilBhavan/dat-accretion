@@ -98,9 +98,28 @@ function swatch(inner) {
 }
 
 // ---- 1. headline ----
+// Two ticks on one scale spanning price and break-even with 10% padding: price in the firm color, break-even in --fg.
+function track(h) {
+  const lo = Math.min(h.pref_close, h.break_even), hi = Math.max(h.pref_close, h.break_even), pad = (hi - lo) * 0.1 || 1;
+  const at = v => ((v - lo + pad) / (hi - lo + 2 * pad) * 100).toFixed(1) + '%';
+  return '<div class="snapshot-track" aria-hidden="true"><span style="left:' + at(h.pref_close) + ';background:var(' + FIRM[h.firm].color + ')"></span>'
+    + '<span style="left:' + at(h.break_even) + ';background:var(--fg)"></span></div>';
+}
+
 function headline() {
-  document.getElementById('headline-text').innerHTML = DATA.headline.map(h => '<p class="headline">' + esc(h.sentence) + '</p>').join('')
-    + '<p class="closes">' + DATA.headline.map(h => esc(h.close_sentence)).join(' ') + '</p>';
+  document.getElementById('title').textContent = DATA.title;
+  document.getElementById('headline-text').innerHTML = '<div class="snapshot-grid">' + DATA.headline.map(h => {
+    const symbol = h.firm.toLowerCase(), sbet = h.break_even == null;
+    const value = sbet ? 'm ' + h.m.toFixed(3) : h.pref + ' $' + h.pref_close.toFixed(2);
+    // MSTR's rotation adds while STRC is below break-even; BMNR's while BMNP is above it.
+    const days = Math.round((Date.parse(DATA.generated_at.slice(0, 10)) - Date.parse(h.week_end)) / 864e5);
+    const line = sbet ? 'Holdings as of ' + h.week_end + ' (' + days + ' days before build)'
+      : (h.firm === 'MSTR' ? 'Stops adding above $' : 'Adds above $') + h.break_even.toFixed(2) + ' · $' + Math.abs(h.gap).toFixed(2) + (h.gap < 0 ? ' below' : ' above');
+    return '<article class="snapshot-card"><div class="snapshot-top"><span class="firm-symbol ' + symbol + '">' + esc(h.firm) + '</span><span class="snapshot-date">' + esc(h.week_end) + '</span></div>'
+      + '<h3>' + esc(h.name) + '</h3><p class="snapshot-value">' + esc(value) + '</p><p class="snapshot-label">' + esc(line) + '</p>'
+      + (sbet ? '' : track(h)) + '<div class="snapshot-rule"></div><p class="snapshot-context">' + esc(h.sentence) + '</p>'
+      + (sbet ? '' : '<p class="snapshot-meta">Net mNAV <strong>' + h.m.toFixed(3) + '</strong></p>') + '</article>';
+  }).join('') + '</div><p class="snapshot-footnote">' + DATA.headline.map(h => esc(h.close_sentence)).join(' ') + '</p>';
 }
 
 // ---- 2. break-even map ----
@@ -176,7 +195,8 @@ function drawMap() {
 
 function mapLegend() {
   document.getElementById('map-legend').innerHTML = Object.entries(FIRM).map(([f, v]) =>
-    '<span>' + swatch(markSvg(f, 7, 7, 6, '', 'fill:var(' + v.color + ');fill-opacity:0.45;stroke:var(' + v.color + ')')) + v.name + '</span>').join('')
+    '<span>' + swatch(markSvg(f, 7, 7, 6, '', 'fill:var(' + v.color + ');fill-opacity:0.45;stroke:var(' + v.color + ')')) + v.name
+    + (f === 'SBET' ? ' (no preferred, so its marks sit at q = 1, where the line is m = 1)' : '') + '</span>').join('')
     + '<span>' + swatch('<line x1="1" y1="13" x2="13" y2="1" style="stroke:var(--fg);stroke-dasharray:3 2"/>') + 'm = q</span>'
     + '<span class="muted">Mark area: dollars moved that week (filed actions; carry and estimated issuance excluded)</span>';
 }
@@ -281,6 +301,14 @@ function barsLegend() {
     + (i === 1 ? '<path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--s1);stroke-width:2"/>' : '')) + label + '</span>').join('');
 }
 
+function totals() {  // one muted line per firm panel, from build_site totals
+  for (const [firm, x] of Object.entries(DATA.totals)) {
+    document.getElementById('bars-' + firm).closest('.firm-panel').querySelector('.firm-heading').insertAdjacentHTML('beforeend',
+      '<p class="firm-total muted">Since ' + esc(x.since) + ': filed actions ' + usd(x.actions, true) + ', carry ' + usd(x.carry, true)
+      + (x.est_issuance ? ', estimated issuance ' + usd(x.est_issuance, true) : '') + ', residual ' + usd(x.residual, true) + ' (value to common)</p>');
+  }
+}
+
 function table() {
   const cols = DATA.categories;
   let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved</th>'
@@ -301,8 +329,11 @@ function method() {
   document.getElementById('notes').innerHTML = DATA.notes.map(n => '<li>' + esc(n.text)
     + (n.url ? ' <a href="' + esc(n.url) + '" target="_blank" rel="noopener">Release</a>.' : '') + '</li>').join('');
   const c = DATA.check && typeof DATA.check === 'object' ? DATA.check : { status: 'not yet run' }, when = c.run_at || c.generated_at;
-  document.getElementById('check').innerHTML = '<p>Status: ' + esc(c.status || 'see below') + (when ? ', run ' + esc(when) : '') + '.</p>'
-    + (Object.keys(c).length > 1 ? '<pre>' + esc(JSON.stringify(c, null, 1)) + '</pre>' : '');
+  const count = Array.isArray(c.checks) ? c.checks.length : 0;
+  document.getElementById('check').innerHTML = '<div class="check-summary"><span class="check-status ' + (c.status === 'pass' ? 'passed' : '') + '">' + esc(c.status || 'see below') + '</span>'
+    + '<div><strong>Data validation</strong><p>' + (count ? count + ' checks recorded' : 'No checks recorded')
+    + (when ? ' · Run ' + esc(when) : '') + '</p></div></div>'
+    + (Object.keys(c).length > 1 ? '<details class="fold check-detail"><summary>View full check record</summary><pre>' + esc(JSON.stringify(c, null, 1)) + '</pre></details>' : '');
   document.getElementById('footer').textContent = 'Data built ' + DATA.generated_at + ' from the CSVs below.';
 }
 
@@ -318,8 +349,12 @@ function theme() {
   const dark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
   const saved = localStorage.getItem('theme');
   if (saved) root.dataset.theme = saved;
-  const label = () => { btn.textContent = dark() ? 'light theme' : 'dark theme'; };
+  const label = () => {
+    btn.textContent = dark() ? 'light theme' : 'dark theme';
+    document.querySelector('meta[name="theme-color"]').content = dark() ? '#0d1015' : '#f7f8fa';
+  };
   label();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', label);
   btn.addEventListener('click', () => {
     root.dataset.theme = dark() ? 'light' : 'dark';
     localStorage.setItem('theme', root.dataset.theme);
@@ -333,6 +368,7 @@ fetch('data.json').then(r => r.json()).then(d => {
   headline();
   mapLegend();
   barsLegend();
+  totals();
   table();
   method();
   draw();
