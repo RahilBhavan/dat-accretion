@@ -146,7 +146,7 @@ the build if removing that bias would move any week across the line.
 - **Retry (#12)**: the first refresh run, started by hand, failed on one HTTP 503 from EDGAR. The client now retries
   429 and 503 three times with backoff, then fails loudly as before.
 
-### After v1, part 2: Pages gate and a figures-first page (#17, #18)
+### After v1, part 2: Pages gate, figures-first page, guards, redesign and social cards (#15, #17, #18, #19, #20)
 
 - **Pages gate (#17)**: the Pages job copied `data/check.json` from the `data` branch with `|| true`, so a
   missing or failing check still deployed and the page showed the failure. The step now fails unless the
@@ -156,6 +156,21 @@ the build if removing that bias would move any week across the line.
   card with its preferred close against break-even, and each bar panel shows totals since the anchor week.
   The slogan hero and buttons are gone, and the method section folds. At 375 px there is no horizontal
   scroll, and each of the 37 map marks links to an sec.gov filing.
+- **Guards (#15)**: `states()` in `dat/engine.py` built any firm it did not name as SharpLink. It now
+  raises on an unknown firm. `build_bmnr()` raises when actions hold more than one BMNP `issue_pref` row:
+  after a follow-on sale the liquidation preference floats, so q = close/100 stops holding. The build
+  stops instead of relying on a weekly recheck by hand. Rebuilt `balances.csv`, `weekly.csv` and
+  `attribution.csv` came out identical.
+- **Site redesign (#20)**: a "By week" chart shows each week's preferred close against its break-even
+  ($100 × m) for STRC and BMNP. Firm cards became bullet tracks with the close, a break-even tick and the
+  gap in dollars. Attribution bars use five colours, with a tick for each week's net change and a totals
+  strip per firm. The map gained a touch pin and 24 px hit targets. Only `site/` changed. At 375 px, in
+  light and dark, there is no horizontal scroll, and all 37 map marks link to an sec.gov filing.
+- **Social cards (#19)**: `python -m dat.social` turns the page's `build()` output into 1200x675 SVG
+  cards, map replay frames, draft posts and a list of every filed action with its link, in the gitignored
+  `private/social/<week_end>/`. It uses only the standard library. A script outside the package renders
+  PNG, MP4 and GIF with Playwright, Chromium and ffmpeg, and posting stays manual. A test scans every
+  generated string for em dashes and banned words.
 
 ## Plan against result
 

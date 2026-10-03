@@ -116,9 +116,11 @@ def states(firm, bal, weekly, stated, actions):
         elif firm == 'BMNR':
             st.update(converts=[], prefs={'BMNP': float(b['pref_notional'])}, conv={}, basic=basic[w][0],
                       awards=BMNR_RSU, options=BMNR_DILUTIVE)
-        else:  # SBET: no converts or preferred; rows per filed holdings date
+        elif firm == 'SBET':  # no converts or preferred; rows per filed holdings date
             st.update(converts=[], prefs={}, conv={}, basic=sbet_basic(actions, w)[0], awards=sbet_awards(w),
                       options=sbet_options(w))
+        else:
+            raise ValueError(f'states: unknown firm {firm!r}; add its branch here')
         out[w] = st
     return out
 

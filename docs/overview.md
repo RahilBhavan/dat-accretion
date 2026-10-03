@@ -86,17 +86,24 @@ line for both rotations.
 
 1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). Its h1 is the memo's title. Below
    it:
-   - one card per firm for the latest filed week, with the preferred close against break-even. STRC stops
-     adding above $100 × m; BMNP adds above $100 × m. SharpLink's card gives m and the date of its last
-     filed holdings.
+   - one card per firm for the latest filed week, drawn as a bullet track: the preferred close, a tick at
+     break-even, and the gap in dollars (#20). STRC stops adding above $100 × m; BMNP adds above $100 × m.
+     SharpLink's card gives m and the date of its last filed holdings.
+   - a "By week" chart: each week's preferred close against its break-even, $100 × m, for STRC and BMNP
+     (#20).
    - the break-even map. Every dot links to its SEC filing.
-   - weekly attribution bars, with totals since each firm's anchor week: filed actions, carry, estimated
-     issuance (BitMine only) and residual, as value to common.
+   - weekly attribution bars in five colours, with a tick for each week's net change and a totals strip per
+     firm since its anchor week: filed actions, carry, estimated issuance (BitMine only) and residual, as
+     value to common (#20).
    - the method, folded, and CSV downloads.
 2. **A one-page memo** (`docs/memo.md`, `docs/memo.pdf`): the finding as counts, the ruler, the line, and
    where each firm sits in its latest filed week.
 3. **The data and the engine**: CSVs under `data/`, the Python that builds them, and `check.py`, which
    compares the rebuilt numbers against live sources.
+4. **Social drafts** (`python -m dat.social`, #19): post-ready SVG cards, map replay frames and draft
+   posts, written to `private/social/<week_end>/`, which is gitignored. The module uses only the standard
+   library and reads the same `build()` output as the page. Rendering to PNG, MP4 and GIF happens outside
+   the package, and posting stays manual.
 
 ## Who it is for and how to use it
 
@@ -132,7 +139,7 @@ instead of taking anyone's view of it.
 
 Each step is one module, run as `python -m dat.<module>`. `dat/refresh.py` runs them in this order,
 stopping at the first failure: parse_mstr, prices, parse_bmnr, parse_sbet, balances, engine, memo,
-build_site.
+build_site. `dat.social` is not part of the refresh; a person runs it by hand.
 
 ```
 SEC EDGAR 8-Ks, 10-Qs ──> dat/edgar.py (throttled client, disk cache in data/raw/)
@@ -151,6 +158,7 @@ balances + weekly + actions ──> dat/engine.py ──> attribution.csv
 
 CSVs ──> dat/memo.py ──> docs/memo.md, memo.html, map.svg
 CSVs ──> dat/build_site.py ──> site/data.json ──> site/ (static HTML, CSS, JS)
+      └─> build() ──> dat/social.py ──> private/social/<week_end>/ (cards, replay frames, drafts; gitignored)
 ```
 
 | file | one row per | holds |
@@ -191,4 +199,4 @@ page keeps its last passing build (#17).
   SharpLink), a read-only agent matched every changed row of `actions.csv` and `stated.csv` to its filing
   before merge. Weekly refresh PRs merge on the automated checks alone.
 
-`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 140 offline tests.
+`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 144 offline tests.

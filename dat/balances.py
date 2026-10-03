@@ -249,7 +249,11 @@ def build_bmnr(stated, actions, prices):
             raise LookupError(f'{t}: no close on {pdate[w]} (BMNR price date for week {w})')
         return c
 
-    issue = min(a['week_end'] for a in actions if a['action'] == 'issue_pref' and a['ticker'] == 'BMNP')
+    issues = sorted(a['week_end'] for a in actions if a['action'] == 'issue_pref' and a['ticker'] == 'BMNP')
+    if len(issues) > 1:  # method.md: after a follow-on sale the preference floats, so q = close/100 no longer holds
+        raise ValueError(f'follow-on BMNP sale found (issue_pref weeks {issues}): the liquidation preference now floats '
+                         f'to max($100, last sale, 10-day average) per method.md; update q before building')
+    issue = issues[0]
     flows = bmnr_flows(stated, actions)
     basic, scale, between = bmnr_basic(weeks, flows, closes, actions)
     bal, weekly, lines = [], [], []
