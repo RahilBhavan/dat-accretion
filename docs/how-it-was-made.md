@@ -95,7 +95,7 @@ reviewer's first pass found a path where a trade could be skipped silently. It w
 ### Step 2: balances and prices (#4)
 
 The spec's check (rolled USD Reserve equals every 8-K) could not pass: the filings round the reserve to
-$10 to 50 million and, before August, don't itemize flows into it. With the user, the rule changed to:
+the nearest $1M, $10M or $100M and, before August, don't itemize flows into it. With the user, the rule changed to:
 take R as stated, and use the roll as a check within each filing's rounding from 2026-08-02. Eight checked
 weeks pass. Prices come from Yahoo (settled closes, not adjusted) and CoinGecko.
 
@@ -162,8 +162,8 @@ the build if removing that bias would move any week across the line.
   stops instead of relying on a weekly recheck by hand. Rebuilt `balances.csv`, `weekly.csv` and
   `attribution.csv` came out identical.
 - **Site redesign (#20)**: a "By week" chart shows each week's preferred close against its break-even
-  ($100 × m) for STRC and BMNP. Firm cards became bullet tracks with the close, a break-even tick and the
-  gap in dollars. Attribution bars use five colours, with a tick for each week's net change and a totals
+  ($100 × m) for STRC and BMNP, and SharpLink's m against 1. Firm cards became bullet tracks with the close, a break-even tick and the
+  gap. Attribution bars use five colours, with a tick for each week's net change and a totals
   strip per firm. The map gained a touch pin and 24 px hit targets. Only `site/` changed. At 375 px, in
   light and dark, there is no horizontal scroll, and all 37 map marks link to an sec.gov filing.
 - **Social cards (#19)**: `python -m dat.social` turns the page's `build()` output into 1200x675 SVG
