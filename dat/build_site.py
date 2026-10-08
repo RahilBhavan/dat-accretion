@@ -5,7 +5,7 @@ Per firm-week: m, q, n, p, s, S, dollars moved, filing links, and each attributi
 Observed value to common is recomputed through the engine's states, so the bars can be checked against it.
 """
 import datetime as dt, json, math, os, sys
-from dat.balances import read
+from dat.balances import read, bmnr_s_bias
 from dat.engine import states, state_net
 from dat.parse_bmnr import excluded_holdings
 
@@ -24,7 +24,7 @@ NOTES = [
     'BitMine S is estimated between filings. It is anchored to the 10-Q share counts for 2026-05-31 and 2026-07-09 '
     'and rolled by disclosed buybacks. Unreported issuance each week is estimated as the week\'s unexplained change '
     'in R divided by that week\'s BMNR close; the bars show it hatched as estimated issuance. ETH counted as bought '
-    'includes staking, which raises the S estimate by about 0.43% by 2026-09-20; the next 10-K count resets it.',
+    'includes staking, which raises the S estimate by about {bias} by {bias_week}; the next 10-K count resets it.',
     'BitMine releases give ETH bought in coins only. The USD of each BitMine ETH purchase is estimated as units × that '
     'week\'s ETH close. Coin trades are neutral on day one, so the estimate does not move the bars. The releases do '
     'not separate staking rewards from purchases.',
@@ -202,7 +202,8 @@ def build(data_dir='data', online=False):
         h['gap'] = round(h['pref_close'] - h['break_even'], 2)  # negative: preferred below break-even
         headline.append({**h, 'sentence': sentence(h), 'close_sentence': close_sentence(h)})
     bmnr_url = max((r for r in all_st if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])['filing_url']
-    notes = [{'text': n, 'url': None} for n in NOTES]
+    bias, bias_week = bmnr_s_bias(data_dir)
+    notes = [{'text': n.replace('{bias}', f'{bias:.2%}').replace('{bias_week}', bias_week), 'url': None} for n in NOTES]
     notes.insert(1, bmnr_r_note(bmnr_url, online))
     sbet = sorted(r['week_end'] for r in all_st if r['firm'] == 'SBET')
     last_8k = max(r['filed'] for r in all_st if r['firm'] == 'SBET')

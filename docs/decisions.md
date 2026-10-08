@@ -56,6 +56,9 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | S10 | Preferred notional and class A shares roll forward from Q2 10-Q anchors by each 8-K's sales and repurchases; class B and awards stay at 10-Q values until the next 10-Q. | The weekly 8-Ks give flows, not levels. | Levels from the API. |
 | S11 | Parsers use structural guards instead of word lists: every $ amount in a reserve sentence must be consumed, every "USD Reserve" mention must sit inside a recognized pattern, hedged or negated flows ("may use up to", "did not use") raise. | Three review rounds of word lists kept finding new phrasings; structural rules held on the full corpus (notes #16). | Growing lists of phrasings. |
 | S12 | Sentence splitting handles "$5.04" and "U.S.". | A naive split on periods produced empty output (notes #18). | Splitting on every period. |
+| S13 | Strategy's 9/28 8-K (week 9/27) states 847,666 BTC where 846,000 + 1,665 = 847,665, and the 10/05 8-K balances from 847,666. `KNOWN_FILING_REBASES` lets the roll take the stated level from that week, only for a named week and only for a 1 BTC difference. | Unlike the 6/14 and 8/02 gaps, later filings follow the stated figure, so a one-week gap entry would fail every week after. The extra BTC lands in that week's residual. | A general ±1 BTC tolerance; listing every later week as a gap. |
+| S14 | "$X were funded using interest earned on Strategy's cash" (10/05 8-K, STRC repurchases) books a positive `carry` row, ticker `INT_INC`. | It is cash into R that the filing names; without it the 10/04 R check misses by $22.2M. | Leaving it in the residual. |
+| S15 | When an 8-K splits a section into periods that end at a holdings-only quarter-end row (10/05: 9/28 to 9/30 and 10/1 to 10/4), the rows keep the 8-K's week end (10/04), not the sub-period end. | The quarter-end row states no USD balance, so R there is carried (method.md); dating a cash flow to it would leave the flow out of R and fail the next week's residual (tried: 10/04 residual -$99.6M). Open question: roll R through such rows by their flows. | Dating each row to its sub-period with R still carried. |
 
 ## BitMine data
 
@@ -71,6 +74,7 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | B8 | A BitMine holdings change with no parsed purchase raises. | A missed purchase sentence would otherwise pass silently. | Inferring the purchase from the change. |
 | B9 | The ETH check compares against strategicethreserve.xyz at the site's own snapshot date and fails if the snapshot is over six weeks old. The site's data is read from its page. | The site has no API and lags about four weeks (notes #8). | The spec's check on the latest date, which could not pass. |
 | B10 | A second BMNP `issue_pref` row in actions stops `build_bmnr()` with an error (#15). | After BitMine's first follow-on BMNP sale the liquidation preference floats to max($100, last sale price, 10-day average) (`method.md`), so q = close/100 no longer holds. | A manual recheck of each week's release. |
+| B11 | An exhibit with no holdings sentence whose header says "Video Transcript" (Chairman's Message) is skipped with a printed line before the unknown-number guard runs. The staked-ETH pattern also accepts "Bitmine's". | Transcripts recount flows already booked from the weekly releases ("we bought back 21 million shares ... completed on August 17th"). | One regex per anecdote. |
 
 ## SharpLink data
 
@@ -100,6 +104,7 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | A7 | Test anchors: the Bitcoin Magazine STRC week ($24.998M retiring $28.893M notional adds $3.895M) to the dollar; each formula is zero at m = 1 or q = 1; each rotation is zero at m = q; first order within 1% of exact for an action under 1% of market cap. | A public figure to reproduce, plus identities any correct engine satisfies. | Tests only against our own outputs. |
 | A8 | The data row for 7/26 uses the 8-K's rounded $25.0M ($3.893M); the test uses $24.998M ($3.895M). | Data follows the filing; the test anchors to the published figure. | Editing the data to match the article. |
 | A9 | `states()` in `dat/engine.py` raises `ValueError` on an unknown firm (#15). | Its last branch was `else:  # SBET`, so any firm it did not name was built as SharpLink without an error. | A fall-through default. |
+| A10 | The residual test skips in-scope weeks with no R check (the 2026-09-30 quarter-end holdings row states no balance); they are report only. | `method.md`: the test applies only to weeks where R is checked. | Raising on a missing tolerance. |
 
 ## Page and memo
 
@@ -120,6 +125,7 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | M13 | Bar panel totals keep carry and BitMine's estimated issuance out of "filed actions"; each shows as its own total (#18). | `method.md`: carry rows are not actions, and estimated issuance is not an `actions.csv` row. | One total for all non-price parts. |
 | M14 | The page computes SharpLink's day count (days from its last filed holdings to the build), not `build()` (#18). | `build()` stays independent of the clock. | Writing the day count into `data.json`. |
 | M15 | `dat.social` writes cards, replay frames and draft posts to the gitignored `private/social/`, uses only the standard library, and leaves rendering (Playwright, Chromium, ffmpeg) to a script outside the package. Posting is manual. A test scans every generated string for em dashes and banned words (#19). | The repo gains no dependency, nothing posts on its own, and the drafts follow `framing.md` like the page. | Committing the output; a rendering dependency in the package; automated posting. |
+| M16 | The page shows "Data through the week ending X (N days ago)" under the lede, warns "Behind" past 9 days, gives SharpLink's card its days since last filing, and the footer leads with the data date, not the build time. The BitMine S-bias note is computed at build. | A fresh build stamp and a green check made three-week-old data look current. Computed in the browser so a page that stops updating still says so. | The build time alone. |
 
 ## Automation
 

@@ -124,7 +124,7 @@ def residuals(data_dir):
         tol = {c[0]: float(c[4]) for c in reserve_checks(stated, actions, start) if c[4] is not None}
         sts, weeks = states(firm, bal, weekly, stated, actions), [b['date'] for b in bal]
         for prev_w, w in zip(weeks, weeks[1:]):
-            if w < start:
+            if w < start or w not in tol:  # no R check that week (e.g. 2026-09-30 quarter-end row): report only
                 continue
             prev, cur = sts[prev_w], sts[w]
             rows, obs = attribute(prev, cur, week_rows(firm, prev_w, w, prev, cur, actions))

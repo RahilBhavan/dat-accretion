@@ -188,3 +188,6 @@ footer { margin-top: 6px; border-top: 1px solid var(--border); padding: 26px 0 4
   .firm-note { max-width: 125px; text-align: right; line-height: 1.2; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+.asof { font-size: .9rem; color: var(--muted); max-width: 680px; }
+.asof .stale { color: var(--s2); font-weight: 600; }
