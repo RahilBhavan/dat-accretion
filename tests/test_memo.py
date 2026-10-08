@@ -38,3 +38,10 @@ def test_bias_that_flips_a_week_fails():
     rows = read('data/weekly.csv')
     with pytest.raises(ValueError, match='rewrite the footnote'):
         memo.closest(rows, {w: 0.02 for w in memo.week_biases('data', rows)})
+
+
+def test_memo_leads_with_break_even_table(tmp_path):
+    memo.main('data', str(tmp_path))
+    lines = (tmp_path / 'memo.md').read_text().splitlines()
+    assert lines[2].startswith('| Firm |') and 'Break-even' in lines[2]  # answer first: table right under the title
+    assert '<table>' in (tmp_path / 'memo.html').read_text()

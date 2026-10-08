@@ -85,7 +85,7 @@ def test_excluded_holdings_missing_is_omitted():
     assert excluded_holdings('<p>No holdings sentence here.</p>') is None
     url = 'https://www.sec.gov/Archives/edgar/data/1829311/000000000000000000/ex99-1.htm'
     note = bmnr_r_note(url, online=False)  # not cached, offline: warn and omit
-    assert note == {'text': BMNR_R_NOTE, 'url': None}
+    assert note == {'group': 'coverage', 'text': BMNR_R_NOTE, 'url': None}
 
 
 def week(site, firm, w):
@@ -123,3 +123,7 @@ def test_worked_example_traces_to_its_row(site):
     x = site['example']
     assert x['filing_url'].startswith('https://www.sec.gov/') and x['adds_usd'] == round(x['notional'] - x['usd'])
     assert x['usd'] == 25_000_000 and x['adds_usd'] == 3_893_000  # method.md rounding note: as filed, $3.893M
+
+
+def test_every_note_has_a_group(site):
+    assert {n['group'] for n in site['notes']} == {'estimate', 'coverage', 'convention'}
