@@ -212,3 +212,7 @@ footer { margin-top: 6px; border-top: 1px solid var(--border); padding: 26px 0 4
 .strip-note { font-size: 13px; color: var(--muted); margin: 0 0 10px; max-width: 760px; }
 .strip-bar i.resid, .sw.resid { background: repeating-linear-gradient(-45deg, var(--neutral) 0 2px, transparent 2px 5px) !important; opacity: 1 !important; }
 .strip-bar i.est { background: repeating-linear-gradient(45deg, var(--c1) 0 2px, transparent 2px 5px); }
+
+#notes { list-style: none; padding-left: 0; }
+.note-group h4 { margin: 14px 0 6px; font-size: .95rem; }
+.note-group ul { margin: 0; padding-left: 1.2rem; }

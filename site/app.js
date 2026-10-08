@@ -511,8 +511,13 @@ function table() {
 
 // ---- 5. method: notes and check ----
 function method() {
-  document.getElementById('notes').innerHTML = DATA.notes.map(n => '<li>' + esc(n.text)
-    + (n.url ? ' <a href="' + esc(n.url) + '" target="_blank" rel="noopener">Release</a>.' : '') + '</li>').join('');
+  // Caveats grouped by kind, each group a short list (estimated figures first: they carry numbers a reader may reuse).
+  const KIND = [['estimate', 'Estimated figures'], ['coverage', 'What is in, what is out, where data is missing'], ['convention', 'Conventions']];
+  const li = n => '<li>' + esc(n.text) + (n.url ? ' <a href="' + esc(n.url) + '" target="_blank" rel="noopener">Release</a>.' : '') + '</li>';
+  document.getElementById('notes').innerHTML = KIND.map(([k, label]) => {
+    const ns = DATA.notes.filter(n => n.group === k);
+    return ns.length ? '<li class="note-group"><h4>' + label + ' (' + ns.length + ')</h4><ul>' + ns.map(li).join('') + '</ul></li>' : '';
+  }).join('');
   const c = DATA.check && typeof DATA.check === 'object' ? DATA.check : { status: 'not yet run' }, when = c.run_at || c.generated_at;
   const count = Array.isArray(c.checks) ? c.checks.length : 0;
   document.getElementById('check').innerHTML = '<div class="check-summary"><span class="check-status ' + (c.status === 'pass' ? 'passed' : '') + '">' + esc(c.status || 'see below') + '</span>'

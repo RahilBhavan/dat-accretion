@@ -20,45 +20,45 @@ LIQ_PREF = 100  # STRC stated amount and BMNP liquidation preference, USD (metho
 BMNR_R_NOTE = ('BitMine R is its stated "total cash & marketable securities", so it includes marketable securities. '
                'BitMine\'s BTC holdings and equity stakes are excluded, as Strategy\'s definition counts only the coin '
                'reserve and USD assets.')
-NOTES = [
-    'BitMine S is estimated between filings. It is anchored to the 10-Q share counts for 2026-05-31 and 2026-07-09 '
+NOTES = [  # (group, text): estimate = an estimated figure; coverage = what is in or out; convention = a stated rule
+    ('estimate', 'BitMine S is estimated between filings. It is anchored to the 10-Q share counts for 2026-05-31 and 2026-07-09 '
     'and rolled by disclosed buybacks. Unreported issuance each week is estimated as the week\'s unexplained change '
     'in R divided by that week\'s BMNR close; the bars show it hatched as estimated issuance. ETH counted as bought '
-    'includes staking, which raises the S estimate by about {bias} by {bias_week}; the next 10-K count resets it.',
-    'BitMine releases give ETH bought in coins only. The USD of each BitMine ETH purchase is estimated as units × that '
+    'includes staking, which raises the S estimate by about {bias} by {bias_week}; the next 10-K count resets it.'),
+    ('estimate', 'BitMine releases give ETH bought in coins only. The USD of each BitMine ETH purchase is estimated as units × that '
     'week\'s ETH close. Coin trades are neutral on day one, so the estimate does not move the bars. The releases do '
-    'not separate staking rewards from purchases.',
-    'Strategy R is taken as stated in each 8-K. The roll-forward check on R runs from 2026-08-02; before that date R '
+    'not separate staking rewards from purchases.'),
+    ('coverage', 'Strategy R is taken as stated in each 8-K. The roll-forward check on R runs from 2026-08-02; before that date R '
     'is unchecked and any unexplained change lands in the residual. Before 2026-08-23 R is the USD Reserve alone '
-    '(USD Cash was established that week, funded by that week\'s MSTR sale proceeds). The 2026-06-30 quarter-end row carries R from the prior 8-K; the 2026-09-30 quarter-end row rolls R from the 9/27 8-K by filed cash flows.',
-    'Residuals are report-only for Strategy weeks before 2026-08-02 and for every BitMine week. The residual test '
-    '(under 5% of the week\'s change, or within R rounding) applies to Strategy from 2026-08-02.',
-    'STRE is in EUR; it converts at 1.147 USD per EUR, the rate implied by Strategy\'s API. The Friday 12:30 PM New '
-    'York fixing Strategy uses is not published.',
-    'Break-even prices use a $100 stated amount for STRC and a $100 liquidation preference for BMNP. After BitMine\'s '
-    'first follow-on BMNP sale the BMNP preference floats to max($100, last sale price, 10-day average).',
-    'Each firm\'s first week, 2026-05-31, is the anchor: it has no attribution, since the change in n needs a prior '
-    'week. It is not in the bars.',
-    'BitMine weeks before BMNP was issued (2026-05-31 and 2026-06-07) have no q, so they are not on the map.',
+    '(USD Cash was established that week, funded by that week\'s MSTR sale proceeds). The 2026-06-30 quarter-end row carries R from the prior 8-K; the 2026-09-30 quarter-end row rolls R from the 9/27 8-K by filed cash flows.'),
+    ('coverage', 'Residuals are report-only for Strategy weeks before 2026-08-02 and for every BitMine week. The residual test '
+    '(under 5% of the week\'s change, or within R rounding) applies to Strategy from 2026-08-02.'),
+    ('convention', 'STRE is in EUR; it converts at 1.147 USD per EUR, the rate implied by Strategy\'s API. The Friday 12:30 PM New '
+    'York fixing Strategy uses is not published.'),
+    ('convention', 'Break-even prices use a $100 stated amount for STRC and a $100 liquidation preference for BMNP. After BitMine\'s '
+    'first follow-on BMNP sale the BMNP preference floats to max($100, last sale price, 10-day average).'),
+    ('coverage', 'Each firm\'s first week, 2026-05-31, is the anchor: it has no attribution, since the change in n needs a prior '
+    'week. It is not in the bars.'),
+    ('coverage', 'BitMine weeks before BMNP was issued (2026-05-31 and 2026-06-07) have no q, so they are not on the map.'),
 ]
 
 
 def sbet_notes(dates, last_filed):
     listed = ', '.join(dates[:-1]) + ' and ' + dates[-1]
     return [
-        f'SharpLink states ETH holdings in its filings only on {listed}, and its last 8-K was filed {last_filed}. Its '
+        ('coverage', f'SharpLink states ETH holdings in its filings only on {listed}, and its last 8-K was filed {last_filed}. Its '
         'marks and bars are per filed date, not per week; nothing is carried forward between them. Its first filed '
-        f'date, {dates[0]}, is its anchor.',
-        'SharpLink has no preferred, so it has no q and no rotation line. Its marks sit at q = 1 on the map, where the '
-        'line m = q is m = 1: the break-even for issuing or buying back common.',
-        'SharpLink C is its stated Total ETH Holdings: native ETH plus LsETH and weETH at the stated as-if-redeemed ETH '
+        f'date, {dates[0]}, is its anchor.'),
+        ('convention', 'SharpLink has no preferred, so it has no q and no rotation line. Its marks sit at q = 1 on the map, where the '
+        'line m = q is m = 1: the break-even for issuing or buying back common.'),
+        ('estimate', 'SharpLink C is its stated Total ETH Holdings: native ETH plus LsETH and weETH at the stated as-if-redeemed ETH '
         'equivalence. The stated ETH change not explained by stated purchases is booked as carry, labeled inferred '
-        'staking and LST accrual. BitMine has no such row, because its "acquired" figure already includes staking.',
-        'SharpLink R is balance-sheet cash, stated only at quarter ends (2026-06-30 in this period). Other dates roll '
+        'staking and LST accrual. BitMine has no such row, because its "acquired" figure already includes staking.'),
+        ('coverage', 'SharpLink R is balance-sheet cash, stated only at quarter ends (2026-06-30 in this period). Other dates roll '
         'it by filed cash flows, so operating costs and staking revenue are not in it. SharpLink S uses the 10-Q counts '
-        'for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks. SharpLink residuals are report only.',
-        'SharpLink\'s residuals come from shares added to S that no filing ties to an action: 49,265 performance '
-        'RSUs on 2026-06-30, and on 2026-08-03 the July RSU and performance RSU grants and award shares.',
+        'for 2026-06-30 and 2026-08-03, rolled by filed issuance and buybacks. SharpLink residuals are report only.'),
+        ('coverage', 'SharpLink\'s residuals come from shares added to S that no filing ties to an action: 49,265 performance '
+        'RSUs on 2026-06-30, and on 2026-08-03 the July RSU and performance RSU grants and award shares.'),
     ]
 
 
@@ -148,8 +148,8 @@ def bmnr_r_note(url, online):
         print(f'warning: BitMine release {url}: {e}', file=sys.stderr)
     if not x:
         print(f'warning: excluded BitMine holdings not found in {url}; note omits them', file=sys.stderr)
-        return {'text': BMNR_R_NOTE, 'url': None}
-    return {'text': BMNR_R_NOTE + ' ' + excluded_sentence(x), 'url': url}
+        return {'group': 'coverage', 'text': BMNR_R_NOTE, 'url': None}
+    return {'group': 'coverage', 'text': BMNR_R_NOTE + ' ' + excluded_sentence(x), 'url': url}
 
 
 def sentence(h):
@@ -237,11 +237,12 @@ def build(data_dir='data', online=False):
         headline.append({**h, 'sentence': sentence(h), 'close_sentence': close_sentence(h)})
     bmnr_url = max((r for r in all_st if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])['filing_url']
     bias, bias_week = bmnr_s_bias(data_dir)
-    notes = [{'text': n.replace('{bias}', f'{bias:.2%}').replace('{bias_week}', bias_week), 'url': None} for n in NOTES]
+    notes = [{'group': g, 'text': n.replace('{bias}', f'{bias:.2%}').replace('{bias_week}', bias_week), 'url': None}
+             for g, n in NOTES]
     notes.insert(1, bmnr_r_note(bmnr_url, online))
     sbet = sorted(r['week_end'] for r in all_st if r['firm'] == 'SBET')
     last_8k = max(r['filed'] for r in all_st if r['firm'] == 'SBET')
-    notes += [{'text': n, 'url': None} for n in sbet_notes(sbet, last_8k)]
+    notes += [{'group': g, 'text': n, 'url': None} for g, n in sbet_notes(sbet, last_8k)]
     totals = {}
     for firm in FIRMS:  # actions = filed actions only: carry and estimated issuance are listed apart (method.md)
         ws = [w for w in weeks if w['firm'] == firm]

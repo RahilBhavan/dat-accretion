@@ -44,55 +44,61 @@
 <text x="744.0" y="20.0" text-anchor="end">m = q</text>
 <text x="68" y="34" font-weight="bold">Strategy's rotation adds here (m &gt; q)</text>
 <text x="774" y="410" text-anchor="end" font-weight="bold">BitMine's rotation adds here (m &lt; q)</text>
-<circle cx="324.3" cy="261.8" r="22.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="139.7" cy="259.3" r="16.1" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="334.1" cy="225.6" r="15.9" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="314.3" cy="221.1" r="14.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="244.9" cy="255.3" r="11.3" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="344.5" cy="160.9" r="11.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="266.9" cy="231.3" r="10.4" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="250.0" cy="239.6" r="10.3" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="312.4" cy="235.3" r="10.3" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<rect x="177.7" y="245.2" width="16.9" height="16.9" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<circle cx="259.5" cy="131.8" r="9.1" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="312.5" cy="79.7" r="8.4" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="300.6" cy="51.8" r="8.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="231.3" cy="235.6" r="7.7" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="344.2" cy="149.8" r="7.5" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="337.7" cy="180.8" r="6.3" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="345.3" cy="205.7" r="5.6" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="253.3" cy="171.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="348.3" cy="68.4" r="5.4" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<rect x="323.9" y="246.1" width="9.6" height="9.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<circle cx="351.9" cy="158.4" r="5.2" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<rect x="236.3" y="306.9" width="9.0" height="9.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<circle cx="351.4" cy="176.7" r="4.8" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<rect x="232.2" y="305.0" width="8.4" height="8.4" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<path d="M356.9,380.0L363.3,391.0L350.6,391.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
-<rect x="258.8" y="267.5" width="8.3" height="8.3" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="240.6" y="260.2" width="8.0" height="8.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="295.6" y="280.2" width="7.6" height="7.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<circle cx="227.6" cy="210.7" r="4.3" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<rect x="335.5" y="237.0" width="7.1" height="7.1" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="211.0" y="309.3" width="7.1" height="7.1" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="262.0" y="240.8" width="7.1" height="7.1" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="337.3" y="226.6" width="7.0" height="7.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="341.8" y="237.1" width="7.0" height="7.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="232.0" y="314.8" width="5.9" height="5.9" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="273.7" y="252.3" width="5.9" height="5.9" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="349.5" y="222.9" width="5.8" height="5.8" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="192.0" y="304.0" width="5.5" height="5.5" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="349.8" y="242.8" width="5.3" height="5.3" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<path d="M356.9,372.0L361.0,379.0L352.9,379.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
-<path d="M356.9,381.9L361.0,388.9L352.9,388.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
-<path d="M356.9,340.9L361.0,347.9L352.9,347.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
-<circle cx="65.0" cy="480.0" r="6.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6"/>
+<polyline points="348.3,68.4 300.6,51.8 312.5,79.7 259.5,131.8 139.7,259.3 227.6,210.7 253.3,171.3 250.0,239.6 231.3,235.6 244.9,255.3 266.9,231.3 314.3,221.1 312.4,235.3 324.3,261.8 334.1,225.6 337.7,180.8 345.3,205.7 344.2,149.8 344.5,160.9 351.4,176.7 351.9,158.4" fill="none" stroke="#2a78d6" stroke-opacity="0.45" stroke-width="1.2"/>
+<circle cx="348.3" cy="68.4" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="300.6" cy="51.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="312.5" cy="79.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="259.5" cy="131.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="139.7" cy="259.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="227.6" cy="210.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="253.3" cy="171.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="250.0" cy="239.6" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="231.3" cy="235.6" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="244.9" cy="255.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="266.9" cy="231.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="314.3" cy="221.1" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="312.4" cy="235.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="324.3" cy="261.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="334.1" cy="225.6" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="337.7" cy="180.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="345.3" cy="205.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="344.2" cy="149.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="344.5" cy="160.9" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<circle cx="351.4" cy="176.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
+<polyline points="186.1,253.6 244.6,264.2 194.7,306.7 214.6,312.9 235.0,317.8 236.4,309.2 240.8,311.4 263.0,271.6 265.6,244.4 276.7,255.2 299.4,284.0 328.7,250.9 340.8,230.1 345.3,240.5 339.1,240.5 352.3,225.8 352.5,245.5" fill="none" stroke="#eb6834" stroke-opacity="0.45" stroke-width="1.2"/>
+<rect x="181.2" y="248.7" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="239.8" y="259.3" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="189.9" y="301.9" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="209.7" y="308.0" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="230.1" y="312.9" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="231.6" y="304.3" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="235.9" y="306.5" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="258.1" y="266.8" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="260.7" y="239.5" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="271.8" y="250.4" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="294.5" y="279.1" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="323.8" y="246.0" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="335.9" y="225.3" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="340.5" y="235.7" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="334.2" y="235.7" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<rect x="347.5" y="220.9" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
+<polyline points="356.9,376.7 356.9,387.4 356.9,386.6 356.9,345.6" fill="none" stroke="#4a3aa7" stroke-opacity="0.45" stroke-width="1.2"/>
+<path d="M356.9,368.1L364.3,381.0L349.5,381.0Z" style="fill:#4a3aa7;fill-opacity:0.35;stroke:#4a3aa7;stroke-width:1.5"/>
+<path d="M356.9,378.8L364.3,391.6L349.5,391.6Z" style="fill:#4a3aa7;fill-opacity:0.35;stroke:#4a3aa7;stroke-width:1.5"/>
+<path d="M356.9,378.0L364.3,390.8L349.5,390.8Z" style="fill:#4a3aa7;fill-opacity:0.35;stroke:#4a3aa7;stroke-width:1.5"/>
+<circle cx="351.9" cy="158.4" r="7.0" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.5"/>
+<text x="362.9" y="162.4" font-weight="bold">Strategy 2026-10-04</text>
+<rect x="346.3" y="239.3" width="12.4" height="12.4" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.5"/>
+<text x="363.5" y="249.5" font-weight="bold">BitMine 2026-10-04</text>
+<path d="M356.9,334.7L366.4,351.0L347.5,351.0Z" style="fill:#4a3aa7;stroke:#4a3aa7;stroke-width:1.5"/>
+<text x="367.9" y="349.6" font-weight="bold">SharpLink 2026-08-03</text>
+<circle cx="65.0" cy="480.0" r="5.5" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6"/>
 <text x="76" y="484">Strategy</text>
-<rect x="159.7" y="474.7" width="10.6" height="10.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834"/>
+<rect x="160.1" y="475.1" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834"/>
 <text x="176" y="484">BitMine</text>
-<path d="M265.0,470.7L273.1,484.7L256.9,484.7Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7"/>
+<path d="M265.0,471.4L272.4,484.3L257.6,484.3Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7"/>
 <text x="276" y="484">SharpLink</text>
 <line x1="368" y1="486" x2="382" y2="474" stroke="#222" stroke-dasharray="3 2"/>
 <text x="388" y="484">m = q</text>
-<text x="448" y="484" fill="#555">Mark area: dollars moved (filed actions only)</text>
+<text x="448" y="484" fill="#555">Lines join each firm's weeks in date order; solid mark: latest</text>
 </svg>

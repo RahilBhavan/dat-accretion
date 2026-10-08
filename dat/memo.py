@@ -61,7 +61,8 @@ def ticks(lo, hi, step=0.05):
 
 
 def map_svg(weeks, W=800, H=500):
-    """Break-even map, 16:10: x = q, y = m on one shared domain, m = q diagonal, area ∝ dollars moved."""
+    """Break-even map, 16:10: x = q, y = m on one shared domain, m = q diagonal. One mark size; each firm's weeks
+    joined in date order, latest mark solid and labeled (as on the page)."""
     # SharpLink has no preferred (q None): its marks sit at q = 1, where m = q is m = 1 (as on the page).
     pts = [{**w, 'qx': 1.0 if w['q'] is None else w['q']} for w in weeks
            if w['m'] is not None and (w['q'] is not None or w['firm'] == 'SBET')]
@@ -70,8 +71,7 @@ def map_svg(weeks, W=800, H=500):
     lo, hi = math.floor((min(vals) - 0.05) * 20) / 20, math.ceil((max(vals) + 0.05) * 20) / 20
     X = lambda v: M['l'] + (v - lo) / (hi - lo) * (W - M['l'] - M['r'])
     Y = lambda v: H - M['b'] - (v - lo) / (hi - lo) * (H - M['t'] - M['b'])
-    dmax = max([w['dollars_moved'] or 0 for w in pts] + [1])
-    rad = lambda w: max(3.0, math.sqrt((w['dollars_moved'] or 0) / dmax) * 22)
+    R = 5.5
     step = 0.05 if (hi - lo) <= 0.8 else 0.1
     s = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" '
          'aria-label="Break-even map: net mNAV m against preferred price over notional q, one mark per firm-week" '
@@ -92,37 +92,75 @@ def map_svg(weeks, W=800, H=500):
     s.append(f'<text x="{M["l"] + 10}" y="{M["t"] + 20}" font-weight="bold">Strategy\'s rotation adds here (m &gt; q)</text>')
     s.append(f'<text x="{W - M["r"] - 10}" y="{H - M["b"] - 12}" text-anchor="end" font-weight="bold">'
              'BitMine\'s rotation adds here (m &lt; q)</text>')
-    for w in sorted(pts, key=lambda w: -(w['dollars_moved'] or 0)):  # small marks on top
-        c = COLOR[w['firm']]
-        s.append(mark(w['firm'], X(w['qx']), Y(w['m']), rad(w), f'fill:{c};fill-opacity:0.45;stroke:{c};stroke-width:1.5'))
+    latest = {}
+    for firm in ('MSTR', 'BMNR', 'SBET'):
+        path = sorted((w for w in pts if w['firm'] == firm), key=lambda w: w['week_end'])
+        if not path:
+            continue
+        latest[firm] = path[-1]
+        c = COLOR[firm]
+        if len(path) > 1:
+            s.append(f'<polyline points="{" ".join(f"{X(w["qx"]):.1f},{Y(w["m"]):.1f}" for w in path)}" '
+                     f'fill="none" stroke="{c}" stroke-opacity="0.45" stroke-width="1.2"/>')
+        for w in path[:-1]:
+            s.append(mark(firm, X(w['qx']), Y(w['m']), R, f'fill:{c};fill-opacity:0.35;stroke:{c};stroke-width:1.5'))
+    for firm, w in latest.items():
+        c, cx, cy = COLOR[firm], X(w['qx']), Y(w['m'])
+        s.append(mark(firm, cx, cy, R + 1.5, f'fill:{c};stroke:{c};stroke-width:1.5'))
+        s.append(f'<text x="{cx + 11:.1f}" y="{cy + 4:.1f}" font-weight="bold">{FIRMS[firm]["name"]} {w["week_end"]}</text>')
     y, x = H - 16, M['l']
     for firm in ('MSTR', 'BMNR', 'SBET'):
         c = COLOR[firm]
-        s.append(mark(firm, x + 7, y - 4, 6, f'fill:{c};fill-opacity:0.45;stroke:{c}'))
+        s.append(mark(firm, x + 7, y - 4, 5.5, f'fill:{c};fill-opacity:0.45;stroke:{c}'))
         s.append(f'<text x="{x + 18}" y="{y}">{FIRMS[firm]["name"]}</text>')
         x += 100 if firm != 'SBET' else 110
     s.append(f'<line x1="{x}" y1="{y + 2}" x2="{x + 14}" y2="{y - 10}" stroke="#222" stroke-dasharray="3 2"/>')
     s.append(f'<text x="{x + 20}" y="{y}">m = q</text>')
-    s.append(f'<text x="{x + 80}" y="{y}" fill="#555">Mark area: dollars moved (filed actions only)</text>')
+    s.append(f'<text x="{x + 80}" y="{y}" fill="#555">Lines join each firm\'s weeks in date order; solid mark: latest</text>')
     return '\n'.join(s + ['</svg>']) + '\n'
 
 
-def paragraphs(d):
+def table(d):
+    """Answer first: each firm's latest m, preferred close and break-even. -> (header, rows, caption)."""
     h = {x['firm']: x for x in d['headline']}
-    ruler = ("The ruler is Strategy's own net coins per share definition, applied to all three firms, from the glossary in "
-             f"Strategy's 2026-08-24 FWP. Net coins N are coins held plus USD assets, less out-of-the-money convertible "
-             "debt and preferred notional, converted to coins at the coin price. n is N per fully diluted share. m is net "
-             "mNAV, the common share price over the net coin value per share: m = s / (p·n). q is the preferred's close "
-             "over its $100 notional.")
+    rows = []
+    for f in ('MSTR', 'BMNR'):
+        x, side = h[f], FIRMS[f]['side']
+        rows.append([FIRMS[f]['name'], x['week_end'], f"{x['m']:.3f}", f"{x['pref']} ${x['pref_close']:.2f}",
+                     f"${x['break_even']:.2f}", f"{x['pref']} {side} break-even"])
+    x = h['SBET']
+    rows.append(['SharpLink', f"{x['week_end']} (last filed)", f"{x['m']:.3f}", 'no preferred', 'm = 1',
+                 'issuance while m > 1; buyback while m < 1'])
+    header = ['Firm', 'Week ending', 'Net mNAV m', 'Preferred close', 'Break-even ($100 × m)', 'Rotation adds while']
+    caption = ' '.join(h[f]['close_sentence'] for f in ('MSTR', 'BMNR', 'SBET'))
+    return header, rows, caption
+
+
+def residual_sentence(d):
+    """The residual against filed actions, with Strategy's split at its first R-checked week (as on the page)."""
+    t = d['totals']
+    m, b, s = t['MSTR'], t['BMNR'], t['SBET']
+    usd = lambda v: ('+' if v >= 0 else '−') + f'${abs(v) / 1e6:,.1f}M'
+    return (f"Value to common since each firm's first week, by cause: filed actions {usd(m['actions'])} for Strategy, "
+            f"{usd(b['actions'])} for BitMine and {usd(s['actions'])} for SharpLink. The residual, the change the filings "
+            f"leave unexplained, is {usd(m['residual'])} for Strategy: {usd(m['residual'] - m['residual_checked'])} before "
+            f"{m['checked_from']}, when the 8-Ks did not itemize cash flows, and {usd(m['residual_checked'])} in the weeks "
+            f"since, each checked against the filings. BitMine's is {usd(b['residual'])} and SharpLink's "
+            f"{usd(s['residual'])}, both report only.")
+
+
+def paragraphs(d):
+    ruler = ("Digital asset treasury (DAT) companies hold bitcoin or ether and raise money by selling stock. This memo "
+             "measures each share sale, buyback and preferred trade since 2026-06-01 with Strategy's own net coins per "
+             "share definition, applied to all three firms (glossary, Strategy's 2026-08-24 FWP). Net coins N are coins "
+             "held plus USD assets, less out-of-the-money convertible debt and preferred notional, converted to coins at "
+             "the coin price; n is N per fully diluted share. m is net mNAV, the share price over the net coin value per "
+             "share. q is the preferred's close over its $100 notional.")
     line = ("Issuing common adds to n while m is above 1; retiring preferred adds while q is below 1. Strategy's rotation "
             "sells common and retires STRC, so it adds while m > q: it stops adding when STRC trades above $100 × m. "
             "BitMine's rotation sells BMNP and buys back common, so it adds while m < q: it stops adding when BMNP trades "
-            "below $100 × m. The line m = q is where both rotations add nothing. SharpLink has no preferred, so no rotation "
-            "line applies: issuing common adds while m > 1 and buying back common adds while m < 1.")
-    s = h['SBET']  # the line paragraph above already states SharpLink's m vs 1 rule
-    where = ' '.join(f"{h[f]['sentence']} {h[f]['close_sentence']}" for f in ('MSTR', 'BMNR')) + \
-        f" SharpLink's net mNAV was {s['m']:.3f} on its last filed date, {s['week_end']}. {s['close_sentence']}"
-    return ruler, line, where + ' ' + d['counts']
+            "below $100 × m. SharpLink has no preferred, so no rotation line applies.")
+    return ruler, line, d['counts'] + ' ' + residual_sentence(d)
 
 
 def footnote(c, weekly, biases):
@@ -145,30 +183,40 @@ def footnote(c, weekly, biases):
     ]
 
 
-def md(t, paras, notes):
-    return '\n\n'.join([f'# {t}', *paras, '![Break-even map: m against q, one mark per firm-week](map.svg)',
+def md(t, tab, paras, notes):
+    header, rows, caption = tab
+    grid = '\n'.join(['| ' + ' | '.join(header) + ' |', '|' + '---|' * len(header)] + ['| ' + ' | '.join(r) + ' |' for r in rows])
+    return '\n\n'.join([f'# {t}', grid, f'<sub>{caption}</sub>', *paras, '![Break-even map: m against q, one mark per firm-week](map.svg)',
                         '---', *(f'<sub>{x}</sub>' for x in notes),
                         f'<sub>Page: {PAGE}. Method: {REPO}/blob/main/docs/methodology.md. '
                         f'Code and data: {REPO}. Definition source: {FWP}.</sub>']) + '\n'
 
 
-CSS = """@page { size: Letter; margin: 0.6in; }
-body { font: 10pt/1.38 Helvetica, Arial, sans-serif; color: #222; max-width: 7.3in; margin: 0 auto; }
-h1 { font-size: 14.5pt; line-height: 1.25; margin: 0 0 0.12in; }
+CSS = """@page { size: Letter; margin: 0.5in; }
+body { font: 9.2pt/1.34 Helvetica, Arial, sans-serif; color: #222; max-width: 7.5in; margin: 0 auto; }
+h1 { font-size: 13pt; line-height: 1.22; margin: 0 0 0.08in; }
 p { margin: 0 0 0.09in; }
 figure { margin: 0.04in 0 0.06in; text-align: center; }
-figure svg { width: 5.2in; height: auto; }
-.note { font-size: 7.6pt; line-height: 1.3; color: #444; margin: 0 0 0.04in; }
+figure svg { width: 4.3in; height: auto; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 0.04in; font-size: 8.6pt; }
+th, td { text-align: left; padding: 2px 6px; border-bottom: 1px solid #ddd; }
+th { border-bottom: 1.5px solid #222; }
+td:nth-child(3), td:nth-child(4), td:nth-child(5) { font-variant-numeric: tabular-nums; }
+.note { font-size: 7pt; line-height: 1.25; color: #444; margin: 0 0 0.04in; }
 a { color: #1a5aa6; }
 @media screen { body { margin: 0.6in auto; } }"""
 
 
-def page(t, paras, notes, svg):
+def page(t, tab, paras, notes, svg):
     e = html.escape
+    header, rows, caption = tab
+    grid = ('<table><thead><tr>' + ''.join(f'<th>{e(h)}</th>' for h in header) + '</tr></thead><tbody>'
+            + ''.join('<tr>' + ''.join(f'<td>{e(c)}</td>' for c in r) + '</tr>' for r in rows) + '</tbody></table>'
+            + f'<p class="note">{e(caption)}</p>')
     links = (f'Page: <a href="{PAGE}">{PAGE}</a>. Method: <a href="{REPO}/blob/main/docs/methodology.md">'
              f'docs/methodology.md</a>. Code and data: <a href="{REPO}">{REPO}</a>. '
              f'Definition source: <a href="{FWP}">Strategy FWP, 2026-08-24</a>.')
-    body = [f'<h1>{e(t)}</h1>', *(f'<p>{e(p)}</p>' for p in paras), f'<figure>{svg}</figure>',
+    body = [f'<h1>{e(t)}</h1>', grid, *(f'<p>{e(p)}</p>' for p in paras), f'<figure>{svg}</figure>',
             *(f'<p class="note">{e(x)}</p>' for x in notes), f'<p class="note">{links}</p>']
     return ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
             f'<title>{e(t)}</title>\n<style>\n{CSS}\n</style></head>\n<body>\n' + '\n'.join(body) + '\n</body></html>\n')
@@ -179,7 +227,8 @@ def main(data_dir='data', out='docs'):
     weekly = read(os.path.join(data_dir, 'weekly.csv'))
     c = counts(weekly)
     t, paras, notes, svg = title(d['headline']), paragraphs(d), footnote(c, weekly, week_biases(data_dir, weekly)), map_svg(d['weeks'])
-    files = {'map.svg': svg, 'memo.md': md(t, paras, notes), 'memo.html': page(t, paras, notes, svg)}
+    tab = table(d)
+    files = {'map.svg': svg, 'memo.md': md(t, tab, paras, notes), 'memo.html': page(t, tab, paras, notes, svg)}
     for name, text in files.items():
         with open(os.path.join(out, name), 'w') as f:
             f.write(text)
