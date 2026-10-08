@@ -84,18 +84,21 @@ line for both rotations.
 
 ## What it produces
 
-1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). Its h1 is the memo's title. Below
-   it:
-   - one card per firm for the latest filed week, drawn as a bullet track: the preferred close, a tick at
-     break-even, and the gap (#20). STRC stops adding above $100 × m; BMNP adds above $100 × m.
-     SharpLink's card gives m and the date of its last filed holdings.
-   - a "By week" chart: each week's preferred close against its break-even, $100 × m, for STRC and BMNP, and SharpLink's m against 1
-     (#20).
-   - the break-even map. Every dot links to its SEC filing.
-   - weekly attribution bars in five colours, with a tick for each week's net change and a totals strip per
-     firm since its anchor week: filed actions, carry, estimated issuance (BitMine only) and residual, as
-     value to common (#20).
-   - the method (symbols, formulas and sources fold; caveats and the done check stay open) and CSV downloads.
+1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). A plain-language heading identifies the preferred-stock price threshold
+   for the two rotations. The sentence below it gives both rotations' break-even prices and closes, using
+   the same figures as the memo. Beside it are a gauge for each preferred and SharpLink's latest filed
+   holdings line. The page then shows:
+   - three key-term cards defining rotation, break-even and net mNAV;
+   - a four-step worked example of Strategy's July 26 STRC retirement, linked to its filing;
+   - preferred close against break-even by week for STRC and BMNP, and SharpLink's m against 1;
+   - a break-even map with equal-size marks, paths joining each firm's dates and a solid latest mark.
+     Every mark links to its SEC filing;
+   - attribution bars with a net-change tick, a hatched residual and separate totals for filed actions,
+     carry, estimated issuance (BitMine only) and residual, as value to common;
+   - a "How this is built" strip with figures from the current build: filings, firm-weeks, KPI comparison
+     and checks, plus the author's name and source-code link;
+   - the method, grouped caveats, done check and CSV downloads. Symbols, formulas and sources fold;
+     caveats and the done check stay open.
 2. **A one-page memo** (`docs/memo.md`, `docs/memo.pdf`): the finding as counts, the ruler, the line, and
    where each firm sits in its latest filed week.
 3. **The data and the engine**: CSVs under `data/`, the Python that builds them, and `check.py`, which
@@ -190,13 +193,15 @@ page keeps its last passing build (#17).
 ## How the numbers are checked
 
 - **Parsers**: each week's rolled coin total must equal the filing's stated total. Strategy matches
-  exactly (two 1-BTC gaps in Strategy's own filings are listed with their arithmetic). BitMine matches
+  exactly except for three documented 1-BTC discrepancies: two gaps retain the rolled total,
+  and the September 27 discrepancy resets the roll to the stated total supported by later filings. BitMine matches
   strategicethreserve.xyz within 0.1%.
-- **Definition**: the rebuilt net sats per share sits within 0.11% of Strategy's live KPI API.
+- **Definition**: the rebuilt net sats per share must sit within 0.5% of Strategy's live KPI API.
+  The original pinned snapshot differed by 0.107%; the live difference changes with prices and filings.
 - **Attribution**: the parts of each week sum to the observed change in n, and from 2026-08-02 the
   residual for Strategy is under 5% of the week's change or inside the filings' rounding.
 - **Provenance**: every `filing_url` returns HTTP 200. In each parsing step (Strategy, BitMine,
   SharpLink), a read-only agent matched every changed row of `actions.csv` and `stated.csv` to its filing
   before merge. Weekly refresh PRs merge on the automated checks alone.
 
-`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 144 offline tests.
+`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 152 offline tests as of 2026-10-08.

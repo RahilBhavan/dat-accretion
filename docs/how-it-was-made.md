@@ -152,7 +152,7 @@ the build if removing that bias would move any week across the line.
   missing or failing check still deployed and the page showed the failure. The step now fails unless the
   check's status is `pass`, so the live page keeps its last passing build. The page stops updating
   instead of showing a failure, and the failing Pages run is the signal.
-- **Figures-first page (#18)**: the h1 is now the memo's title, built by the same code. Each firm gets a
+- **Figures-first page (#18)**: at that stage the h1 became the memo's title, built by the same code. Each firm gets a
   card with its preferred close against break-even, and each bar panel shows totals since the anchor week.
   The slogan hero and buttons are gone, and the method section folds. At 375 px there is no horizontal
   scroll, and each of the 37 map marks links to an sec.gov filing.
@@ -171,6 +171,23 @@ the build if removing that bias would move any week across the line.
   `private/social/<week_end>/`. It uses only the standard library. A script outside the package renders
   PNG, MP4 and GIF with Playwright, Chromium and ffmpeg, and posting stays manual. A test scans every
   generated string for em dashes and banned words.
+
+## October 8 follow-up
+
+PR #21 brought Strategy and BitMine through October 4 and documented the September 27 1-BTC
+rebase: later filings balance from the stated holdings, unlike the two earlier gaps. PR #24 dated
+split filing periods to their own ends and rolled USD assets through holdings-only quarter-end rows.
+
+PRs #22 and #25–28 revised how the findings are presented: equal-size map marks with paths,
+hatched residuals, a one-page memo led by a break-even table, grouped caveats, and a plain page
+heading with figures and gauges beside it. The page and memo share figures but now have different
+titles. A four-step trade example and three term cards explain the mechanism before the analyst
+sections; a build strip identifies the author and gives counts from the current data.
+
+The earlier agent reader tests cover intermediate layouts. Three fresh AI readers tested the final redesign, all identifying both conditions and scoring it
+4/5. Their repeated common-versus-preferred headline confusion prompted a narrower heading.
+The same readers confirmed that the revised heading resolves that confusion.
+`docs/reader-test.md` records both rounds and a reusable human-test protocol.
 
 ## Plan against result
 
@@ -192,3 +209,7 @@ the build if removing that bias would move any week across the line.
   ones.
 - After SharpLink, 137 offline tests pass and `python check.py` passes 16 of 16 against live data.
 - `filing-verifier` matched every row of `actions.csv` and `stated.csv` to its filing.
+
+- On 2026-10-08, 152 offline tests pass and the live done check passes 18 of 18 checks against the
+  October 4 data (44 of 44 filing URLs return HTTP 200). No newer anchor-period 10-Q or 10-K was
+  returned by the reanchor scan.
