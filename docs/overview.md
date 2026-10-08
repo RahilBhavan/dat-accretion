@@ -84,8 +84,8 @@ line for both rotations.
 
 ## What it produces
 
-1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). A plain-language heading states
-   what it measures. The sentence below it gives both rotations' break-even prices and closes, using
+1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). A plain-language heading identifies the preferred-stock price threshold
+   for the two rotations. The sentence below it gives both rotations' break-even prices and closes, using
    the same figures as the memo. Beside it are a gauge for each preferred and SharpLink's latest filed
    holdings line. The page then shows:
    - three key-term cards defining rotation, break-even and net mNAV;

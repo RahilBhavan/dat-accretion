@@ -184,8 +184,10 @@ heading with figures and gauges beside it. The page and memo share figures but n
 titles. A four-step trade example and three term cards explain the mechanism before the analyst
 sections; a build strip identifies the author and gives counts from the current data.
 
-The earlier agent reader tests cover intermediate layouts. Human testing of the final redesign is
-pending; `docs/reader-test.md` contains the protocol and empty response sheet.
+The earlier agent reader tests cover intermediate layouts. Three fresh AI readers tested the final redesign, all identifying both conditions and scoring it
+4/5. Their repeated common-versus-preferred headline confusion prompted a narrower heading.
+The same readers confirmed that the revised heading resolves that confusion.
+`docs/reader-test.md` records both rounds and a reusable human-test protocol.
 
 ## Plan against result
 

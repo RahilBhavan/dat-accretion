@@ -148,3 +148,12 @@ Sections: [Project and repo](#project-and-repo) · [The ruler](#the-ruler) ·
 | O8 | The repo setting "Allow GitHub Actions to create and approve pull requests" is on. | `refresh.yml` needs it to open and merge its PR. Turned on with the user's approval. | Merging refresh PRs by hand. |
 | O9 | CSVs are written with `\n` line endings. | Python's `csv` default is CRLF, which git flagged (notes #17). | Default endings. |
 | O10 | `pages.yml` deploys only when the latest `data/check.json` on the `data` branch has status `pass` (#17). | A missing or failing check used to deploy, and the page showed the failure. Trade-off: the page now stops updating instead, and the failing Pages run is the signal. The non-pass branch in `site/app.js` stays for local builds. | Deploying with `\|\| true` and showing the failure on the page. |
+
+
+## Follow-up AI reader test, 2026-10-08
+
+Three independent AI readers of the final desktop first screen understood both break-even conditions
+and scored understanding 4/5. All expected a common-stock threshold from the heading, then resolved
+it from the paragraph. The heading now explicitly identifies the preferred stock price and rotation.
+All three said "Rotation adds" can sound favorable, but none read an explicit investment recommendation.
+See `reader-test.md` for results and limitations.

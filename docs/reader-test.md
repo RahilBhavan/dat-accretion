@@ -24,11 +24,44 @@ Other notes from readers: "Residual −$255.9M" reads as a loss until the senten
 "good". Neither was reported as a recommendation.
 
 
-## Final redesign: human test pending
+## Final redesign: AI reader test, 2026-10-08
 
 The final first screen (PR #28, commit `36a09c5`) uses a plain heading, figure sentence and gauges,
-followed by three term cards. It has not been tested with human readers. The agent scores above
+followed by three term cards. Three fresh AI readers tested the final desktop first screen at 1280 × 800, using only a screenshot
+of the deployed page at commit `36a09c5`, with data through October 4. It has not been tested with
+human readers. The agent scores above
 apply to the earlier versions and are not evidence for this version.
+
+### Results
+
+| AI reader role | purpose understood | correct figure and condition | opposite directions clear | explicit recommendation read | score |
+|---|---|---|---|---|---|
+| Equity analyst | yes | STRC $99.41 below $119.92; BMNP $99.48 below $101.77, adds only above | yes | no | 4/5 |
+| Business journalist | yes | both prices and thresholds, with correct conditions | yes | no | 4/5 |
+| Fintech hiring manager | yes | both prices and thresholds, with correct conditions | yes | no | 4/5 |
+
+All three identified the measure and conditions; mean understanding was 4.0/5. They all wanted to
+check the formula and filings next. All three said "Rotation adds" sounds favorable, while recognizing
+that it describes conditional per-share accretion and does not explicitly recommend an investment.
+This does not satisfy the stricter target of nobody reading favorable judgment into the wording.
+
+First confusion, independently repeated:
+- Analyst: "The headline says ‘company’s stock trades,’ which initially made me expect a common-stock
+  price threshold. The cards instead emphasize preferred prices."
+- Journalist: "The headline says ‘each company’s stock trades,’ which initially makes me think of
+  MSTR’s common-share price. The prominently displayed $99.41 is actually STRC’s preferred-share price."
+- Hiring manager: "The headline sounds as though it will tell me the company’s ordinary stock price
+  threshold, but the cards show preferred stock prices."
+
+Response: the page heading now says "The preferred stock price where each rotation stops adding coins
+per share." SharpLink's separate card continues to say it has no preferred. The same three AI readers repeated the screenshot test on the revised heading. All three
+reported that the common-versus-preferred confusion resolved, retained both correct conditions and
+scored understanding 4/5. This is a follow-up with the same readers, not a fresh blind sample.
+They still described "adds" as favorable for this metric, but none read an explicit investment
+recommendation. The metric wording is retained because it states the measured direction; this
+remaining interpretation is recorded rather than treating the stricter no-favorable-judgment target
+as passed. These are simulated roles, not actual readers; no human responses are
+claimed. Below is a reusable protocol for a future human test.
 
 ### Run with 3 to 5 people
 
