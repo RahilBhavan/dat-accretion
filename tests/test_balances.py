@@ -138,3 +138,14 @@ def test_bmnr_follow_on_bmnp_sale_raises():
     rows = [act('2026-06-14', 'issue_pref', 'BMNP', units='350000000'), act('2026-09-20', 'issue_pref', 'BMNP', units='1')]
     with pytest.raises(ValueError, match='follow-on BMNP sale'):
         build_bmnr([], rows, [])
+
+
+def test_quarter_end_row_rolls_r_by_filed_flows():
+    # 2026-09-30 states holdings only; 9/27 and 10/04 both disclose USD Cash, so R(9/30) = R(9/27) + flows in (9/27, 9/30].
+    from dat.balances import read, SIGN
+    bal = {r['date']: r for r in read('data/balances.csv') if r['firm'] == 'MSTR'}
+    acts = [a for a in read('data/actions.csv') if a['firm'] == 'MSTR' and '2026-09-27' < a['week_end'] <= '2026-09-30']
+    assert acts and 'rolled from 8-K' in bal['2026-09-30']['source']
+    flows = sum(SIGN[a['action']] * float(a['usd']) for a in acts)
+    assert float(bal['2026-09-30']['usd_reserve']) == pytest.approx(float(bal['2026-09-27']['usd_reserve']) + flows, abs=1)
+    assert 'carried from 8-K' in bal['2026-06-30']['source']  # USD Reserve only then: flows itemized per 8-K, not per sub-period

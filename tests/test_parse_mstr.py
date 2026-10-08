@@ -137,6 +137,19 @@ def test_roll():
     assert [st for *_, st in roll(acts, stated, gaps={'2026-09-20': 'x'})] == ['OK', 'MISMATCH']  # gap > 1 BTC fails
 
 
+def test_split_period_repurchase_keeps_each_period_end():
+    # 10/05 8-K: one repurchase section, two periods; each row is dated by its own period.
+    def period(start, end, shares, usd):
+        return [[f'During Period {start} to {end}'], ['Security', 'Shares Repurchased', 'Aggregate Purchase Price (in millions)'],
+                ['STRC Stock (1)', shares, usd], ['Variable Rate Series A Perpetual Stretch Preferred Stock'],
+                ['MSTR Stock (2)', '-', '-'], ['Class A Common Stock'], ['Total', shares, usd]]
+    sec = p('Repurchase Program Updates') + table(*period('September 28, 2026', 'September 30, 2026', '1,033,168', '102.6'),
+                                                   *period('October 1, 2026', 'October 4, 2026', '740,634', '73.7'))
+    actions, _ = parse(sec + BTC_BUY, F)
+    assert sorted((a['week_end'], a['usd']) for a in actions if a['action'] == 'retire_pref') == \
+        [('2026-09-30', '102600000'), ('2026-10-04', '73700000')]
+
+
 def test_roll_rebase_follows_stated_level():
     # 9/27: 846,000 + 1,665 states 847,666; 10/04 balances from the stated figure (+334 = 848,000).
     stated = [{'week_end': '2026-09-20', 'coins': '846000'}, {'week_end': '2026-09-27', 'coins': '847666'},

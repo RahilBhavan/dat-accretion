@@ -80,11 +80,11 @@ MSTR,2026-09-27,2026-09-28,https://www.sec.gov/Archives/edgar/data/1050446/00011
 MSTR,2026-09-27,2026-09-28,https://www.sec.gov/Archives/edgar/data/1050446/000119312526403417/mstr-20260914.htm,carry,DIV_INT,-22100000,0,,
 MSTR,2026-09-27,2026-09-28,https://www.sec.gov/Archives/edgar/data/1050446/000119312526403417/mstr-20260914.htm,issue_common,MSTR,246200000,1469165,167.578182,
 MSTR,2026-09-27,2026-09-28,https://www.sec.gov/Archives/edgar/data/1050446/000119312526403417/mstr-20260914.htm,retire_pref,STRC,151700000,153453000,98.857631,
+MSTR,2026-09-30,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,retire_pref,STRC,102600000,103316800,99.306212,
 MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,buy_coin,BTC,28700000,334,85838.8,
 MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,carry,DIV_INT,-142500000,0,,
 MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,carry,INT_INC,22200000,0,,
 MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,issue_common,MSTR,15700000,92894,169.009839,
-MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,retire_pref,STRC,102600000,103316800,99.306212,
 MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/000119312526413164/mstr-20261005.htm,retire_pref,STRC,73700000,74063400,99.509339,
 SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,buy_coin,ETH,16110400,10000,1611.04,
 SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,buyback_common,SBET,10022000,2132773,4.69,"usd: treasury stock cost, 10-Q equity statement (https://www.sec.gov/Archives/edgar/data/1981535/000149315226036620/form10-q.htm)"

@@ -127,7 +127,11 @@ August, don't itemize flows into it, so R is taken as stated, not rolled. The ro
 - 2026-08-02 to 2026-08-16 (reserve only): ΔReserve must equal the itemized "used to increase the
   USD Reserve" amounts plus reserve-funded carry (reserve_in − reserve_out). Also 2026-08-23,
   whose prior week has no USD Cash.
-- 2026-06-30 (quarter-end holdings row, no balance stated): R carried from the prior 8-K, labeled.
+- Holdings-only rows (quarter ends; no balance stated). Decided 2026-10-08. When both neighbouring stated
+  balances include USD Cash (2026-09-30), R is rolled from the last stated R by the filed cash flows dated after
+  it, the same flows the R check counts, labeled "rolled". An 8-K that splits a section into periods (10/05:
+  9/28 to 9/30 and 10/1 to 10/4) dates each row to its own period end. When R is the USD Reserve alone
+  (2026-06-30), the filings itemize reserve flows per 8-K period only, so R is carried from the prior 8-K, labeled.
 - Tolerance per week: half a unit in the last disclosed digit of each of the two stated figures,
   summed ($5.10 billion → ±$5M; $4.0 billion → ±$50M).
 - Before 2026-08-02: no check. Print the unexplained ΔR per week, labeled; it lands in Step 4's

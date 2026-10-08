@@ -30,7 +30,7 @@ NOTES = [
     'not separate staking rewards from purchases.',
     'Strategy R is taken as stated in each 8-K. The roll-forward check on R runs from 2026-08-02; before that date R '
     'is unchecked and any unexplained change lands in the residual. Before 2026-08-23 R is the USD Reserve alone '
-    '(USD Cash was established that week, funded by that week\'s MSTR sale proceeds). The 2026-06-30 quarter-end row carries R from the prior 8-K.',
+    '(USD Cash was established that week, funded by that week\'s MSTR sale proceeds). The 2026-06-30 quarter-end row carries R from the prior 8-K; the 2026-09-30 quarter-end row rolls R from the 9/27 8-K by filed cash flows.',
     'Residuals are report-only for Strategy weeks before 2026-08-02 and for every BitMine week. The residual test '
     '(under 5% of the week\'s change, or within R rounding) applies to Strategy from 2026-08-02.',
     'STRE is in EUR; it converts at 1.147 USD per EUR, the rate implied by Strategy\'s API. The Friday 12:30 PM New '
