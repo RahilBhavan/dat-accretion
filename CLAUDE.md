@@ -1,6 +1,6 @@
 # dat-accretion
 
-Measures every capital action by Strategy (BTC) and BitMine (ETH) since 2026-06-01 on one ruler,
+Measures every capital action by Strategy (BTC), BitMine (ETH) and SharpLink (ETH) since 2026-06-01 on one ruler,
 net coins per share, and shows the price where each program stops adding. Output: a GitHub Pages
 site, a one-page memo, and the CSVs plus engine behind them.
 

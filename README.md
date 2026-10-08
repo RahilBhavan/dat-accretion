@@ -14,6 +14,7 @@ Status: v1 built. Page: https://rahilbhavan.github.io/dat-accretion/. Memo: `doc
 - [`docs/decisions.md`](docs/decisions.md): every decision, why, and the alternative it rules out.
 - [`docs/methodology.md`](docs/methodology.md): definitions, formulas and labeled estimates.
 - [`docs/build-notes.md`](docs/build-notes.md): problems hit while building.
+- [`docs/reader-test.md`](docs/reader-test.md): earlier reader results and the final human-test protocol.
 - [`docs/course/`](docs/course/README.md): a 24-lesson course that teaches the project from scratch, with quizzes.
 
 ## Layout
