@@ -216,3 +216,11 @@ footer { margin-top: 6px; border-top: 1px solid var(--border); padding: 26px 0 4
 #notes { list-style: none; padding-left: 0; }
 .note-group h4 { margin: 14px 0 6px; font-size: .95rem; }
 .note-group ul { margin: 0; padding-left: 1.2rem; }
+
+.title-line { display: block; }
+.title-line + .title-line { margin-top: .25em; }
+
+.keys { max-width: 680px; padding-left: 1.1rem; margin: 0 0 14px; line-height: 1.5; }
+.keys li { margin: .3rem 0; }
+
+.kicker { font-size: .9rem; font-weight: 600; color: var(--muted); max-width: 680px; margin: 0 0 8px; text-transform: none; }

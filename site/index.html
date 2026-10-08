@@ -17,8 +17,14 @@
 </div>
 <main id="main">
 <header id="top" class="hero">
+  <p class="kicker">Three crypto treasury companies: the preferred stock price at which each one's repeated trades stop adding coins per share</p>
   <h1 id="title">loading</h1>
-  <p class="explainer">Digital asset treasury (DAT) companies hold bitcoin or ether and raise money by selling stock. This page measures every share sale, buyback and preferred trade by Strategy, BitMine and SharpLink since 2026-06-01 with one figure: net coins per share. An action adds when it raises that figure. Each firm's pattern has a break-even price where adding turns to subtracting.</p>
+  <p class="explainer">Digital asset treasury (DAT) companies hold bitcoin or ether and raise money by selling stock. This page measures every share sale, buyback and preferred trade by Strategy, BitMine and SharpLink since 2026-06-01 by whether it raises or lowers net coins per share.</p>
+  <ul class="keys">
+    <li><b>Rotation:</b> the pair of trades each firm repeats. Strategy sells common stock to buy back STRC, its preferred stock. BitMine sells BMNP, its preferred stock, to buy back common. They run in opposite directions, so Strategy's adds while STRC is below break-even and BitMine's while BMNP is above it.</li>
+    <li><b>Net mNAV:</b> the share price divided by the coin value behind each share, net of debt and preferred.</li>
+    <li><b>Sats:</b> 1 sat is 0.00000001 BTC; net sats per share is Strategy's net coins per share.</li>
+  </ul>
   <p class="lede">Strategy's own net coins per share definition, applied to all three firms. Every capital action valued at disclosed prices.</p>
   <p class="asof" id="asof"></p>
   <details class="fold howto">
@@ -26,7 +32,7 @@
     <dl class="terms">
       <dt>Net coins per share (n)</dt><dd>Coins held plus USD cash, minus debt and preferred notional, converted to coins, divided by fully diluted shares.</dd>
       <dt>Net mNAV (m)</dt><dd>The share price divided by the net coin value behind each share. While m is above 1, selling new common brings in more coins per share than it gives away.</dd>
-      <dt>q</dt><dd>The preferred close divided by its $100 notional. While q is below 1, buying preferred back for cash removes more claim on the coins than it costs.</dd>
+      <dt>q</dt><dd>The preferred close divided by its $100 notional (the face amount each preferred share is owed). While q is below 1, buying preferred back for cash removes more claim on the coins than it costs.</dd>
       <dt>Break-even</dt><dd>$100 × m. Strategy sells common to retire STRC, which adds while STRC closes below break-even. BitMine sells BMNP to buy back common, which adds while BMNP closes above it.</dd>
     </dl>
   </details>

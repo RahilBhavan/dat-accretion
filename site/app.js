@@ -137,14 +137,16 @@ function asof() {
   const weekly = DATA.headline.filter(h => h.break_even != null), sbet = DATA.headline.find(h => h.break_even == null);
   const through = weekly.map(h => h.week_end).sort()[0], age = daysAgo(through);
   let s = 'Data through the week ending ' + esc(through) + ' (' + age + ' days ago)';
-  if (sbet) s += '; SharpLink through its last filed holdings date, ' + esc(sbet.week_end) + ' (' + daysAgo(sbet.week_end) + ' days ago)';
+  if (sbet) s += '; SharpLink through its last filed holdings date, ' + esc(sbet.week_end) + ' (' + daysAgo(sbet.week_end) + ' days ago; it has filed no holdings since)';
   s += '. Every action links to its SEC filing.';
   if (age > 9) s += ' <strong class="stale">Behind: filings after ' + esc(through) + ' are not yet included.</strong>';
   document.getElementById('asof').innerHTML = s;
 }
 
 function headline() {
-  document.getElementById('title').innerHTML = esc(DATA.title).replace(/\d{4}-\d{2}-\d{2}/g, '<span class="nobr">$&</span>');
+  // One line per firm: the title is one sentence (page = memo), but its two clauses run opposite ways (below / above).
+  document.getElementById('title').innerHTML = esc(DATA.title).replace(/\d{4}-\d{2}-\d{2}/g, '<span class="nobr">$&</span>')
+    .split('; ').map((c, i, all) => '<span class="title-line">' + c + (i < all.length - 1 ? ';' : '') + '</span>').join(' ');
   asof();
   document.getElementById('headline-text').innerHTML = '<div class="snapshot-grid">' + DATA.headline.map(h => {
     const symbol = h.firm.toLowerCase(), sbet = h.break_even == null;
