@@ -145,7 +145,8 @@ def text_of(sec):
 
 
 def security_table(rows, cols, where):
-    """Rows labelled '<TICKER> Stock' under a 'Security' header -> [(ticker, {col: Decimal}), (period_end)]."""
+    """Rows labelled '<TICKER> Stock' under a 'Security' header -> ([(ticker, {col: Decimal}, row_period_end)], last
+    period_end). An 8-K can split one section into periods (10/05: 9/28-9/30 and 10/1-10/4); each row keeps its own."""
     out, header, end, done = [], None, None, False
     for r in rows:
         if period_end(r[0]):
@@ -165,7 +166,7 @@ def security_table(rows, cols, where):
             t = m.group(1)
             if t != 'MSTR' and t not in PREFS or header is None or len(r) != len(header) + 1:
                 raise ValueError(f'{where}: unknown security row {r!r}')
-            out.append((t, dict(zip(header, map(num, r[1:])))))
+            out.append((t, dict(zip(header, map(num, r[1:]))), end))
         elif len(r) == 1 and re.fullmatch(r'Class A Common Stock|[\d.]+% Series A Perpetual \w+ Preferred Stock|'
                                           r'Variable Rate Series A Perpetual \w+ Preferred Stock', r[0]):
             continue
@@ -183,10 +184,10 @@ def atm(sec, where, fallback_end):
         if re.search(r'did not sell any shares', text):
             return []
         raise ValueError(f'{where}: ATM section has no table and no "did not sell" sentence')
-    table, end = security_table(rows, ['sharessold', 'notionalvalue(inmillions)', 'netproceeds(inmillions)', 'available'], where)
-    end = end or fallback_end
+    table, _ = security_table(rows, ['sharessold', 'notionalvalue(inmillions)', 'netproceeds(inmillions)', 'available'], where)
     out = []
-    for t, v in table:
+    for t, v, end in table:
+        end = end or fallback_end
         shares, usd = v['sharessold'], v['netproceeds(inmillions)'] * SCALE['million']
         if shares == 0 and usd == 0:
             continue
@@ -208,10 +209,10 @@ def repurchase(sec, where, fallback_end):
         if re.search(r'did not purchase any shares', text_of(sec)):
             return []
         raise ValueError(f'{where}: repurchase section has no table and no "did not purchase" sentence')
-    table, end = security_table(rows, ['sharesrepurchased', 'aggregatepurchaseprice(inmillions)'], where)
-    end = end or fallback_end
+    table, _ = security_table(rows, ['sharesrepurchased', 'aggregatepurchaseprice(inmillions)'], where)
     out = []
-    for t, v in table:
+    for t, v, end in table:
+        end = end or fallback_end
         shares, usd = v['sharesrepurchased'], v['aggregatepurchaseprice(inmillions)'] * SCALE['million']
         if shares == 0 and usd == 0:
             continue

@@ -59,13 +59,14 @@
 <circle cx="300.6" cy="51.8" r="8.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <circle cx="231.3" cy="235.6" r="7.7" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <circle cx="344.2" cy="149.8" r="7.5" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="351.9" cy="158.4" r="7.1" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <circle cx="337.7" cy="180.8" r="6.3" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <circle cx="345.3" cy="205.7" r="5.6" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <circle cx="253.3" cy="171.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <circle cx="348.3" cy="68.4" r="5.4" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <rect x="323.9" y="246.1" width="9.6" height="9.6" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
+<circle cx="351.9" cy="158.4" r="5.2" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <rect x="236.3" y="306.9" width="9.0" height="9.0" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
+<circle cx="351.4" cy="176.7" r="4.8" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <rect x="232.2" y="305.0" width="8.4" height="8.4" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <path d="M356.9,380.0L363.3,391.0L350.6,391.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
 <rect x="258.8" y="267.5" width="8.3" height="8.3" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
@@ -82,7 +83,6 @@
 <rect x="349.5" y="222.9" width="5.8" height="5.8" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="192.0" y="304.0" width="5.5" height="5.5" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
 <rect x="349.8" y="242.8" width="5.3" height="5.3" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834;stroke-width:1.5"/>
-<circle cx="351.4" cy="176.7" r="3.0" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6;stroke-width:1.5"/>
 <path d="M356.9,372.0L361.0,379.0L352.9,379.0Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
 <path d="M356.9,381.9L361.0,388.9L352.9,388.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>
 <path d="M356.9,340.9L361.0,347.9L352.9,347.9Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7;stroke-width:1.5"/>

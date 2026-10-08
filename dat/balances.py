@@ -117,17 +117,26 @@ def build(stated, actions, prices):
     """-> (balances rows, weekly rows, notes) for every stated week."""
     from dat.prices import close_on_or_before
     bal, weekly, notes, last_r = [], [], [], None
-    for st in sorted(stated, key=lambda s: s['week_end']):
+    rows = sorted(stated, key=lambda s: s['week_end'])
+    for i, st in enumerate(rows):
         week = st['week_end']
         src = f"8-K {accession(st['filing_url'])}; 10-Q 6/30 roll"
         if st['usd_reserve']:
             R = float(st['usd_reserve']) + float(st['usd_cash'] or 0)
-            last_r = (R, accession(st['filing_url']))
+            last_r = (R, accession(st['filing_url']), week, bool(st['usd_cash']))
             if not st['usd_cash']:
                 src += '; R = USD Reserve only (USD Cash not disclosed)'
         else:
-            R = last_r[0]
-            src += f'; R not stated, carried from 8-K {last_r[1]}'
+            # Holdings-only row (quarter end). Both neighbouring stated balances include USD Cash: R is rolled from the
+            # last stated R by the filed cash flows dated after it, as the R check counts them (method.md). Otherwise
+            # (USD Reserve only, flows itemized per 8-K period, not per sub-period): carried.
+            nxt = next((r for r in rows[i + 1:] if r['usd_reserve']), None)
+            if last_r[3] and nxt and nxt['usd_cash']:
+                R = last_r[0] + float(sum(SIGN[a['action']] * dec(a['usd']) for a in actions if last_r[2] < a['week_end'] <= week))
+                src += f'; R not stated, rolled from 8-K {last_r[1]} by filed cash flows'
+            else:
+                R = last_r[0]
+                src += f'; R not stated, carried from 8-K {last_r[1]}'
         price_date, s = close_on_or_before(prices, 'MSTR', week)
         closes = {}
         for t in ('STRC', 'BTC'):
