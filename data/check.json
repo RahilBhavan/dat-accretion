@@ -1,15 +1,15 @@
 {
  "status": "pass",
- "run_at": "2026-10-07T00:50:55Z",
+ "run_at": "2026-10-08T01:06:28Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 158,591.0003 vs API 158,221.4829: +0.234% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $85,526.00 (API latestPrice), MSTR $164.55 (Yahoo); repo at week 2026-09-20; newer 8-K filed 2026-10-05 not yet parsed",
+   "compared": "rebuilt 157,628.0220 vs API 157,261.1992: +0.233% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $83,436.00 (API latestPrice), MSTR $153.37 (Yahoo); repo at week 2026-09-20; newer 8-K filed 2026-10-05 not yet parsed",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2424 vs API 1.2424: +0.001% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $85,526.00 (API latestPrice), MSTR $164.55 (Yahoo); repo at week 2026-09-20; newer 8-K filed 2026-10-05 not yet parsed",
+   "compared": "rebuilt 1.2500 vs API 1.2500: -0.000% (tolerance 0.5%); state from 8-K for week 2026-09-20 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526396093/mstr-20260914.htm; the API may reflect a newer 8-K), BTC $83,436.00 (API latestPrice), MSTR $153.37 (Yahoo); repo at week 2026-09-20; newer 8-K filed 2026-10-05 not yet parsed",
    "ok": true
   },
   {
@@ -19,7 +19,7 @@
   },
   {
    "name": "SharpLink ETH vs strategicethreserve.xyz",
-   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 65 days before today)",
+   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 66 days before today)",
    "ok": true
   },
   {
