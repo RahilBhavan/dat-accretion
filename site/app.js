@@ -119,8 +119,26 @@ function track(h) {
     + '<div class="bullet-sides"><span>' + sides[0] + '</span><span>' + sides[1] + '</span></div></div>';
 }
 
+// Days from an ISO date to today (UTC). The page is static, so staleness is computed when it is read.
+function daysAgo(iso) {
+  return Math.floor((Date.now() - Date.parse(iso + 'T00:00:00Z')) / 864e5);
+}
+
+// As-of line: what the figures cover, how old that is, and where each number comes from. Weekly firms file on
+// Mondays for the week ending Sunday, so more than 9 days since the latest week means a refresh was missed.
+function asof() {
+  const weekly = DATA.headline.filter(h => h.break_even != null), sbet = DATA.headline.find(h => h.break_even == null);
+  const through = weekly.map(h => h.week_end).sort()[0], age = daysAgo(through);
+  let s = 'Data through the week ending ' + esc(through) + ' (' + age + ' days ago)';
+  if (sbet) s += '; SharpLink through its last filed holdings date, ' + esc(sbet.week_end) + ' (' + daysAgo(sbet.week_end) + ' days ago)';
+  s += '. Every action links to its SEC filing.';
+  if (age > 9) s += ' <strong class="stale">Behind: filings after ' + esc(through) + ' are not yet included.</strong>';
+  document.getElementById('asof').innerHTML = s;
+}
+
 function headline() {
   document.getElementById('title').textContent = DATA.title;
+  asof();
   document.getElementById('headline-text').innerHTML = '<div class="snapshot-grid">' + DATA.headline.map(h => {
     const symbol = h.firm.toLowerCase(), sbet = h.break_even == null;
     const value = sbet ? 'm ' + h.m.toFixed(3) : '$' + h.pref_close.toFixed(2);
@@ -128,7 +146,7 @@ function headline() {
       : '$' + Math.abs(h.gap).toFixed(2) + (h.gap < 0 ? ' below' : ' above') + ' break-even $' + h.break_even.toFixed(2);
     return '<article class="snapshot-card"><div class="snapshot-top"><span class="firm-symbol ' + symbol + '">' + esc(h.firm) + '</span><span class="snapshot-date">' + esc(sbet ? 'net mNAV' : h.pref + ' close') + '</span></div>'
       + '<h3>' + esc(h.name) + '</h3><p class="snapshot-value">' + esc(value) + '</p><p class="snapshot-label">' + esc(gap) + '</p>'
-      + track(h) + '<p class="snapshot-asof">As of ' + esc(h.price_date) + (sbet ? ' (filed holdings date ' + esc(h.week_end) + ')' : ', net mNAV ' + h.m.toFixed(3)) + '</p>'
+      + track(h) + '<p class="snapshot-asof">As of ' + esc(h.price_date) + (sbet ? ' (last filed holdings date, ' + daysAgo(h.week_end) + ' days ago)' : ', net mNAV ' + h.m.toFixed(3)) + '</p>'
       + '<div class="snapshot-rule"></div><p class="snapshot-context">' + esc(h.sentence) + '</p></article>';
   }).join('') + '</div><p class="snapshot-footnote">' + DATA.headline.map(h => esc(h.close_sentence)).join(' ') + '</p>';
 }
@@ -444,7 +462,8 @@ function method() {
     + '<div><strong>Data validation</strong><p>' + (count ? count + ' checks recorded' : 'No checks recorded')
     + (when ? ' · Run ' + esc(when) : '') + '</p></div></div>'
     + (Object.keys(c).length > 1 ? '<details class="fold check-detail"><summary>View full check record</summary><pre>' + esc(JSON.stringify(c, null, 1)) + '</pre></details>' : '');
-  document.getElementById('footer').textContent = 'Data built ' + DATA.generated_at + ' from the CSVs below.';
+  const through = DATA.headline.filter(h => h.break_even != null).map(h => h.week_end).sort()[0];
+  document.getElementById('footer').textContent = 'Data through the week ending ' + through + '. Page built ' + DATA.generated_at + ' from the CSVs below.';
 }
 
 function draw() {

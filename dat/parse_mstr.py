@@ -315,6 +315,8 @@ RESERVE_REMAINING = r'\b(?:remaining|rest|remainder)\b[^$;.]{0,120}?\bUSD Reserv
 RESERVE_OUT = rf'{MONEY} of the USD Reserve to\b'
 RESERVE_CAPACITY = r'up to \$1\.25 billion of additional proceeds to fund the USD Reserve'  # BTC Monetization Program size, not a flow
 DIVIDEND_FUNDING = rf'{MONEY}[^$]{{0,160}}?\bto fund (?:the )?(?:payment of )?(?:dividends|distributions|interest)'
+# Interest earned on Strategy's cash that funded a use (10/05 8-K footnote): an inflow to R, booked as positive carry.
+INTEREST_FUNDING = rf"{MONEY} were funded using interest earned on Strategy[’']s cash\b"
 # Other known uses of proceeds or USD Cash that share a sentence with USD Reserve flows.
 OTHER_FUNDING = (rf"{MONEY} in (?:net )?proceeds from [^$;]{{0,60}}? were (?:used to fund (?:repurchases of \w+ Stock|"
                  rf"bitcoin purchases)|added to Strategy[’']s cash balance|used to increase the USD Cash liquidity account)",
@@ -418,6 +420,10 @@ def parse(html, filing):
             acts += repurchase(sec, where, end)
     for used in dividends_paid(bs):
         acts.append((week_end, 'carry', 'DIV_INT', -used, Decimal(0), None))
+    for k, t in bs:
+        if k == 'p':
+            acts += [(week_end, 'carry', 'INT_INC', money(*m.group(1, 2)), Decimal(0), None)
+                     for m in re.finditer(INTEREST_FUNDING, t)]
     bal = balances(bs)
     r_in, r_out = reserve_flows(bs, where)
     if stray := set(bal) - {e for e, _ in holdings}:
@@ -451,9 +457,17 @@ KNOWN_FILING_GAPS = {
                   '8-K 0001193125-26-341297 (filed 8/10) balances only from 842,137 (-1,690 = 840,447)',
 }
 
+# Weeks whose 8-K holdings disagree by 1 BTC with the prior 8-K plus that week's trade, where later 8-Ks
+# balance from the stated figure, not the rolled one. From that week the roll follows the stated level.
+KNOWN_FILING_REBASES = {
+    '2026-09-27': '846,000 + 1,665 = 847,665 but 8-K 0001193125-26-403417 (filed 9/28) states 847,666; '
+                  '8-K 0001193125-26-413164 (filed 10/05) balances from 847,666 (+334 = 848,000)',
+}
 
-def roll(actions, stated, gaps=KNOWN_FILING_GAPS):
-    """-> [(week_end, rolled, stated, status)], status OK, GAP (documented, off by <= 1 BTC) or MISMATCH.
+
+def roll(actions, stated, gaps=KNOWN_FILING_GAPS, rebases=KNOWN_FILING_REBASES):
+    """-> [(week_end, rolled, stated, status)], status OK, GAP (documented, off by <= 1 BTC), REBASE (documented,
+    off by <= 1 BTC; later weeks roll from the stated figure) or MISMATCH.
     Start = first stated coins minus that week's net buys."""
     net = {}
     for a in actions:
@@ -466,6 +480,10 @@ def roll(actions, stated, gaps=KNOWN_FILING_GAPS):
     for s in stated:
         rolled = start + sum(v for w, v in net.items() if w <= s['week_end'])
         diff = abs(rolled - Decimal(s['coins']))
+        if s['week_end'] in rebases and 0 < diff <= 1:
+            start += Decimal(s['coins']) - rolled
+            out.append((s['week_end'], rolled, Decimal(s['coins']), 'REBASE'))
+            continue
         status = 'OK' if diff == 0 else 'GAP' if s['week_end'] in gaps and diff <= 1 else 'MISMATCH'
         out.append((s['week_end'], rolled, Decimal(s['coins']), status))
     return out
@@ -496,7 +514,9 @@ def main(data_dir='data'):
           f'actions.csv {len(actions)} rows, stated.csv {len(stated)} rows')
     bad = 0
     for i, (week, rolled, st, status) in enumerate(roll(actions, stated)):
-        note = f'FILING GAP (documented): {KNOWN_FILING_GAPS[week]}' if status == 'GAP' else status
+        note = (f'FILING GAP (documented): {KNOWN_FILING_GAPS[week]}' if status == 'GAP' else
+                f'FILING REBASE (documented; later weeks roll from stated): {KNOWN_FILING_REBASES[week]}'
+                if status == 'REBASE' else status)
         if i == 0:
             note += ' (anchor: start derived from this week)'
         print(f'{week} rolled={rolled} stated={st} {note}')

@@ -137,6 +137,18 @@ def test_roll():
     assert [st for *_, st in roll(acts, stated, gaps={'2026-09-20': 'x'})] == ['OK', 'MISMATCH']  # gap > 1 BTC fails
 
 
+def test_roll_rebase_follows_stated_level():
+    # 9/27: 846,000 + 1,665 states 847,666; 10/04 balances from the stated figure (+334 = 848,000).
+    stated = [{'week_end': '2026-09-20', 'coins': '846000'}, {'week_end': '2026-09-27', 'coins': '847666'},
+              {'week_end': '2026-10-04', 'coins': '848000'}]
+    acts = [{'week_end': '2026-09-27', 'action': 'buy_coin', 'units': '1665'},
+            {'week_end': '2026-10-04', 'action': 'buy_coin', 'units': '334'}]
+    assert [st for *_, st in roll(acts, stated, rebases={})] == ['OK', 'MISMATCH', 'MISMATCH']
+    assert [st for *_, st in roll(acts, stated, rebases={'2026-09-27': 'x'})] == ['OK', 'REBASE', 'OK']
+    acts[0]['units'] = '1664'
+    assert [st for *_, st in roll(acts, stated, rebases={'2026-09-27': 'x'})] == ['OK', 'MISMATCH', 'MISMATCH']
+
+
 def test_dividend_carry_from_every_source():
     footnote = p('(5) $52.4 million in net proceeds from MSTR Stock sales were used to fund dividends on Strategy\'s '
                  'STRC Stock, $132.2 million in net proceeds from MSTR Stock sales were used to fund repurchases of STRC '
@@ -149,6 +161,15 @@ def test_dividend_carry_from_every_source():
     carry = sorted(a['usd'] for a in actions if a['action'] == 'carry')
     assert carry == ['-52400000', '-52400000', '-57400000']  # two funding sentences, equal amounts -> two rows
     assert all(a['ticker'] == 'DIV_INT' and a['units'] == '0' for a in actions if a['action'] == 'carry')
+
+
+def test_interest_income_carry():
+    # 10/05 8-K: part of a STRC repurchase was funded by interest earned on cash, an inflow to R.
+    note = p("(1) $80.4 million of STRC Stock repurchases were funded using USD Cash and $22.2 million were funded "
+             "using interest earned on Strategy’s cash, cash equivalents and short-term investments.")
+    actions, _ = parse(atm_sale() + note + BTC_BUY, F)
+    inc = [a for a in actions if a['ticker'] == 'INT_INC']
+    assert [(a['action'], a['usd'], a['units']) for a in inc] == [('carry', '22200000', '0')]
 
 
 def test_reserve_in_and_precision():

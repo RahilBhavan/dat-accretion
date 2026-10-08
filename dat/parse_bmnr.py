@@ -19,7 +19,7 @@ STAKING_FIELDS = ['week_end', 'eth_est']  # staked ETH x 7-day yield x 7/365, di
 HOLDINGS = (rf'As of ({DATE})(?: at [^,]+)?, the Company{AP}s crypto holdings are comprised of ([\d,]+) ETH\b'
             rf'.*? and total cash(?: & marketable securities)? of {MONEY}')
 ACQUIRED = r'\bwe acquired ([\d,]+) ETH\b'
-STAKED = rf'As of ({DATE}), Bitmine total staked ETH stands at ([\d,]+)'
+STAKED = rf'As of ({DATE}), Bitmine(?:{AP}s)? total staked ETH stands at ([\d,]+)'
 YIELD = r'\b(\d+\.\d+)% 7-day BMNR yield|7-day yield of (\d+\.\d+)% \(annualized\)'
 BUYBACK = (r'\brepurchased (?:approximately )?(\d+(?:\.\d+)?) million (?:shares of common stock|common stock|'
            r'common shares|shares) (?:in|during) the past week')
@@ -36,6 +36,7 @@ KNOWN = [ACQUIRED, BUYBACK, BUYBACK_AVG, PREF_CLOSED, PREF_NET,
          r'\bexecuted the [\d.]+ million common stock buyback',
          r'\bfrom the [\d.]+ million purchased the week prior',
          r'\bpast week{AP}s [\d.]+ million buyback'.replace('{AP}', AP),
+         r'\bacquiring [\d.]+ million shares in \d{4} alone',
          r'\breduced pace of buys reflects that Bitmine repurchased [\d.]+ million common shares',
          r'\bof [\d,]+ shares of 9\.50% Series A Perpetual Preferred Stock\b.*? at a public offering price of \$[\d.]+ per share',
          r'\bpreviously announced offering of [\d,]+ shares of Series A Preferred Stock',
@@ -145,8 +146,11 @@ def parse(html, filing, url, prev_week=None):
     where = f"{filing['accession']} ({url})"
     bs = blocks(html)
     paras = paragraphs(bs)
-    check_near(paras, where)
     hold = [m for p in paras for m in re.finditer(HOLDINGS, p)]
+    # Chairman's Message video transcripts recount past flows already booked from the weekly releases.
+    if not hold and any(re.search(r'\bVideo Transcript\b', p) for p in paras[:10]):
+        raise Skip('video transcript, no holdings sentence')
+    check_near(paras, where)
     if not hold:
         raise Skip('no holdings sentence')
     as_of, coins, cash = one([(iso(m.group(1)), num(m.group(2)), m.group(3, 4)) for m in hold], 'holdings', where)

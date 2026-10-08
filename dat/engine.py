@@ -166,7 +166,8 @@ def main(data_dir='data'):
             if abs(total - obs) > 1e-12 * abs(obs):
                 bad_id.append((firm, w))
             res = rows[-1]['dn_exact']
-            in_scope = firm in CHECK_FROM and w >= CHECK_FROM[firm]
+            # Weeks with no R check (quarter-end holdings rows such as 2026-09-30 state no balance) are report only.
+            in_scope = firm in CHECK_FROM and w >= CHECK_FROM[firm] and w in tol
             to_usd = state_net(cur)['S'] * cur['p']
             verdict = 'report only'
             if in_scope:
