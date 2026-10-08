@@ -131,47 +131,82 @@ function daysAgo(iso) {
   return Math.floor((Date.now() - Date.parse(iso + 'T00:00:00Z')) / 864e5);
 }
 
-// As-of line: what the figures cover, how old that is, and where each number comes from. Weekly firms file on
-// Mondays for the week ending Sunday, so more than 9 days since the latest week means a refresh was missed.
+// Readable date for page text ("Oct 4, 2026"); data and tooltips keep ISO dates.
+function nice_date(iso) {
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+
+// Meta line under the dek: what the figures cover, how old that is, where each number comes from, the definition.
+// Weekly firms file on Mondays for the week ending Sunday, so more than 9 days since the latest week means a missed refresh.
 function asof() {
-  const weekly = DATA.headline.filter(h => h.break_even != null), sbet = DATA.headline.find(h => h.break_even == null);
+  const weekly = DATA.headline.filter(h => h.break_even != null);
   const through = weekly.map(h => h.week_end).sort()[0], age = daysAgo(through);
-  let s = 'Data through the week ending ' + esc(through) + ' (' + age + ' days ago)';
-  if (sbet) s += '; SharpLink through its last filed holdings date, ' + esc(sbet.week_end) + ' (' + daysAgo(sbet.week_end) + ' days ago; it has filed no holdings since)';
-  s += '. Every action links to its SEC filing.';
+  let s = 'Data through ' + nice_date(through) + ' (' + age + ' days ago) · Every figure links to its SEC filing · '
+    + 'Measured with Strategy\'s own net coins per share definition, applied to all three firms · '
+    + '<a href="#built">How this is built</a>';
   if (age > 9) s += ' <strong class="stale">Behind: filings after ' + esc(through) + ' are not yet included.</strong>';
   document.getElementById('asof').innerHTML = s;
 }
 
+// Dek: the headline's answer in plain words, one sentence per firm, figures from data.json.
+function dek() {
+  const h = Object.fromEntries(DATA.headline.map(x => [x.firm, x])), a = h.MSTR, b = h.BMNR;
+  document.getElementById('dek').innerHTML =
+    'Strategy sells common stock to buy back its STRC preferred. That adds bitcoin per share while STRC trades below <strong>$'
+    + a.break_even.toFixed(2) + '</strong>; it closed at $' + a.pref_close.toFixed(2) + '. '
+    + 'BitMine sells its BMNP preferred to buy back common. That adds ether per share while BMNP trades above <strong>$'
+    + b.break_even.toFixed(2) + '</strong>; it closed at $' + b.pref_close.toFixed(2) + '.';
+}
+
+// Hero gauges: one card per firm with a rotation (big close, break-even, track), and one line for SharpLink.
 function headline() {
-  // One line per firm: the title is one sentence (page = memo), but its two clauses run opposite ways (below / above).
-  document.getElementById('title').innerHTML = esc(DATA.title).replace(/\d{4}-\d{2}-\d{2}/g, '<span class="nobr">$&</span>')
-    .split('; ').map((c, i, all) => '<span class="title-line">' + c + (i < all.length - 1 ? ';' : '') + '</span>').join(' ');
   asof();
-  document.getElementById('headline-text').innerHTML = '<div class="snapshot-grid">' + DATA.headline.map(h => {
-    const symbol = h.firm.toLowerCase(), sbet = h.break_even == null;
-    const value = sbet ? 'm ' + h.m.toFixed(3) : '$' + h.pref_close.toFixed(2);
-    const gap = sbet ? Math.abs(h.m - 1).toFixed(3) + (h.m < 1 ? ' below' : ' above') + ' 1'
-      : '$' + Math.abs(h.gap).toFixed(2) + (h.gap < 0 ? ' below' : ' above') + ' break-even $' + h.break_even.toFixed(2);
-    return '<article class="snapshot-card"><div class="snapshot-top"><span class="firm-symbol ' + symbol + '">' + esc(h.firm) + '</span><span class="snapshot-date">' + esc(sbet ? 'net mNAV' : h.pref + ' close') + '</span></div>'
-      + '<h3>' + esc(h.name) + '</h3><p class="snapshot-value">' + esc(value) + '</p><p class="snapshot-label">' + esc(gap) + '</p>'
-      + track(h) + '<p class="snapshot-asof">As of ' + esc(h.price_date) + (sbet ? ' (last filed holdings date, ' + daysAgo(h.week_end) + ' days ago)' : ', net mNAV ' + h.m.toFixed(3)) + '</p>'
-      + '</article>';
-  }).join('') + '</div><p class="snapshot-footnote">' + DATA.headline.map(h => esc(h.close_sentence)).join(' ') + '</p>';
+  dek();
+  const cards = DATA.headline.filter(h => h.break_even != null).map(h => {
+    const below = h.gap < 0, side = h.firm === 'MSTR' ? 'below' : 'above';
+    return '<article class="gauge"><div class="gauge-top"><span class="firm-symbol ' + h.firm.toLowerCase() + '">' + esc(h.firm) + '</span>'
+      + '<span>' + esc(h.name) + ' · ' + esc(h.pref) + ' preferred</span></div>'
+      + '<p class="gauge-value">$' + h.pref_close.toFixed(2) + '<span> close, ' + nice_date(h.price_date) + '</span></p>'
+      + '<p class="gauge-gap">$' + Math.abs(h.gap).toFixed(2) + (below ? ' below' : ' above') + ' break-even $' + h.break_even.toFixed(2) + '</p>'
+      + track(h)
+      + '<p class="gauge-rule">Break-even = $100 × net mNAV (' + h.m.toFixed(3) + ') · adds while ' + esc(h.pref) + ' is ' + side + ' it</p></article>';
+  }).join('');
+  const s = DATA.headline.find(h => h.break_even == null);
+  const sb = s ? '<p class="gauge-note"><span class="firm-symbol sbet">SBET</span> SharpLink has no preferred, so no rotation. Net mNAV '
+    + s.m.toFixed(3) + ' on ' + nice_date(s.week_end) + ', its last filed holdings date (' + daysAgo(s.week_end)
+    + ' days ago). Issuing common adds while m is above 1; buying back adds while m is below 1.</p>' : '';
+  document.getElementById('headline-text').innerHTML = cards + sb;
   document.getElementById('counts').textContent = DATA.counts;
   example();
 }
 
+// "How this is built": live figures only (computed from data.json and the latest check record), so nothing goes stale.
+function built() {
+  const filings = new Set(DATA.weeks.flatMap(w => w.filing_urls)).size;
+  const weeks = DATA.weeks.filter(w => w.firm !== 'SBET').length;
+  const c = DATA.check || {}, checks = Array.isArray(c.checks) ? c.checks : [];
+  const api = checks.find(x => /netSatsPerShare/.test(x.name)), pct = api && (api.compared.match(/([+-]\d+\.\d+)%/) || [])[1];
+  const tiles = [[filings, 'SEC filings parsed', 'Every action row links to its filing.'],
+    [weeks, 'firm-weeks rebuilt', 'Coin holdings rolled from each trade and reconciled to the filed total.'],
+    ...(pct ? [[pct.replace('-', '−') + '%', 'from Strategy\'s published net sats per share', 'The rebuild of Strategy\'s own KPI, checked against its API.']] : []),
+    [checks.filter(x => x.ok).length + ' of ' + checks.length, 'checks pass', 'Run ' + esc((c.run_at || '').slice(0, 10)) + '; the page deploys only on a pass.']];
+  document.getElementById('built-grid').innerHTML = tiles.map(([v, k, d]) =>
+    '<div class="tile"><p class="tile-value">' + v + '</p><p class="tile-key">' + k + '</p><p class="tile-desc">' + d + '</p></div>').join('');
+}
+
 // ---- 1b. worked example: one filed action, from its data row ----
 function example() {
-  const x = DATA.example, M = v => '$' + (v / 1e6).toFixed(1) + ' million';
-  document.getElementById('example-title').textContent = 'One action, step by step: ' + M(x.usd) + ' of STRC retired adds ' + M(x.adds_usd) + ' to common';
-  document.getElementById('example').innerHTML = '<ol class="steps">'
-    + '<li>Strategy paid <strong>' + M(x.usd) + '</strong> to buy back STRC with <strong>' + M(x.notional) + '</strong> of notional, $' + x.avg_price.toFixed(2) + ' per $100 share (q = ' + x.q.toFixed(4) + ').</li>'
-    + '<li>Each STRC share carried a $100 claim on the company ahead of common. Retiring the shares removed ' + M(x.notional) + ' of claims for ' + M(x.usd) + ' of cash.</li>'
-    + '<li>The difference, ' + M(x.notional) + ' − ' + M(x.usd) + ' = <strong>' + M(x.adds_usd) + '</strong>, moves to common holders. In the formula: (1/q − 1) × ' + M(x.usd) + '.</li>'
-    + '<li>Across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares, net coins per share rose by <strong>' + x.sats_per_share.toFixed(2) + ' sats</strong> (exact recompute).</li>'
-    + '</ol><p class="source">Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p>';
+  const x = DATA.example, M = v => '$' + (v / 1e6).toFixed(1) + 'M';
+  document.getElementById('example-title').textContent = 'One trade, step by step: Strategy retires $' + (x.usd / 1e6).toFixed(1)
+    + ' million of STRC and common holders gain $' + (x.adds_usd / 1e6).toFixed(1) + ' million';
+  const steps = [[M(x.usd), 'cash paid', 'to buy back STRC at $' + x.avg_price.toFixed(2) + ' per $100 share (q = ' + x.q.toFixed(4) + ')'],
+    [M(x.notional), 'of claims removed', 'each STRC share carried a $100 claim ahead of common'],
+    [M(x.adds_usd), 'moves to common', M(x.notional) + ' − ' + M(x.usd) + ', or (1/q − 1) × cash'],
+    ['+' + x.sats_per_share.toFixed(2) + ' sats', 'per share', 'across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares (exact recompute)']];
+  document.getElementById('example').innerHTML = '<ol class="stepper">' + steps.map(([v, k, d], i) =>
+    '<li class="step' + (i === 2 ? ' key' : '') + '"><p class="step-value">' + v + '</p><p class="step-key">' + k + '</p><p class="step-desc">' + esc(d) + '</p></li>').join('')
+    + '</ol><p class="source">Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end)
+    + '</a>. Every bar and mark below is built the same way.</p>';
 }
 
 // ---- 2. preferred close against break-even, by week ----
@@ -568,6 +603,7 @@ fetch('data.json').then(r => r.json()).then(d => {
   totals();
   table();
   method();
+  built();
   draw();
   let lastW = innerWidth;
   addEventListener('resize', () => { if (innerWidth !== lastW) { lastW = innerWidth; draw(); } });
