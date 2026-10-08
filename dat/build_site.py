@@ -6,7 +6,7 @@ Observed value to common is recomputed through the engine's states, so the bars 
 """
 import datetime as dt, json, math, os, sys
 from dat.balances import read, bmnr_s_bias
-from dat.engine import states, state_net
+from dat.engine import states, state_net, CHECK_FROM
 from dat.parse_bmnr import excluded_holdings
 
 CATEGORIES = ['issue_common', 'buyback_common', 'issue_pref', 'retire_pref', 'coins', 'carry', 'residual']
@@ -251,7 +251,10 @@ def build(data_dir='data', online=False):
             ('residual', lambda w: w['value']['residual']), ('observed', lambda w: w['observed']),
             ('price', lambda w: w['price']), ('itm_flip', lambda w: w['itm_flip']))}
         x['actions'] = math.fsum(w['actions_value'] for w in att) - x['carry'] - x['est_issuance']
-        totals[firm] = {**{k: cents(v) for k, v in x.items()}, 'since': ws[0]['week_end']}
+        # Residual split at the first R-checked week (method.md): before it, unexplained R changes land in the residual.
+        start = CHECK_FROM.get(firm)
+        x['residual_checked'] = math.fsum(w['value']['residual'] for w in att if start and w['week_end'] >= start)
+        totals[firm] = {**{k: cents(v) for k, v in x.items()}, 'since': ws[0]['week_end'], 'checked_from': start}
     check = load_check(path('check.json'))
     return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(headline),
             'counts': counts_sentence(counts(all_w)), 'example': example(all_act, all_a, all_bal),
