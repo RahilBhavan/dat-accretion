@@ -110,3 +110,16 @@ def test_bad_check_json_is_not_yet_run(tmp_path, body, capsys):
     assert load_check(str(tmp_path / 'check.json')) == {'status': 'not yet run'}
     assert 'warning' in capsys.readouterr().err
     assert load_check(str(tmp_path / 'missing.json')) == {'status': 'not yet run'}
+
+
+def test_title_states_break_even_figures(site):
+    h = {x['firm']: x for x in site['headline']}
+    for f in ('MSTR', 'BMNR'):
+        assert f"${h[f]['break_even']:.2f}" in site['title'] and f"{h[f]['m']:.3f}" in site['title']
+    assert ' of ' not in site['title'] and '—' not in site['title']  # no counts, no em dash
+
+
+def test_worked_example_traces_to_its_row(site):
+    x = site['example']
+    assert x['filing_url'].startswith('https://www.sec.gov/') and x['adds_usd'] == round(x['notional'] - x['usd'])
+    assert x['usd'] == 25_000_000 and x['adds_usd'] == 3_893_000  # method.md rounding note: as filed, $3.893M

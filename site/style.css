@@ -81,8 +81,6 @@ section { border-top: 1px solid var(--border); padding: clamp(60px, 7vw, 96px) 0
 .bullet-track .dot { top: -3px; width: 12px; height: 12px; margin-left: -8px; border-radius: 50%; border: 2px solid var(--card); box-sizing: content-box; }
 .bullet-sides { display: flex; justify-content: space-between; margin-top: 4px; font-style: italic; }
 .snapshot-asof { margin: 10px 0 0; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-.snapshot-rule { height: 1px; background: var(--border); margin: 18px 0 14px; }
-.snapshot-context { margin: 0; color: var(--fg); font-size: 13px; line-height: 1.5; }
 .snapshot-meta { margin: auto 0 0; padding-top: 16px; }
 .snapshot-meta strong { color: var(--fg); margin-left: 3px; }
 .snapshot-footnote { margin: 14px 0 0; line-height: 1.65; }
@@ -171,7 +169,6 @@ footer { margin-top: 6px; border-top: 1px solid var(--border); padding: 26px 0 4
   .snapshot-grid { grid-template-columns: 1fr; }
   .snapshot-card { min-height: auto; }
   .snapshot-top { margin-bottom: 18px; }
-  .snapshot-rule { margin: 20px 0 14px; }
   #downloads ul { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) {
@@ -191,3 +188,22 @@ footer { margin-top: 6px; border-top: 1px solid var(--border); padding: 26px 0 4
 
 .asof { font-size: .9rem; color: var(--muted); max-width: 680px; }
 .asof .stale { color: var(--s2); font-weight: 600; }
+
+.explainer { font-size: 1.05rem; max-width: 680px; line-height: 1.55; }
+.howto { max-width: 680px; }
+.terms { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1rem; margin: .6rem 0 0; }
+.terms dt { font-weight: 600; }
+.terms dd { margin: 0; color: var(--muted); }
+.counts { color: var(--muted); max-width: 850px; }
+.steps { max-width: 760px; padding-left: 1.3rem; line-height: 1.6; }
+.steps li { margin: .35rem 0; }
+@media (max-width: 600px) {
+  .terms { grid-template-columns: 1fr; }
+  .terms dd { margin-bottom: .4rem; }
+  .snapshot-card { padding: 16px; }
+  .snapshot-card h3 { margin: .2rem 0; }
+  .snapshot-value { font-size: 1.8rem; }
+}
+
+.nobr { white-space: nowrap; }
+.hero .lede { font-size: .95rem; line-height: 1.5; color: var(--muted); }

@@ -12,20 +12,35 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="site-bar">
   <a class="brand" href="#top" aria-label="DAT Accretion, back to top"><span class="brand-mark" aria-hidden="true">D<span>·</span></span><span>DAT <strong>Accretion</strong></span></a>
-  <nav aria-label="Primary navigation"><a href="#pref-section">By week</a><a href="#map-section">Break-even map</a><a href="#bars-section">Attribution</a><a href="#method">Method</a><a href="#downloads">Downloads</a></nav>
+  <nav aria-label="Primary navigation"><a href="#example-section">Example</a><a href="#pref-section">By week</a><a href="#map-section">Break-even map</a><a href="#bars-section">Attribution</a><a href="#method">Method</a><a href="#downloads">Downloads</a></nav>
   <button type="button" id="theme" class="theme">Theme</button>
 </div>
 <main id="main">
 <header id="top" class="hero">
   <h1 id="title">loading</h1>
-  <p class="gloss">Net mNAV (m) is the share price divided by net coin value per share. q is the preferred close divided by its $100 notional.</p>
-  <p class="lede">Strategy's own net coins per share definition, applied to all three firms. Every capital action since 2026-06-01, valued at disclosed prices.</p>
+  <p class="explainer">Digital asset treasury (DAT) companies hold bitcoin or ether and raise money by selling stock. This page measures every share sale, buyback and preferred trade by Strategy, BitMine and SharpLink since 2026-06-01 with one figure: net coins per share. An action adds when it raises that figure. Each firm's pattern has a break-even price where adding turns to subtracting.</p>
+  <p class="lede">Strategy's own net coins per share definition, applied to all three firms. Every capital action valued at disclosed prices.</p>
   <p class="asof" id="asof"></p>
+  <details class="fold howto">
+    <summary>How to read this page</summary>
+    <dl class="terms">
+      <dt>Net coins per share (n)</dt><dd>Coins held plus USD cash, minus debt and preferred notional, converted to coins, divided by fully diluted shares.</dd>
+      <dt>Net mNAV (m)</dt><dd>The share price divided by the net coin value behind each share. While m is above 1, selling new common brings in more coins per share than it gives away.</dd>
+      <dt>q</dt><dd>The preferred close divided by its $100 notional. While q is below 1, buying preferred back for cash removes more claim on the coins than it costs.</dd>
+      <dt>Break-even</dt><dd>$100 × m. Strategy sells common to retire STRC, which adds while STRC closes below break-even. BitMine sells BMNP to buy back common, which adds while BMNP closes above it.</dd>
+    </dl>
+  </details>
 </header>
 
 <section id="headline" aria-live="polite" class="overview">
   <div class="section-heading"><div><h2>Break-even, latest filed week</h2></div><p>Each firm's latest filed week or date.</p></div>
   <div id="headline-text"><p class="muted">loading</p></div>
+  <p class="counts" id="counts"></p>
+</section>
+
+<section id="example-section">
+  <div class="section-heading"><div><h2 id="example-title">One action, step by step</h2></div><p>Strategy, week ending 2026-07-26.</p></div>
+  <div id="example"></div>
 </section>
 
 <section id="pref-section">

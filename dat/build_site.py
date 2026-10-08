@@ -74,10 +74,44 @@ def counts(weekly):
     return out
 
 
-def title(c):
+def title(headline):
+    """Page h1 and memo title: each rotation's break-even at the latest week, figures only (framing.md form)."""
+    h = {x['firm']: x for x in headline}
+    a, b = h['MSTR'], h['BMNR']
+    when = (f"week ending {a['week_end']}" if a['week_end'] == b['week_end']
+            else f"weeks ending {a['week_end']} and {b['week_end']}")
+    return (f"At net mNAV {a['m']:.3f}, Strategy's STRC rotation adds net sats per share while STRC trades below "
+            f"${a['break_even']:.2f}; at {b['m']:.3f}, BitMine's BMNP rotation adds net ETH per share while BMNP trades "
+            f"above ${b['break_even']:.2f} ({when})")
+
+
+def counts_sentence(c):
+    """The weekly counts, stated the same way for both preferreds: weeks the close was below break-even ($100 × m)."""
     (a, n, _, _), (b, k, _, _), (x, y, _, _) = c['MSTR'], c['BMNR'], c['SBET']
-    return (f"Strategy's STRC rotation sat on its adding side of the break-even line in {a} of {n} filed weeks; "
-            f"BitMine's BMNP rotation in {b} of {k}; SharpLink, with no preferred, had m below 1 on {x} of {y} filed dates")
+    return (f"STRC closed below its break-even in {a} of {n} filed weeks, and BMNP closed below its break-even in "
+            f"{k - b} of {k}. Strategy's rotation adds while STRC is below break-even; BitMine's adds while BMNP is above "
+            f"it. SharpLink's m was below 1 on {x} of {y} filed dates.")
+
+
+# The worked example on the page: Strategy's 7/26 STRC retirement (method.md test anchor 1, as filed: $25.0M).
+EXAMPLE = ('MSTR', '2026-07-26', 'retire_pref', 'STRC')
+
+
+def example(actions, attribution, balances):
+    """One action, step by step, from the data rows. Raises if the row is missing, so the page never invents it."""
+    firm, week, action, ticker = EXAMPLE
+    key = lambda r: (r['firm'], r['week_end'], r['action'], r['ticker']) == EXAMPLE
+    act = [r for r in actions if key(r)]
+    att = [r for r in attribution if key(r)]
+    bal = [r for r in balances if r['firm'] == firm and r['date'] == week]
+    if len(act) != 1 or len(att) != 1 or len(bal) != 1:
+        raise ValueError(f'worked example {EXAMPLE}: expected one actions, attribution and balances row')
+    act, att, bal = act[0], att[0], bal[0]
+    usd, notional = float(act['usd']), float(act['units'])
+    dn = float(att['dn_exact'])
+    return {'week_end': week, 'filing_url': act['filing_url'], 'usd': usd, 'notional': notional,
+            'q': round(usd / notional, 4), 'avg_price': round(float(act['avg_price']), 2),
+            'adds_usd': round(notional - usd), 'sats_per_share': round(dn * 1e8, 2), 'shares': int(float(bal['shares_diluted']))}
 
 
 def fnum(x):
@@ -219,7 +253,8 @@ def build(data_dir='data', online=False):
         x['actions'] = math.fsum(w['actions_value'] for w in att) - x['carry'] - x['est_issuance']
         totals[firm] = {**{k: cents(v) for k, v in x.items()}, 'since': ws[0]['week_end']}
     check = load_check(path('check.json'))
-    return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(counts(all_w)),
+    return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(headline),
+            'counts': counts_sentence(counts(all_w)), 'example': example(all_act, all_a, all_bal),
             'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'totals': totals, 'notes': notes, 'check': check}
 
 

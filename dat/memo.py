@@ -122,7 +122,7 @@ def paragraphs(d):
     s = h['SBET']  # the line paragraph above already states SharpLink's m vs 1 rule
     where = ' '.join(f"{h[f]['sentence']} {h[f]['close_sentence']}" for f in ('MSTR', 'BMNR')) + \
         f" SharpLink's net mNAV was {s['m']:.3f} on its last filed date, {s['week_end']}. {s['close_sentence']}"
-    return ruler, line, where
+    return ruler, line, where + ' ' + d['counts']
 
 
 def footnote(c, weekly, biases):
@@ -178,7 +178,7 @@ def main(data_dir='data', out='docs'):
     d = build(data_dir, online=False)
     weekly = read(os.path.join(data_dir, 'weekly.csv'))
     c = counts(weekly)
-    t, paras, notes, svg = title(c), paragraphs(d), footnote(c, weekly, week_biases(data_dir, weekly)), map_svg(d['weeks'])
+    t, paras, notes, svg = title(d['headline']), paragraphs(d), footnote(c, weekly, week_biases(data_dir, weekly)), map_svg(d['weeks'])
     files = {'map.svg': svg, 'memo.md': md(t, paras, notes), 'memo.html': page(t, paras, notes, svg)}
     for name, text in files.items():
         with open(os.path.join(out, name), 'w') as f:

@@ -137,7 +137,7 @@ function asof() {
 }
 
 function headline() {
-  document.getElementById('title').textContent = DATA.title;
+  document.getElementById('title').innerHTML = esc(DATA.title).replace(/\d{4}-\d{2}-\d{2}/g, '<span class="nobr">$&</span>');
   asof();
   document.getElementById('headline-text').innerHTML = '<div class="snapshot-grid">' + DATA.headline.map(h => {
     const symbol = h.firm.toLowerCase(), sbet = h.break_even == null;
@@ -147,8 +147,22 @@ function headline() {
     return '<article class="snapshot-card"><div class="snapshot-top"><span class="firm-symbol ' + symbol + '">' + esc(h.firm) + '</span><span class="snapshot-date">' + esc(sbet ? 'net mNAV' : h.pref + ' close') + '</span></div>'
       + '<h3>' + esc(h.name) + '</h3><p class="snapshot-value">' + esc(value) + '</p><p class="snapshot-label">' + esc(gap) + '</p>'
       + track(h) + '<p class="snapshot-asof">As of ' + esc(h.price_date) + (sbet ? ' (last filed holdings date, ' + daysAgo(h.week_end) + ' days ago)' : ', net mNAV ' + h.m.toFixed(3)) + '</p>'
-      + '<div class="snapshot-rule"></div><p class="snapshot-context">' + esc(h.sentence) + '</p></article>';
+      + '</article>';
   }).join('') + '</div><p class="snapshot-footnote">' + DATA.headline.map(h => esc(h.close_sentence)).join(' ') + '</p>';
+  document.getElementById('counts').textContent = DATA.counts;
+  example();
+}
+
+// ---- 1b. worked example: one filed action, from its data row ----
+function example() {
+  const x = DATA.example, M = v => '$' + (v / 1e6).toFixed(1) + ' million';
+  document.getElementById('example-title').textContent = 'One action, step by step: ' + M(x.usd) + ' of STRC retired adds ' + M(x.adds_usd) + ' to common';
+  document.getElementById('example').innerHTML = '<ol class="steps">'
+    + '<li>Strategy paid <strong>' + M(x.usd) + '</strong> to buy back STRC with <strong>' + M(x.notional) + '</strong> of notional, $' + x.avg_price.toFixed(2) + ' per $100 share (q = ' + x.q.toFixed(4) + ').</li>'
+    + '<li>Each STRC share carried a $100 claim on the company ahead of common. Retiring the shares removed ' + M(x.notional) + ' of claims for ' + M(x.usd) + ' of cash.</li>'
+    + '<li>The difference, ' + M(x.notional) + ' − ' + M(x.usd) + ' = <strong>' + M(x.adds_usd) + '</strong>, moves to common holders. In the formula: (1/q − 1) × ' + M(x.usd) + '.</li>'
+    + '<li>Across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares, net coins per share rose by <strong>' + x.sats_per_share.toFixed(2) + ' sats</strong> (exact recompute).</li>'
+    + '</ol><p class="source">Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p>';
 }
 
 // ---- 2. preferred close against break-even, by week ----
