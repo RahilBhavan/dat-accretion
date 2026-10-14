@@ -21,111 +21,72 @@ a { color: #1a5aa6; }
 <p>Digital asset treasury (DAT) companies hold bitcoin or ether and raise money by selling stock. This memo measures each share sale, buyback and preferred trade since 2026-06-01 with Strategy&#x27;s own net coins per share definition, applied to all three firms (glossary, Strategy&#x27;s 2026-08-24 FWP). Net coins N are coins held plus USD assets, less out-of-the-money convertible debt and preferred notional, converted to coins at the coin price; n is N per fully diluted share. m is net mNAV, the share price over the net coin value per share. q is the preferred&#x27;s close over its $100 notional.</p>
 <p>Issuing common adds to n while m is above 1; retiring preferred adds while q is below 1. Strategy&#x27;s rotation sells common and retires STRC, so it adds while m &gt; q: it stops adding when STRC trades above $100 × m. BitMine&#x27;s rotation sells BMNP and buys back common, so it adds while m &lt; q: it stops adding when BMNP trades below $100 × m. SharpLink has no preferred, so no rotation line applies.</p>
 <p>STRC closed below its break-even in 22 of 22 filed weeks, and BMNP closed below its break-even in 18 of 18. Strategy&#x27;s rotation adds while STRC is below break-even; BitMine&#x27;s adds while BMNP is above it. SharpLink&#x27;s m was below 1 on 4 of 4 filed dates. Value to common since each firm&#x27;s first week, by cause: filed actions +$406.3M for Strategy, −$50.7M for BitMine and +$10.9M for SharpLink. The residual, the change the filings leave unexplained, is −$255.9M for Strategy: −$257.4M before 2026-08-02, when the 8-Ks did not itemize cash flows, and +$1.5M in the weeks since, each checked against the filings. BitMine&#x27;s is −$27.9M and SharpLink&#x27;s −$19.2M, both report only.</p>
-<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Break-even map: net mNAV m against preferred price over notional q, one mark per firm-week" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#222">
-<rect width="800" height="500" fill="#fff"/>
-<line x1="58.0" x2="58.0" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="422.0" y2="422.0" stroke="#e3e3e3"/>
-<text x="58.0" y="439" text-anchor="middle" fill="#555">0.65</text>
-<text x="51" y="426.0" text-anchor="end" fill="#555">0.65</text>
-<line x1="143.4" x2="143.4" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="374.0" y2="374.0" stroke="#e3e3e3"/>
-<text x="143.4" y="439" text-anchor="middle" fill="#555">0.75</text>
-<text x="51" y="378.0" text-anchor="end" fill="#555">0.75</text>
-<line x1="228.8" x2="228.8" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="326.0" y2="326.0" stroke="#e3e3e3"/>
-<text x="228.8" y="439" text-anchor="middle" fill="#555">0.85</text>
-<text x="51" y="330.0" text-anchor="end" fill="#555">0.85</text>
-<line x1="314.2" x2="314.2" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="278.0" y2="278.0" stroke="#e3e3e3"/>
-<text x="314.2" y="439" text-anchor="middle" fill="#555">0.95</text>
-<text x="51" y="282.0" text-anchor="end" fill="#555">0.95</text>
-<line x1="399.6" x2="399.6" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="230.0" y2="230.0" stroke="#e3e3e3"/>
-<text x="399.6" y="439" text-anchor="middle" fill="#555">1.05</text>
-<text x="51" y="234.0" text-anchor="end" fill="#555">1.05</text>
-<line x1="485.1" x2="485.1" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="182.0" y2="182.0" stroke="#e3e3e3"/>
-<text x="485.1" y="439" text-anchor="middle" fill="#555">1.15</text>
-<text x="51" y="186.0" text-anchor="end" fill="#555">1.15</text>
-<line x1="570.5" x2="570.5" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="134.0" y2="134.0" stroke="#e3e3e3"/>
-<text x="570.5" y="439" text-anchor="middle" fill="#555">1.25</text>
-<text x="51" y="138.0" text-anchor="end" fill="#555">1.25</text>
-<line x1="655.9" x2="655.9" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="86.0" y2="86.0" stroke="#e3e3e3"/>
-<text x="655.9" y="439" text-anchor="middle" fill="#555">1.35</text>
-<text x="51" y="90.0" text-anchor="end" fill="#555">1.35</text>
-<line x1="741.3" x2="741.3" y1="14" y2="422" stroke="#e3e3e3"/>
-<line x1="58" x2="784" y1="38.0" y2="38.0" stroke="#e3e3e3"/>
-<text x="741.3" y="439" text-anchor="middle" fill="#555">1.45</text>
-<text x="51" y="42.0" text-anchor="end" fill="#555">1.45</text>
-<line x1="58" x2="784" y1="422" y2="422" stroke="#555"/>
-<line x1="58" x2="58" y1="14" y2="422" stroke="#555"/>
-<text x="421.0" y="460" text-anchor="middle">q = preferred close / $100 notional (STRC for Strategy, BMNP for BitMine; SharpLink, no preferred, at q = 1)</text>
-<text transform="translate(16 218.0) rotate(-90)" text-anchor="middle">m = net mNAV</text>
-<line x1="58.0" y1="422.0" x2="784.0" y2="14.0" stroke="#222" stroke-dasharray="6 4"/>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="800" height="480" role="img" aria-label="Break-even map: net mNAV m against preferred price over notional q, one mark per firm-week" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#222">
+<rect width="800" height="480" fill="#fff"/>
+<line x1="139.7" x2="356.9" y1="418" y2="418" stroke="#888"/>
+<line x1="50" x2="50" y1="50.7" y2="376.4" stroke="#888"/>
+<text x="139.7" y="434" text-anchor="middle" fill="#555">0.75</text>
+<text x="356.9" y="434" text-anchor="middle" fill="#555">1.00</text>
+<text x="45" y="380.4" text-anchor="end" fill="#555">0.72</text>
+<text x="45" y="250.9" text-anchor="end" fill="#555">1.00</text>
+<text x="45" y="54.7" text-anchor="end" fill="#555">1.42</text>
+<text x="784" y="454" text-anchor="end" fill="#555">q = preferred close / $100 notional (STRC, BMNP; SharpLink, no preferred, at q = 1) →</text>
+<text x="58" y="18" fill="#555">↑ m = net mNAV</text>
+<line x1="58.0" y1="410.0" x2="784.0" y2="14.0" stroke="#222" stroke-dasharray="5 4" stroke-opacity="0.7"/>
 <text x="744.0" y="20.0" text-anchor="end">m = q</text>
-<text x="68" y="34" font-weight="bold">Strategy's rotation adds here (m &gt; q)</text>
-<text x="774" y="410" text-anchor="end" font-weight="bold">BitMine's rotation adds here (m &lt; q)</text>
-<polyline points="348.3,68.4 300.6,51.8 312.5,79.7 259.5,131.8 139.7,259.3 227.6,210.7 253.3,171.3 250.0,239.6 231.3,235.6 244.9,255.3 266.9,231.3 314.3,221.1 312.4,235.3 324.3,261.8 334.1,225.6 337.7,180.8 345.3,205.7 344.2,149.8 344.5,160.9 351.4,176.7 351.9,158.4 354.0,162.5" fill="none" stroke="#2a78d6" stroke-opacity="0.45" stroke-width="1.2"/>
-<circle cx="348.3" cy="68.4" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="300.6" cy="51.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="312.5" cy="79.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="259.5" cy="131.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="139.7" cy="259.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="227.6" cy="210.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="253.3" cy="171.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="250.0" cy="239.6" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="231.3" cy="235.6" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="244.9" cy="255.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="266.9" cy="231.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="314.3" cy="221.1" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="312.4" cy="235.3" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="324.3" cy="261.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="334.1" cy="225.6" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="337.7" cy="180.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="345.3" cy="205.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="344.2" cy="149.8" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="344.5" cy="160.9" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="351.4" cy="176.7" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<circle cx="351.9" cy="158.4" r="5.5" style="fill:#2a78d6;fill-opacity:0.35;stroke:#2a78d6;stroke-width:1.5"/>
-<polyline points="186.1,253.6 244.6,264.2 194.7,306.7 214.6,312.9 235.0,317.8 236.4,309.2 240.8,311.4 263.0,271.6 265.6,244.4 276.7,255.2 299.4,284.0 328.7,250.9 340.8,230.1 345.3,240.5 339.1,240.5 352.3,225.8 352.5,245.5 352.9,255.0" fill="none" stroke="#eb6834" stroke-opacity="0.45" stroke-width="1.2"/>
-<rect x="181.2" y="248.7" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="239.8" y="259.3" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="189.9" y="301.9" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="209.7" y="308.0" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="230.1" y="312.9" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="231.6" y="304.3" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="235.9" y="306.5" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="258.1" y="266.8" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="260.7" y="239.5" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="271.8" y="250.4" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="294.5" y="279.1" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="323.8" y="246.0" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="335.9" y="225.3" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="340.5" y="235.7" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="334.2" y="235.7" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="347.5" y="220.9" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<rect x="347.6" y="240.6" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.35;stroke:#eb6834;stroke-width:1.5"/>
-<polyline points="356.9,376.7 356.9,387.4 356.9,386.6 356.9,345.6" fill="none" stroke="#4a3aa7" stroke-opacity="0.45" stroke-width="1.2"/>
-<path d="M356.9,368.1L364.3,381.0L349.5,381.0Z" style="fill:#4a3aa7;fill-opacity:0.35;stroke:#4a3aa7;stroke-width:1.5"/>
-<path d="M356.9,378.8L364.3,391.6L349.5,391.6Z" style="fill:#4a3aa7;fill-opacity:0.35;stroke:#4a3aa7;stroke-width:1.5"/>
-<path d="M356.9,378.0L364.3,390.8L349.5,390.8Z" style="fill:#4a3aa7;fill-opacity:0.35;stroke:#4a3aa7;stroke-width:1.5"/>
-<circle cx="354.0" cy="162.5" r="7.0" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.5"/>
-<text x="365.0" y="166.5" font-weight="bold">Strategy 2026-10-11</text>
-<rect x="346.7" y="248.8" width="12.4" height="12.4" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.5"/>
-<text x="363.9" y="259.0" font-weight="bold">BitMine 2026-10-11</text>
-<path d="M356.9,334.7L366.4,351.0L347.5,351.0Z" style="fill:#4a3aa7;stroke:#4a3aa7;stroke-width:1.5"/>
-<text x="367.9" y="349.6" font-weight="bold">SharpLink 2026-08-03</text>
-<circle cx="65.0" cy="480.0" r="5.5" style="fill:#2a78d6;fill-opacity:0.45;stroke:#2a78d6"/>
-<text x="76" y="484">Strategy</text>
-<rect x="160.1" y="475.1" width="9.7" height="9.7" rx="1" style="fill:#eb6834;fill-opacity:0.45;stroke:#eb6834"/>
-<text x="176" y="484">BitMine</text>
-<path d="M265.0,471.4L272.4,484.3L257.6,484.3Z" style="fill:#4a3aa7;fill-opacity:0.45;stroke:#4a3aa7"/>
-<text x="276" y="484">SharpLink</text>
-<line x1="368" y1="486" x2="382" y2="474" stroke="#222" stroke-dasharray="3 2"/>
-<text x="388" y="484">m = q</text>
-<text x="448" y="484" fill="#555">Lines join each firm's weeks in date order; solid mark: latest</text>
+<text x="68" y="38" font-weight="bold">Strategy's rotation adds here (m &gt; q)</text>
+<text x="774" y="398" text-anchor="end" font-weight="bold">BitMine's rotation adds here (m &lt; q)</text>
+<polyline points="348.3,66.8 300.6,50.7 312.5,77.7 259.5,128.3 139.7,252.1 227.6,204.9 253.3,166.7 250.0,232.9 231.3,229.1 244.9,248.2 266.9,224.9 314.3,215.1 312.4,228.8 324.3,254.5 334.1,219.4 337.7,175.9 345.3,200.1 344.2,145.8 344.5,156.6 351.4,171.9 351.9,154.1 354.0,158.1" fill="none" stroke="#2a78d6" stroke-opacity="0.5" stroke-width="1"/>
+<circle cx="348.3" cy="66.8" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="300.6" cy="50.7" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="312.5" cy="77.7" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="259.5" cy="128.3" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="139.7" cy="252.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="227.6" cy="204.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="253.3" cy="166.7" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="250.0" cy="232.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="231.3" cy="229.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="244.9" cy="248.2" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="266.9" cy="224.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="314.3" cy="215.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="312.4" cy="228.8" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="324.3" cy="254.5" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="334.1" cy="219.4" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="337.7" cy="175.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="345.3" cy="200.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="344.2" cy="145.8" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="344.5" cy="156.6" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="351.4" cy="171.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<circle cx="351.9" cy="154.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
+<polyline points="186.1,246.6 244.6,256.9 194.7,298.1 214.6,304.1 235.0,308.9 236.4,300.5 240.8,302.6 263.0,264.1 265.6,237.6 276.7,248.1 299.4,276.0 328.7,243.9 340.8,223.8 345.3,233.9 339.1,233.9 352.3,219.6 352.5,238.7 352.9,247.9" fill="none" stroke="#eb6834" stroke-opacity="0.5" stroke-width="1"/>
+<rect x="181.7" y="242.1" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="240.2" y="252.4" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="190.3" y="293.7" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="210.1" y="299.6" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="230.5" y="304.5" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="232.0" y="296.0" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="236.4" y="298.2" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="258.6" y="259.6" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="261.1" y="233.2" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="272.2" y="243.7" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="294.9" y="271.6" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="324.2" y="239.5" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="336.4" y="219.3" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="340.9" y="229.4" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="334.7" y="229.4" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="347.9" y="215.1" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<rect x="348.1" y="234.2" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
+<polyline points="356.9,366.0 356.9,376.4 356.9,375.6 356.9,335.9" fill="none" stroke="#4a3aa7" stroke-opacity="0.5" stroke-width="1"/>
+<path d="M356.9,358.2L363.7,369.9L350.2,369.9Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.25"/>
+<path d="M356.9,368.6L363.7,380.3L350.2,380.3Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.25"/>
+<path d="M356.9,367.8L363.7,379.5L350.2,379.5Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.25"/>
+<circle cx="354.0" cy="158.1" r="6.5" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.25"/>
+<text x="365.0" y="162.1" font-weight="bold">Strategy 2026-10-11</text>
+<rect x="347.2" y="242.1" width="11.5" height="11.5" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.25"/>
+<text x="363.9" y="251.9" font-weight="bold">BitMine 2026-10-11</text>
+<path d="M356.9,325.7L365.7,340.9L348.2,340.9Z" style="fill:#4a3aa7;stroke:#4a3aa7;stroke-width:1.25"/>
+<text x="367.9" y="339.9" font-weight="bold">SharpLink 2026-08-03</text>
+<text x="58" y="472" fill="#555">Open marks: earlier weeks, joined in date order. Solid: latest, labeled. Circle Strategy, square BitMine, triangle SharpLink.</text>
 </svg>
 </figure>
 <p class="note">Closest weeks to the line: Strategy 2026-08-23, m 2.29% above q; BitMine 2026-10-11, m 0.27% above q. BitMine&#x27;s estimated share count carries a known upward bias of up to 0.55% of S by 2026-10-11 (staked ETH costed as purchases), which raises m by the same proportion; removing it puts m at or below q in 1 of 18 BitMine weeks (2026-10-11), where BitMine&#x27;s rotation would add.</p>

@@ -1,30 +1,32 @@
 'use strict';
 // Hand-drawn inline SVG, no chart library. Charts render at the container's pixel width (viewBox = pixels) so text
 // stays 11px on phones; they redraw on resize and on theme change.
+// Graphics follow Tufte (The Visual Display of Quantitative Information): ink for data, gray for context, one accent
+// for the comparison a caption names; compared panels share one scale; labels sit on the data; no boxes or shadows.
 
 let DATA = null;
 const ACTIVE = {};  // index of the column that holds a chart's one tab stop, per chart element id (kept across redraws)
+// Firm hue and shape are used only where firms share an axis (the break-even map). Elsewhere a panel title names the firm.
 const FIRM = {
-  MSTR: { name: 'Strategy', color: '--s1', shape: 'circle' }, BMNR: { name: 'BitMine', color: '--s2', shape: 'square' },
-  SBET: { name: 'SharpLink', color: '--s7', shape: 'triangle' },
+  MSTR: { name: 'Strategy', color: '--f1', shape: 'circle' }, BMNR: { name: 'BitMine', color: '--f2', shape: 'square' },
+  SBET: { name: 'SharpLink', color: '--f3', shape: 'triangle' },
 };
-// Bar categories: label and colour group. Five colours (--c1..--c4 kept clear of the firm colours); residual uses the
-// neutral token (it is not an action). The tooltip and table still list every category.
-const GROUP = { common: ['Common', '--c1'], pref: ['Preferred', '--c2'], coins: ['Coin trades', '--c3'],
-  carry: ['Carry (dividends, interest, staking)', '--c4'], residual: ['Residual', '--neutral'] };
+// Bar categories: ink for common, the accent for preferred (the rotation's other leg), grays for coins and carry,
+// hatched gray for the residual (it is not an action). The tooltip and table still list every category.
 const CAT = {
-  issue_common: ['Issue common', '--c1'], buyback_common: ['Buy back common', '--c1'], issue_pref: ['Issue preferred', '--c2'],
-  retire_pref: ['Retire preferred', '--c2'], coins: ['Coin trades', '--c3'], carry: ['Carry (dividends, interest, staking)', '--c4'],
+  issue_common: ['Issue common', '--ink2'], buyback_common: ['Buy back common', '--ink2'], issue_pref: ['Issue preferred', '--accent'],
+  retire_pref: ['Retire preferred', '--accent'], coins: ['Coin trades', '--gray1'], carry: ['Carry (dividends, interest, staking)', '--gray2'],
   residual: ['Residual', '--neutral'],
 };
+const GROUP = { common: ['Common', '--ink2'], pref: ['Preferred', '--accent'], coins: ['Coin trades', '--gray1'],
+  carry: ['Carry (dividends, interest, staking)', '--gray2'], residual: ['Residual', '--neutral'] };
 const EST = 'Estimated issuance (BitMine)';
-// Residual: what the filings leave unexplained. Hatched neutral on every chart so it never reads as an action.
 const RESID_FILL = id => 'url(#' + id + ')';
-function residPattern(id) {
-  return '<pattern id="' + id + '" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">'
-    + '<rect width="5" height="5" style="fill:var(--neutral);fill-opacity:0.25"/><line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--neutral);stroke-width:2"/></pattern>';
+function hatchPattern(id, color, angle) {
+  return '<pattern id="' + id + '" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(' + angle + ')">'
+    + '<rect width="5" height="5" style="fill:var(' + color + ');fill-opacity:0.2"/><line x1="0" y1="0" x2="0" y2="5" style="stroke:var(' + color + ');stroke-width:2"/></pattern>';
 }
-const RESID_SWATCH = '<rect x="1" y="1" width="12" height="12" rx="2" style="fill:var(--neutral);fill-opacity:0.25"/><path d="M1,5 L5,1 M1,9 L9,1 M1,13 L13,1 M5,13 L13,5 M9,13 L13,9" style="stroke:var(--neutral);stroke-width:1.5"/>';
+const RESID_SWATCH = '<rect x="1" y="1" width="12" height="12" style="fill:var(--neutral);fill-opacity:0.2"/><path d="M1,5 L5,1 M1,9 L9,1 M1,13 L13,1 M5,13 L13,5 M9,13 L13,9" style="stroke:var(--neutral);stroke-width:1.5"/>';
 const MINUS = '−';
 
 function esc(s) {
@@ -38,6 +40,11 @@ function usd(x, signed) {
   const [div, unit] = a >= 1e9 ? [1e9, 'B'] : a >= 1e6 ? [1e6, 'M'] : a >= 1e3 ? [1e3, 'k'] : [1, ''];
   const body = '$' + (a / div).toFixed(unit ? 1 : 0) + unit;
   return (x < 0 ? MINUS : signed && x > 0 ? '+' : '') + body;
+}
+
+function bps(x, signed) {
+  if (x == null || isNaN(x)) return '-';
+  return (x < 0 ? MINUS : signed && x > 0 ? '+' : '') + Math.abs(x).toFixed(Math.abs(x) < 10 ? 1 : 0) + ' bp';
 }
 
 function fix(x, d) {
@@ -100,30 +107,11 @@ function markSvg(firm, cx, cy, r, cls, style) {
   }
   if (FIRM[firm].shape === 'circle') return '<circle class="' + cls + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" style="' + style + '"/>';
   const h = r * 0.886;  // square of equal area
-  return '<rect class="' + cls + '" x="' + (cx - h) + '" y="' + (cy - h) + '" width="' + 2 * h + '" height="' + 2 * h + '" rx="1" style="' + style + '"/>';
+  return '<rect class="' + cls + '" x="' + (cx - h) + '" y="' + (cy - h) + '" width="' + 2 * h + '" height="' + 2 * h + '" style="' + style + '"/>';
 }
 
 function swatch(inner) {
   return '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">' + inner + '</svg>';
-}
-
-// ---- 1. headline ----
-// Bullet track: a grey band on the side where the program adds, a tick at break-even, a dot in the firm colour at the
-// close. Scale spans both values with 30% padding. SharpLink: m against 1 (buyback side below, issue side above).
-function track(h) {
-  const sbet = h.break_even == null, v = sbet ? h.m : h.pref_close, be = sbet ? 1 : h.break_even;
-  const lo = Math.min(v, be), hi = Math.max(v, be), pad = (hi - lo) * 0.3 || 0.1, a = lo - pad, b = hi + pad;
-  const pct = x => (x - a) / (b - a) * 100;
-  const pos = x => { const p = pct(x); return 'left:' + p.toFixed(1) + '%;transform:translateX(' + (p < 22 ? '0' : p > 78 ? '-100%' : '-50%') + ')'; };
-  const bandLeft = h.firm === 'BMNR' ? pct(be) : 0, bandW = h.firm === 'BMNR' ? 100 - pct(be) : pct(be);
-  const beLabel = sbet ? 'm = 1' : 'Break-even $' + be.toFixed(2), vLabel = sbet ? 'm ' + v.toFixed(3) : h.pref + ' $' + v.toFixed(2);
-  const sides = sbet ? ['Buyback adds', 'Issuance adds'] : h.firm === 'MSTR' ? ['Rotation adds', ''] : ['', 'Rotation adds'];
-  return '<div class="bullet" role="img" aria-label="' + esc(vLabel + ', ' + beLabel) + '">'
-    + '<div class="bullet-top"><span style="' + pos(be) + '">' + esc(beLabel) + '</span></div>'
-    + '<div class="bullet-track"><i class="band" style="left:' + bandLeft.toFixed(1) + '%;width:' + bandW.toFixed(1) + '%"></i>'
-    + '<i class="tick" style="left:' + pct(be).toFixed(1) + '%"></i><i class="dot" style="left:' + pct(v).toFixed(1) + '%;background:var(' + FIRM[h.firm].color + ')"></i></div>'
-    + '<div class="bullet-bottom"><span style="' + pos(v) + '">' + esc(vLabel) + '</span></div>'
-    + '<div class="bullet-sides"><span>' + sides[0] + '</span><span>' + sides[1] + '</span></div></div>';
 }
 
 // Days from an ISO date to today (UTC). The page is static, so staleness is computed when it is read.
@@ -135,7 +123,37 @@ function daysAgo(iso) {
 function nice_date(iso) {
   return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }
+function short_date(iso) {
+  return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
 
+// ---- shared ruler: preferred close as a percent of break-even ----
+// r = q / m × 100 (STRC or BMNP close over $100 × m). SharpLink has no preferred, so its q is 1: r = 100 / m.
+// Strategy's rotation adds while r < 100; BitMine's while r > 100; SharpLink's buyback adds while r > 100 (m < 1).
+function ratioPts(firm) {
+  const sbet = firm === 'SBET';
+  return DATA.weeks.filter(w => w.firm === firm && w.m != null && (sbet || w.q != null))
+    .map(w => ({ w, t: Date.parse(w.week_end), r: (sbet ? 1 : w.q) / w.m * 100, close: sbet ? w.m : w.q * 100, be: sbet ? 1 : w.m * 100 }));
+}
+let RULER = null;  // one y domain and one x domain for the sparklines and the small multiples
+function ruler() {
+  const all = Object.keys(FIRM).flatMap(ratioPts), rs = all.map(p => p.r).concat(100);
+  const lo = Math.floor(Math.min(...rs) / 10) * 10, hi = Math.ceil(Math.max(...rs) / 10) * 10;
+  RULER = { lo, hi, t0: Math.min(...all.map(p => p.t)), t1: Math.max(...all.map(p => p.t)) };
+}
+const ADDS = { MSTR: ['below', 'Rotation adds below 100%'], BMNR: ['above', 'Rotation adds above 100%'], SBET: ['above', 'Buyback adds above 100% (m below 1)'] };
+
+function spark(firm) {
+  const pts = ratioPts(firm), W = 104, H = 26, P = 3;
+  const X = t => P + (t - RULER.t0) / (RULER.t1 - RULER.t0) * (W - 2 * P), Y = v => P + (RULER.hi - v) / (RULER.hi - RULER.lo) * (H - 2 * P);
+  const l = pts[pts.length - 1];
+  return '<svg class="spark" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">'
+    + '<line class="ref" x1="' + P + '" x2="' + (W - P) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>'
+    + '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>'
+    + '<circle cx="' + X(l.t).toFixed(1) + '" cy="' + Y(l.r).toFixed(1) + '" r="2.6"/></svg>';
+}
+
+// ---- 1. headline ----
 // Meta line under the dek: what the figures cover, how old that is, where each number comes from, the definition.
 // Weekly firms file on Mondays for the week ending Sunday, so more than 9 days since the latest week means a missed refresh.
 function asof() {
@@ -158,24 +176,28 @@ function dek() {
     + b.break_even.toFixed(2) + '</strong>; it closed at $' + b.pref_close.toFixed(2) + '.';
 }
 
-// Hero gauges: one card per firm with a rotation (big close, break-even, track), and one line for SharpLink.
+// Break-even table: nine numbers, so a table (Tufte: tables beat graphics for small data), with a sparkline per row on
+// the shared percent-of-break-even ruler.
+// Percent of break-even. Within 2 points of 100, one decimal, so rounding never hides which side of the line a close is on.
+const pct = r => (Math.abs(r - 100) < 2 ? r.toFixed(1) : r.toFixed(0)) + '%';
+
 function headline() {
   asof();
   dek();
-  const cards = DATA.headline.filter(h => h.break_even != null).map(h => {
-    const below = h.gap < 0, side = h.firm === 'MSTR' ? 'below' : 'above';
-    return '<article class="gauge"><div class="gauge-top"><span class="firm-symbol ' + h.firm.toLowerCase() + '">' + esc(h.firm) + '</span>'
-      + '<span>' + esc(h.name) + ' · ' + esc(h.pref) + ' preferred</span></div>'
-      + '<p class="gauge-value">$' + h.pref_close.toFixed(2) + '<span> close, ' + nice_date(h.price_date) + '</span></p>'
-      + '<p class="gauge-gap">$' + Math.abs(h.gap).toFixed(2) + (below ? ' below' : ' above') + ' break-even $' + h.break_even.toFixed(2) + '</p>'
-      + track(h)
-      + '<p class="gauge-rule">Break-even = $100 × net mNAV (' + h.m.toFixed(3) + ') · adds while ' + esc(h.pref) + ' is ' + side + ' it</p></article>';
+  const rows = DATA.headline.map(h => {
+    const sbet = h.break_even == null, r = sbet ? 100 / h.m : h.q / h.m * 100;
+    const close = sbet ? 'no preferred' : '$' + h.pref_close.toFixed(2), be = sbet ? 'm = 1' : '$' + h.break_even.toFixed(2);
+    const when = sbet ? 'Net mNAV ' + h.m.toFixed(3) + ' on ' + short_date(h.week_end) + ', last filed date (' + daysAgo(h.week_end) + ' days ago)'
+      : 'Close ' + short_date(h.price_date) + ', net mNAV ' + h.m.toFixed(3);
+    return '<tr><th scope="row">' + esc(h.name) + (sbet ? '' : ' <span class="muted">' + esc(h.pref) + '</span>') + '<span class="sub">' + when + '</span></th>'
+      + '<td class="num">' + close + '</td><td class="num">' + be + '</td><td class="num pct">' + pct(r) + '</td>'
+      + '<td>' + (sbet ? 'buyback, while m &lt; 1' : 'while ' + esc(h.pref) + ' is ' + ADDS[h.firm][0]) + '</td>'
+      + '<td class="spark-cell">' + spark(h.firm) + '</td></tr>';
   }).join('');
-  const s = DATA.headline.find(h => h.break_even == null);
-  const sb = s ? '<p class="gauge-note"><span class="firm-symbol sbet">SBET</span> SharpLink has no preferred, so no rotation. Net mNAV '
-    + s.m.toFixed(3) + ' on ' + nice_date(s.week_end) + ', its last filed holdings date (' + daysAgo(s.week_end)
-    + ' days ago). Issuing common adds while m is above 1; buying back adds while m is below 1.</p>' : '';
-  document.getElementById('headline-text').innerHTML = cards + sb;
+  document.getElementById('headline-text').innerHTML = '<table class="be-table"><thead><tr><th>Firm</th><th class="num">Preferred close</th>'
+    + '<th class="num">Break-even</th><th class="num pct">% of break-even</th><th>Adds</th><th class="spark-cell">Since Jun</th></tr></thead><tbody>' + rows + '</tbody></table>'
+    + '<p class="caption">Break-even = $100 × net mNAV. <span class="spark-note">Sparklines: close ÷ break-even each week, on one shared scale; the dotted line is 100%. '
+    + 'SharpLink has no preferred, so its row shows 1 ÷ m.</span></p>';
   document.getElementById('counts').textContent = DATA.counts;
   example();
 }
@@ -194,22 +216,66 @@ function built() {
     '<div class="tile"><p class="tile-value">' + v + '</p><p class="tile-key">' + k + '</p><p class="tile-desc">' + d + '</p></div>').join('');
 }
 
-// ---- 1b. worked example: one filed action, from its data row ----
-function example() {
-  const x = DATA.example, M = v => '$' + (v / 1e6).toFixed(1) + 'M';
-  document.getElementById('example-title').textContent = 'One trade, step by step: Strategy retires $' + (x.usd / 1e6).toFixed(1)
-    + ' million of STRC and common holders gain $' + (x.adds_usd / 1e6).toFixed(1) + ' million';
-  const steps = [[M(x.usd), 'cash paid', 'to buy back STRC at $' + x.avg_price.toFixed(2) + ' per $100 share (q = ' + x.q.toFixed(4) + ')'],
-    [M(x.notional), 'of claims removed', 'each STRC share carried a $100 claim ahead of common'],
-    [M(x.adds_usd), 'moves to common', M(x.notional) + ' − ' + M(x.usd) + ', or (1/q − 1) × cash'],
-    ['+' + x.sats_per_share.toFixed(2) + ' sats', 'per share', 'across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares (exact recompute)']];
-  document.getElementById('example').innerHTML = '<ol class="stepper">' + steps.map(([v, k, d], i) =>
-    '<li class="step' + (i === 2 ? ' key' : '') + '"><p class="step-value">' + v + '</p><p class="step-key">' + k + '</p><p class="step-desc">' + esc(d) + '</p></li>').join('')
-    + '</ol><p class="source">Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end)
-    + '</a>. Every bar and mark below is built the same way.</p>';
+// ---- 1b. the mechanism first: a toy balance sheet, the rotation at one m, then the real filed trade ----
+// Toy numbers are labeled on the figure. The real trade is too small to draw at true scale; the text says how small.
+const TOY = { coins: 1000, cash: 90, pref: 300, paid: 90, retired: 100 };
+function sheet(after) {
+  const t = TOY, assets = after ? [['Coins', t.coins]] : [['Cash', t.cash], ['Coins', t.coins]];
+  const pref = after ? t.pref - t.retired : t.pref, total = assets.reduce((a, x) => a + x[1], 0);
+  const claims = [['Preferred', pref], ['Common', total - pref]];
+  const W = 330, H = 236, top = 30, unit = 190 / (t.coins + t.cash), colW = 56, xs = [8, 160];
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((after ? 'After' : 'Before') + ': assets '
+    + assets.map(a => a[0] + ' ' + a[1]).join(', ') + '; preferred ' + pref + ', common ' + (total - pref)) + '">';
+  s += '<text class="label" x="0" y="14">' + (after ? 'After: retire a $100 claim for $90' : 'Before') + '</text>';
+  [[assets, 'Assets'], [claims, 'Claims']].forEach(([segs, title], c) => {
+    let y = top + (t.coins + t.cash - total) * unit;  // same scale: a smaller total is a shorter column, bottoms aligned
+    if (after && c === 0) s += '<rect class="gone" x="' + xs[0] + '" y="' + top + '" width="' + colW + '" height="' + (t.cash * unit).toFixed(1) + '"/>'
+      + '<text x="' + (xs[0] + colW + 6) + '" y="' + (top + t.cash * unit / 2 + 4).toFixed(1) + '">cash −90</text>';
+    segs.forEach(([name, v]) => {
+      const h = v * unit, common = name === 'Common';
+      s += '<rect class="' + (common ? 'seg-common' : 'seg') + '" x="' + xs[c] + '" y="' + y.toFixed(1) + '" width="' + colW + '" height="' + h.toFixed(1) + '"/>';
+      s += '<text x="' + (xs[c] + colW + 6) + '" y="' + (y + h / 2 + 4).toFixed(1) + '"' + (common ? ' class="label"' : '') + '>' + name + ' ' + v.toLocaleString('en-US')
+        + (after && common ? ' +10' : after && name === 'Preferred' ? ' −100' : '') + '</text>';
+      y += h;
+    });
+    s += '<text x="' + (xs[c] + colW / 2) + '" y="' + (H - 4) + '" text-anchor="middle">' + title + '</text>';
+  });
+  s += '<line class="axis" x1="' + (xs[0] - 6) + '" x2="' + (W - 2) + '" y1="' + (top + 190) + '" y2="' + (top + 190) + '"/>';
+  return s + '</svg>';
 }
 
-// ---- 2. preferred close against break-even, by week ----
+function example() {
+  const x = DATA.example, M = v => '$' + (v / 1e6).toFixed(1) + 'M';
+  const wk = DATA.weeks.find(w => w.firm === 'MSTR' && w.week_end === x.week_end), net = wk ? wk.n * wk.S * wk.p : null;
+  const m = 1.2, raise = 120, rows = [90, 100, 110, 120, 130].map(P => {
+    const sale = raise * (1 - 1 / m), retire = raise * 100 / P - raise;
+    return '<tr' + (P === 120 ? ' class="hl"' : '') + '><td class="num">$' + P + '</td><td class="num">' + (raise * 100 / P).toFixed(0) + '</td><td class="num">+' + sale.toFixed(0)
+      + '</td><td class="num">' + (retire < 0 ? MINUS : '+') + Math.abs(retire).toFixed(0) + '</td><td class="num"><b>' + (sale + retire < -0.5 ? MINUS : sale + retire > 0.5 ? '+' : '')
+      + Math.abs(sale + retire).toFixed(0) + '</b></td><td>' + (P === 120 ? 'break-even: $100 × m' : '') + '</td></tr>';
+  }).join('');
+  const be = DATA.headline.find(h => h.firm === 'MSTR');
+  document.getElementById('example').innerHTML =
+    '<div class="prose"><p>Start with one share of preferred stock: a $100 claim that ranks ahead of common stock. If the company buys it back '
+    + 'for $90, its claims fall by $100 while its cash falls by $90. The $10 difference now belongs to common holders. The figure draws it, '
+    + 'with assets and claims on the same scale.</p></div>'
+    + '<figure class="fig"><p class="fig-tag">Illustration, not filed figures</p><div class="pair">' + sheet(false) + sheet(true) + '</div>'
+    + '<figcaption>Assets equal claims on both sides. Paying $90 removes a $100 claim, so the common block grows by $10.</figcaption></figure>'
+    + '<div class="prose"><p>Strategy pays for these buybacks by selling common stock. At a net mNAV of 1.2, buyers pay $1.20 for each $1 of net coins behind a '
+    + 'share, so a $120 sale gives new holders $100 of net coins and leaves $20 with existing holders. The rotation adds coins per share as long as the '
+    + 'retirement does not give back more than the sale made. That happens at a STRC price of $100 × m:</p></div>'
+    + '<figure class="fig"><p class="fig-tag">Illustration at m = 1.2: raise $120 by selling common, spend it retiring STRC</p><div class="scroll-x"><table class="plain-num">'
+    + '<thead><tr><th class="num">STRC price</th><th class="num">Notional retired</th><th class="num">Sale of common</th><th class="num">Retirement</th><th class="num">Rotation, to common</th><th></th></tr></thead><tbody>'
+    + rows + '</tbody></table></div><figcaption>Dollars to existing common holders, first order. Today net mNAV is ' + be.m.toFixed(3) + ', so the break-even is $'
+    + be.break_even.toFixed(2) + '. BitMine runs the rotation the other way (sell BMNP, buy back common), so it adds while BMNP trades above $100 × m.</figcaption></figure>'
+    + '<div class="prose"><p><b>The filed trade.</b> In the week ending ' + nice_date(x.week_end) + ', Strategy paid ' + M(x.usd) + ' for STRC at $' + x.avg_price.toFixed(2)
+    + ' per $100 share (q = ' + x.q.toFixed(4) + '), removing ' + M(x.notional) + ' of claims. Common holders gained ' + M(x.adds_usd) + ', or +' + x.sats_per_share.toFixed(2)
+    + ' sats across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares (exact recompute).'
+    + (net ? ' That is ' + (x.adds_usd / net * 100).toFixed(3) + '% of Strategy\'s net coin value that week (' + usd(net) + '), too small to see at true scale, '
+      + 'which is why the figure above uses toy numbers.' : '')
+    + ' Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p></div>';
+}
+
+// ---- 2. small multiples: preferred close as a percent of break-even, one shared scale ----
 // One tab stop per chart: Left/Right (Home/End) move between .col elements and the tooltip follows focus.
 function colKeys(el) {
   el.onkeydown = ev => {
@@ -227,49 +293,36 @@ function colKeys(el) {
 
 function drawPref(firm) {
   const el = document.getElementById('pref-' + firm), sbet = firm === 'SBET', h = DATA.headline.find(x => x.firm === firm);
-  // close: preferred close in dollars (SharpLink: m); be: break-even, 100 × m (SharpLink: 1).
-  const pts = DATA.weeks.filter(w => w.firm === firm && w.m != null && (sbet || w.q != null))
-    .map(w => ({ w, t: Date.parse(w.week_end), close: sbet ? w.m : w.q * 100, be: sbet ? 1 : w.m * 100 }));
-  const W = el.clientWidth || 640, H = W < 500 ? 220 : 260, M = { l: 48, r: W < 500 ? 70 : 92, t: 14, b: 32 };
-  const vals = pts.flatMap(p => [p.close, p.be]), ticks = nice(Math.min(...vals), Math.max(...vals), 4);
-  const lo = ticks[0], hi = ticks[ticks.length - 1], t0 = pts[0].t, t1 = pts[pts.length - 1].t;
-  const X = t => M.l + (t - t0) / (t1 - t0 || 1) * (W - M.l - M.r), Y = v => M.t + (hi - v) / (hi - lo) * (H - M.t - M.b);
-  const fmt = v => sbet ? v.toFixed(2) : '$' + v.toFixed(0), c = 'var(' + FIRM[firm].color + ')';
-  const label = sbet ? 'm' : h.pref + ' close';
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + esc(FIRM[firm].name + ': ' + label + ' and break-even by '
-    + (sbet ? 'filed date' : 'week') + '. Left and Right arrow keys move between ' + (sbet ? 'dates.' : 'weeks.')) + '">';
-  for (const t of ticks) {
-    s += '<line class="grid" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
-    s += '<text x="' + (M.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + fmt(t) + '</text>';
-  }
-  s += '<line class="axis" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + (H - M.b) + '" y2="' + (H - M.b) + '"/>';
-  const line = k => pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p[k]).toFixed(1)).join('');
-  s += '<path class="gapband" d="' + line('close') + pts.slice().reverse().map(p => 'L' + X(p.t).toFixed(1) + ',' + Y(p.be).toFixed(1)).join('') + 'Z"/>';
+  const pts = ratioPts(firm);
+  const W = el.clientWidth || 360, H = 200, M = { l: 40, r: 10, t: 22, b: 26 };
+  const X = t => M.l + (t - RULER.t0) / (RULER.t1 - RULER.t0 || 1) * (W - M.l - M.r), Y = v => M.t + (RULER.hi - v) / (RULER.hi - RULER.lo) * (H - M.t - M.b);
+  const label = sbet ? '1 ÷ m' : h.pref + ' close ÷ break-even';
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + esc(FIRM[firm].name + ': ' + label + ' by '
+    + (sbet ? 'filed date' : 'week') + ', percent. Left and Right arrow keys move between ' + (sbet ? 'dates.' : 'weeks.')) + '">';
+  // Range frame on y: the shared domain's ends and 100%, nothing else.
+  s += '<line class="axis" x1="' + (M.l - 8) + '" x2="' + (M.l - 8) + '" y1="' + Y(RULER.hi) + '" y2="' + Y(RULER.lo) + '"/>';
+  for (const v of [RULER.lo, 100, RULER.hi]) s += '<text x="' + (M.l - 12) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v + '%</text>';
+  s += '<line class="ref" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>';
+  // Labels on the left, on the side of the line where the program adds (the data sits clear of it there).
+  const below = ADDS[firm][0] === 'below';
+  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) - 5 : Y(100) + 14) + '">break-even</text>';
+  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 14 : Y(100) - 5) + '" class="adds">' + ADDS[firm][1] + '</text>';
   // Columns: each point owns the span halfway to its neighbours.
   const mid = i => i < 0 ? M.l : i >= pts.length - 1 ? W - M.r : (X(pts[i].t) + X(pts[i + 1].t)) / 2;
   const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? pts.length - 1, pts.length - 1);
-  const minGap = 44;
-  let lastTick = -Infinity;
   pts.forEach((p, i) => {
-    const x0 = mid(i - 1), x1 = mid(i);
+    const x0 = Math.min(mid(i - 1), X(p.t) - 6), x1 = Math.max(mid(i), X(p.t) + 6);
     s += '<rect class="col" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" x="' + x0 + '" y="' + M.t + '" width="' + Math.max(1, x1 - x0) + '" height="' + (H - M.t - M.b)
-      + '" aria-label="' + esc(FIRM[firm].name + (sbet ? ' filed date ' : ' week ending ') + p.w.week_end + ': ' + label + ' ' + fix(p.close, sbet ? 3 : 2) + ', break-even ' + fix(p.be, sbet ? 0 : 2)) + '"/>';
-    const x = X(p.t);
-    if (x - lastTick >= minGap && (i === pts.length - 1 || W - M.r - x >= minGap / 2 || sbet)) {
-      s += '<text x="' + x + '" y="' + (H - M.b + 14) + '" text-anchor="middle">' + p.w.week_end.slice(5) + '</text>';
-      lastTick = x;
-    }
+      + '" aria-label="' + esc(FIRM[firm].name + (sbet ? ' filed date ' : ' week ending ') + p.w.week_end + ': ' + label + ' ' + p.r.toFixed(1) + '%') + '"/>';
   });
-  s += '<path class="be-line" d="' + line('be') + '"/><path d="' + line('close') + '" style="fill:none;stroke:' + c + ';stroke-width:2;pointer-events:none"/>';
-  if (sbet) s += pts.map(p => markSvg(firm, X(p.t), Y(p.close), 5, 'dot', 'fill:' + c)).join('');
-  // Direct labels at the right end, two lines each, pushed apart if closer than 26px.
-  const last = pts[pts.length - 1], xr = W - M.r + 6;
-  let yc = Y(last.close), yb = Y(last.be);
-  if (Math.abs(yc - yb) < 26) { const m = (yc + yb) / 2, d = yc <= yb ? -13 : 13; yc = m + d; yb = m - d; }
-  const two = (y, a, b, st) => '<text class="label" x="' + xr + '" y="' + (y - 2) + '"' + st + '>' + a + '</text><text x="' + xr + '" y="' + (y + 10) + '">' + b + '</text>';
-  s += two(yc, sbet ? 'm' : esc(h.pref), sbet ? last.close.toFixed(3) : '$' + last.close.toFixed(2), ' style="fill:' + c + '"');
-  s += two(yb, 'Break-even', sbet ? 'm = 1' : '$' + last.be.toFixed(2), '');
-  s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">' + (sbet ? 'filed holdings date (2026)' : 'week ending (2026)') + '</text>';
+  s += '<text x="' + M.l + '" y="' + (H - 6) + '">' + short_date(new Date(RULER.t0).toISOString().slice(0, 10)) + '</text>';
+  s += '<text x="' + (W - M.r) + '" y="' + (H - 6) + '" text-anchor="end">' + short_date(new Date(RULER.t1).toISOString().slice(0, 10)) + '</text>';
+  s += '<path class="data" d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>';
+  if (sbet) s += pts.slice(0, -1).map(p => '<circle class="pt" cx="' + X(p.t) + '" cy="' + Y(p.r) + '" r="2.5"/>').join('');
+  const l = pts[pts.length - 1];
+  s += '<circle class="last" cx="' + X(l.t) + '" cy="' + Y(l.r) + '" r="4"/>';
+  const room = X(l.t) < W - M.r - 40;  // SharpLink's last filed date is mid-range: label to the right of the dot
+  s += '<text class="label" x="' + (X(l.t) + (room ? 8 : -7)) + '" y="' + (room ? Y(l.r) + 4 : Y(l.r) + (l.r > 100 ? -9 : 17)) + '" text-anchor="' + (room ? 'start' : 'end') + '">' + pct(l.r) + '</text>';
   el.innerHTML = s + '</svg>';
   bindTips(el, t => {
     const p = pts[+t.dataset.tip], g = p.close - p.be;
@@ -277,18 +330,14 @@ function drawPref(firm) {
     return '<b>' + FIRM[firm].name + '</b>, ' + (sbet ? 'filed date ' : 'week ending ') + p.w.week_end
       + '<div class="row"><span>' + (sbet ? 'm (net mNAV)' : esc(h.pref) + ' close') + '</span><span>' + (sbet ? p.close.toFixed(3) : '$' + p.close.toFixed(2)) + '</span></div>'
       + '<div class="row"><span>Break-even' + (sbet ? '' : ' (100 × m)') + '</span><span>' + (sbet ? '1' : '$' + p.be.toFixed(2)) + '</span></div>'
+      + '<div class="row"><span>' + (sbet ? '1 ÷ m' : 'Close ÷ break-even') + '</span><span>' + p.r.toFixed(1) + '%</span></div>'
       + '<div class="row on"><span>Gap</span><span>' + gap + '</span></div>'
       + '<div>Filing: ' + esc(fileName(p.w.filing_urls[0])) + '</div>';
   });
   colKeys(el);
   const n = new Set(pts.flatMap(p => p.w.filing_urls)).size;
-  document.getElementById('src-' + firm).innerHTML = 'Source: ' + n + ' SEC filings; closes from Yahoo Finance. Data: <a href="data/attribution.csv">attribution.csv</a>';
-}
-
-function prefLegend() {
-  document.getElementById('pref-legend').innerHTML = '<span>' + swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--muted);stroke-width:2"/>') + 'Preferred close, in the firm colour (SharpLink: m)</span>'
-    + '<span>' + swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--fg);stroke-dasharray:3 2"/>') + 'Break-even, $100 × m (SharpLink: 1)</span>'
-    + '<span>' + swatch('<rect x="1" y="3" width="12" height="8" style="fill:var(--neutral);fill-opacity:0.22"/>') + 'Gap between them</span>';
+  document.getElementById('src-' + firm).innerHTML = (sbet ? 'Last: m ' + l.close.toFixed(3) : 'Last: ' + esc(h.pref) + ' $' + l.close.toFixed(2) + ', break-even $' + l.be.toFixed(2))
+    + '. ' + n + ' SEC filings; closes from Yahoo Finance.';
 }
 
 // ---- 3. break-even map ----
@@ -300,32 +349,30 @@ function mapPoints() {
 function drawMap() {
   const el = document.getElementById('map');
   const pts = mapPoints();
-  const W = el.clientWidth || 640, H = Math.round(Math.max(320, Math.min(480, W * 0.8)));
-  const M = { l: 44, r: 14, t: 12, b: 40 };
+  const W = el.clientWidth || 640, H = Math.round(Math.max(320, Math.min(480, W * 0.75)));
+  const M = { l: 48, r: 14, t: 12, b: 40 };
   const vals = pts.flatMap(w => [w.m, w.qx]);
   // One domain for both axes so m = q is a true diagonal: [min − 0.05, max + 0.05] rounded out to 0.05.
   const lo = Math.floor((Math.min(...vals) - 0.05) * 20) / 20, hi = Math.ceil((Math.max(...vals) + 0.05) * 20) / 20;
   const X = v => M.l + (v - lo) / (hi - lo) * (W - M.l - M.r), Y = v => H - M.b - (v - lo) / (hi - lo) * (H - M.t - M.b);
   // One mark size: position carries m and q; dollars moved are in the tooltip (area is read least accurately,
   // Cleveland & McGill 1984). Each firm's weeks are joined in date order; its latest mark is solid.
-  const R = W < 500 ? 4.5 : 5.5, rad = () => R;
+  const R = W < 500 ? 4 : 5, rad = () => R;
   const latest = {};
   pts.forEach((w, i) => { if (!(w.firm in latest) || w.week_end > pts[latest[w.firm]].week_end) latest[w.firm] = i; });
   let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="Break-even map: net mNAV against preferred price over notional, one mark per firm-week">';
-  for (const t of nice(lo, hi, 6).filter(t => t >= lo - 1e-9 && t <= hi + 1e-9)) {
-    s += '<line class="grid" x1="' + X(t) + '" x2="' + X(t) + '" y1="' + M.t + '" y2="' + (H - M.b) + '"/>';
-    s += '<line class="grid" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
-    s += '<text x="' + X(t) + '" y="' + (H - M.b + 14) + '" text-anchor="middle">' + t.toFixed(2) + '</text>';
-    s += '<text x="' + (M.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + t.toFixed(2) + '</text>';
-  }
-  s += '<line class="axis" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + (H - M.b) + '" y2="' + (H - M.b) + '"/>';
-  s += '<line class="axis" x1="' + M.l + '" x2="' + M.l + '" y1="' + M.t + '" y2="' + (H - M.b) + '"/>';
-  s += '<text x="' + (W - M.r) + '" y="' + (H - 6) + '" text-anchor="end">q = preferred close / $100 notional</text>';
-  s += '<text transform="translate(12 ' + M.t + ') rotate(-90)" text-anchor="end">m = net mNAV</text>';
-  s += '<line class="diag" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
-  s += '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 14) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
+  // Range frames: each axis line spans only the data's own range, labeled at its ends and at 1.00.
+  const qs = pts.map(w => w.qx), ms = pts.map(w => w.m), qlo = Math.min(...qs), qhi = Math.max(...qs), mlo = Math.min(...ms), mhi = Math.max(...ms);
+  s += '<line class="axis" x1="' + X(qlo) + '" x2="' + X(qhi) + '" y1="' + (H - M.b + 6) + '" y2="' + (H - M.b + 6) + '"/>';
+  s += '<line class="axis" x1="' + (M.l - 6) + '" x2="' + (M.l - 6) + '" y1="' + Y(mhi) + '" y2="' + Y(mlo) + '"/>';
+  for (const v of [qlo, qhi]) s += '<text x="' + X(v) + '" y="' + (H - M.b + 20) + '" text-anchor="middle">' + v.toFixed(2) + '</text>';
+  for (const v of [mlo, 1, mhi]) s += '<text x="' + (M.l - 10) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v.toFixed(2) + '</text>';
+  s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">q = preferred close / $100 notional →</text>';
+  s += '<text x="' + M.l + '" y="' + (M.t + 4) + '">↑ m = net mNAV</text>';
+  s += '<line class="ref" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
+  s += '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 22) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
   s += '<text class="label" x="' + (W - M.r - 8) + '" y="' + (H - M.b - 10) + '" text-anchor="end">BitMine\'s rotation adds here (m &lt; q)</text>';
-  if (W >= 500) s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';  // above-left, clear of the diagonal; narrow: legend only
+  if (W >= 500) s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';
   for (const firm of Object.keys(FIRM)) {
     const path = pts.filter(w => w.firm === firm).sort((a, b) => a.week_end < b.week_end ? -1 : 1);
     if (path.length > 1) s += '<polyline class="trail" points="' + path.map(w => X(w.qx).toFixed(1) + ',' + Y(w.m).toFixed(1)).join(' ')
@@ -339,7 +386,7 @@ function drawMap() {
       + (w.q == null ? ', no preferred (plotted at q = 1)' : ', q ' + fix(w.q, 3)) + '. Opens filing.';
     s += '<a href="' + esc(w.filing_urls[0]) + '" target="_blank" rel="noopener" data-tip="' + i + '" aria-label="' + esc(label) + '">'
       + markSvg(w.firm, cx, cy, Math.max(r, 12), 'hit', 'fill:transparent')
-      + markSvg(w.firm, cx, cy, last ? r + 1.5 : r, 'mark', 'fill:' + c + ';fill-opacity:' + (last ? 1 : 0.35) + ';stroke:' + c + ';stroke-width:1.5') + '</a>';
+      + markSvg(w.firm, cx, cy, last ? r + 1.5 : r, 'mark', 'fill:' + (last ? c : 'var(--bg)') + ';stroke:' + c + ';stroke-width:1.25') + '</a>';
   }
   // Direct label on each firm's latest week: right, left, above, below at growing distance; the first box that stays
   // inside the plot and hits no mark or placed label wins. Box width is estimated at 6.3px per character (11px bold).
@@ -348,7 +395,7 @@ function drawMap() {
   for (const firm of Object.keys(FIRM)) {
     const i = latest[firm];
     if (i == null) continue;
-    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + w.week_end, tw = text.length * 6.3;
+    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + short_date(w.week_end), tw = text.length * 6.3;
     const cands = [4, 18, 36].flatMap(d => [[cx + r + d, cy + 4, 'start'], [cx - r - d, cy + 4, 'end'], [cx, cy - r - d - 1, 'middle'],
       [cx, cy + r + d + 9, 'middle']]);
     const box = ([x, y, a]) => { const x0 = a === 'start' ? x : a === 'end' ? x - tw : x - tw / 2; return [x0, y - 10, x0 + tw, y + 2]; };
@@ -395,90 +442,88 @@ function mapTitle() {
 function mapLegend() {
   mapTitle();
   document.getElementById('map-legend').innerHTML = Object.entries(FIRM).map(([f, v]) =>
-    '<span>' + swatch(markSvg(f, 7, 7, 6, '', 'fill:var(' + v.color + ');fill-opacity:0.45;stroke:var(' + v.color + ')')) + v.name
-    + (f === 'SBET' ? ' (no preferred, so its marks sit at q = 1, where the line is m = 1)' : '') + '</span>').join('')
+    '<span>' + swatch(markSvg(f, 7, 7, 5, '', 'fill:var(' + v.color + ');stroke:var(' + v.color + ')')) + v.name
+    + (f === 'SBET' ? ' (no preferred: at q = 1)' : '') + '</span>').join('')
     + '<span>' + swatch('<line x1="1" y1="13" x2="13" y2="1" style="stroke:var(--fg);stroke-dasharray:3 2"/>') + 'm = q</span>'
-    + '<span class="muted">Lines join each firm\'s weeks in date order; the solid mark is the latest. Dollars moved are in each mark\'s details.</span>';
+    + '<span>Open marks: earlier weeks, joined in date order. Solid: latest.</span>';
 }
 
-// ---- 4. attribution bars ----
+// ---- 4. attribution bars: one shared scale in basis points of net coin value ----
+// bp = value to common ÷ (n × S × p) × 10,000, using that week's n, S and p: the week's change in n as a fraction of n.
+// Firms of very different size then sit on one ruler; dollars stay in the tooltip, table and totals.
+const toBp = w => 1e4 / (w.n * w.S * w.p);
 function stack(w) {
-  // [key, label, color var, value, hatched]; issue_common splits into filed and estimated parts.
+  // [key, label, color var, value $, hatched]; issue_common splits into filed and estimated parts.
   const v = w.value, est = w.est_issuance || 0;
-  const out = [['issue_common', CAT.issue_common[0], '--c1', v.issue_common - est, false]];
-  if (est) out.push(['est_issuance', EST, '--c1', est, true]);
+  const out = [['issue_common', CAT.issue_common[0], '--ink2', v.issue_common - est, false]];
+  if (est) out.push(['est_issuance', EST, '--ink2', est, true]);
   for (const k of Object.keys(CAT).slice(1)) out.push([k, CAT[k][0], CAT[k][1], v[k], false]);
   return out.filter(d => Math.abs(d[3]) >= 0.005);
 }
+let BARS = null;  // shared y domain across the three firms, in bp
+function barDomain() {
+  let lo = 0, hi = 0;
+  for (const w of DATA.weeks.filter(w => w.value)) {
+    const st = stack(w), k = toBp(w);
+    hi = Math.max(hi, st.reduce((a, d) => a + Math.max(d[3], 0), 0) * k);
+    lo = Math.min(lo, st.reduce((a, d) => a + Math.min(d[3], 0), 0) * k);
+  }
+  const ticks = nice(lo, hi, 4);
+  BARS = { lo: Math.min(lo, ticks[0]), hi: Math.max(hi, ticks[ticks.length - 1]), ticks };
+}
 
-function segPath(x, y0, y1, w, roundFar, up) {
-  // Rect from y0 (near zero) to y1 (far end); the far end gets 4px rounded corners when it is the bar's data-end.
-  const top = Math.min(y0, y1), h = Math.abs(y1 - y0), r = roundFar ? Math.min(4, h / 2, w / 2) : 0;
-  if (!r) return 'M' + x + ',' + top + 'h' + w + 'v' + h + 'h' + (-w) + 'Z';
-  if (up) return 'M' + x + ',' + (top + h) + 'V' + (top + r) + 'Q' + x + ',' + top + ' ' + (x + r) + ',' + top
-    + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + r) + 'V' + (top + h) + 'Z';
-  return 'M' + x + ',' + top + 'V' + (top + h - r) + 'Q' + x + ',' + (top + h) + ' ' + (x + r) + ',' + (top + h)
-    + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + (top + h) + ' ' + (x + w) + ',' + (top + h - r) + 'V' + top + 'Z';
+function segPath(x, y0, y1, w) {
+  const top = Math.min(y0, y1), h = Math.abs(y1 - y0);
+  return 'M' + x + ',' + top + 'h' + w + 'v' + h + 'h' + (-w) + 'Z';
 }
 
 function weekTip(w, on) {
-  const rows = stack(w).map(d => '<div class="row' + (d[0] === on ? ' on' : '') + '"><span><i class="sw' + (d[0] === 'residual' ? ' resid' : '') + '" style="background:var(' + d[2] + ')'
-    + (d[4] ? ';opacity:0.5' : '') + '"></i>' + d[1] + '</span><span>' + usd(d[3], true) + '</span></div>').join('');
+  const k = toBp(w);
+  const rows = stack(w).map(d => '<div class="row' + (d[0] === on ? ' on' : '') + '"><span><i class="sw' + (d[0] === 'residual' ? ' resid' : d[4] ? ' est' : '') + '" style="background:var(' + d[2] + ')'
+    + '"></i>' + d[1] + '</span><span>' + bps(d[3] * k, true) + ' · ' + usd(d[3], true) + '</span></div>').join('');
   return '<b>' + FIRM[w.firm].name + '</b>, ' + (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end + rows
-    + '<div class="row"><span>Coin price (not stacked)</span><span>' + usd(w.price, true) + '</span></div>'
-    + '<div class="row"><span>In-the-money flips (not stacked)</span><span>' + usd(w.itm_flip, true) + '</span></div>'
-    + '<div class="row on"><span>Observed change</span><span>' + usd(w.observed, true) + '</span></div>';
+    + '<div class="row"><span>Coin price (not stacked)</span><span>' + bps(w.price * k, true) + ' · ' + usd(w.price, true) + '</span></div>'
+    + '<div class="row"><span>In-the-money flips (not stacked)</span><span>' + bps(w.itm_flip * k, true) + ' · ' + usd(w.itm_flip, true) + '</span></div>'
+    + '<div class="row on"><span>Observed change</span><span>' + bps(w.observed * k, true) + ' · ' + usd(w.observed, true) + '</span></div>';
 }
 
 function drawBars(firm) {
   const el = document.getElementById('bars-' + firm);
   const weeks = DATA.weeks.filter(w => w.firm === firm && w.value);
-  const W = el.clientWidth || 640, H = W < 500 ? 240 : 280, M = { l: 52, r: 8, t: 16, b: 32 };
-  const stacks = weeks.map(stack);
-  let lo = 0, hi = 0;
-  for (const st of stacks) {
-    hi = Math.max(hi, st.reduce((a, d) => a + Math.max(d[3], 0), 0));
-    lo = Math.min(lo, st.reduce((a, d) => a + Math.min(d[3], 0), 0));
-  }
-  const ticks = nice(lo / 1e6, hi / 1e6, 5).map(t => t * 1e6);
-  lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+  const W = el.clientWidth || 640, H = W < 500 ? 220 : 250, M = { l: 52, r: 8, t: 16, b: 28 };
+  const { lo, hi, ticks } = BARS;
   const Y = v => M.t + (hi - v) / (hi - lo) * (H - M.t - M.b);
-  const bw = (W - M.l - M.r) / weeks.length, barW = Math.min(48, Math.max(4, bw * 0.7));
+  const bw = (W - M.l - M.r) / weeks.length, barW = Math.min(36, Math.max(4, bw * 0.62));
   const hatch = 'hatch-' + firm, resid = 'resid-' + firm;
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + FIRM[firm].name + ': weekly value to common by cause. Left and Right arrow keys move between weeks.">'
-    + '<defs><pattern id="' + hatch + '" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
-    + '<rect width="6" height="6" style="fill:var(--c1);fill-opacity:0.25"/><line x1="0" y1="0" x2="0" y2="6" style="stroke:var(--c1);stroke-width:3"/></pattern>' + residPattern(resid) + '</defs>';
-  for (const t of ticks) {
-    s += '<line class="' + (t === 0 ? 'axis' : 'grid') + '" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
-    s += '<text x="' + (M.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + usd(t) + '</text>';
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + FIRM[firm].name + ': weekly change in net coins per share by cause, basis points. Left and Right arrow keys move between weeks.">'
+    + '<defs>' + hatchPattern(hatch, '--ink2', 45) + hatchPattern(resid, '--neutral', -45) + '</defs>';
+  for (const t of ticks) {  // labels only; the zero line is the one rule
+    s += '<text x="' + (M.l - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + (t > 0 ? '+' : t < 0 ? MINUS : '') + Math.abs(t) + (t ? '' : ' bp') + '</text>';
+    if (t) s += '<line class="tick" x1="' + (M.l - 4) + '" x2="' + M.l + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
   }
-  if (!ticks.includes(0)) s += '<line class="axis" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>';
   const every = Math.ceil(44 / bw);
   const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? weeks.length - 1, weeks.length - 1);
   let big = null;
   weeks.forEach((w, i) => {
-    const x0 = M.l + i * bw, x = x0 + (bw - barW) / 2;
+    const x0 = M.l + i * bw, x = x0 + (bw - barW) / 2, st = stack(w), k = toBp(w);
     s += '<rect class="col" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" x="' + x0 + '" y="' + M.t + '" width="' + bw + '" height="' + (H - M.t - M.b) + '" aria-label="'
-      + esc(FIRM[firm].name + (firm === 'SBET' ? ' filed date ' : ' week ending ') + w.week_end + ': observed ' + usd(w.observed, true)) + '"/>';
+      + esc(FIRM[firm].name + (firm === 'SBET' ? ' filed date ' : ' week ending ') + w.week_end + ': observed ' + bps(w.observed * k, true) + ', ' + usd(w.observed, true)) + '"/>';
     let up = 0, dn = 0;
-    const st = stacks[i], lastUp = st.map(d => d[3] > 0).lastIndexOf(true), lastDn = st.map(d => d[3] < 0).lastIndexOf(true);
-    st.forEach((d, j) => {
-      const v = d[3], a = v > 0 ? up : dn, b = a + v;
+    st.forEach(d => {
+      const v = d[3] * k, a = v > 0 ? up : dn, b = a + v;
       if (v > 0) up = b; else dn = b;
       const fill = d[0] === 'residual' ? RESID_FILL(resid) : d[4] ? 'url(#' + hatch + ')' : 'var(' + d[2] + ')';
-      s += '<path class="seg" data-tip="' + i + '" data-cat="' + d[0] + '" d="' + segPath(x, Y(a), Y(b), barW, j === (v > 0 ? lastUp : lastDn), v > 0)
-        + '" style="fill:' + fill + '"/>';
+      s += '<path class="seg" data-tip="' + i + '" data-cat="' + d[0] + '" d="' + segPath(x, Y(a), Y(b), barW) + '" style="fill:' + fill + '"/>';
       if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x, y: (Y(a) + Y(b)) / 2, week: w.week_end };
     });
     if (st.length) s += '<line class="net" x1="' + (x - 3) + '" x2="' + (x + barW + 3) + '" y1="' + Y(up + dn) + '" y2="' + Y(up + dn) + '"/>';
-    if (i % every === 0) s += '<text x="' + (x0 + bw / 2) + '" y="' + (H - M.b + 14) + '" text-anchor="middle">' + w.week_end.slice(5) + '</text>';
+    if (i % every === 0) s += '<text x="' + (x0 + bw / 2) + '" y="' + (H - M.b + 16) + '" text-anchor="middle">' + short_date(w.week_end) + '</text>';
   });
-  s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">' + (firm === 'SBET' ? 'filed holdings date (2026)' : 'week ending (2026)') + '</text>';
+  s += '<line class="zero" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>';
   if (big) {  // the one direct label: largest segment in this chart, beside its bar at the segment's middle (clear of the net tick)
-    // Narrow charts have no room beside a bar; the label moves to the plot's top-left corner with its week.
     const right = big.x < W * 0.6, x = W < 500 ? M.l + 4 : right ? big.x + barW + 6 : big.x - 6;
     s += '<text class="label" x="' + x + '" y="' + (W < 500 ? M.t + 4 : big.y + 4) + '" text-anchor="' + (W < 500 || right ? 'start' : 'end') + '">'
-      + (W < 500 ? 'Largest: ' + big.week.slice(5) + ' ' : '') + big.label + ' ' + usd(big.v, true) + '</text>';
+      + (W < 500 ? 'Largest: ' + short_date(big.week) + ' ' : '') + big.label + ' ' + bps(big.v, true) + '</text>';
   }
   el.innerHTML = s + '</svg>';
   bindTips(el, t => weekTip(weeks[+t.dataset.tip], t.dataset.cat));
@@ -488,15 +533,15 @@ function drawBars(firm) {
 function barsLegend() {
   const items = Object.entries(GROUP).map(([k, [label, c]]) => k === 'residual'
     ? swatch(RESID_SWATCH) + 'Residual: change the filings leave unexplained'
-    : swatch('<rect x="1" y="1" width="12" height="12" rx="2" style="fill:var(' + c + ')"/>') + label);
-  items.splice(1, 0, swatch('<rect x="1" y="1" width="12" height="12" rx="2" style="fill:var(--c1);fill-opacity:0.3"/><path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--c1);stroke-width:2"/>')
+    : swatch('<rect x="1" y="1" width="12" height="12" style="fill:var(' + c + ')"/>') + label);
+  items.splice(1, 0, swatch('<rect x="1" y="1" width="12" height="12" style="fill:var(--ink2);fill-opacity:0.2"/><path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--ink2);stroke-width:2"/>')
     + EST + ', part of common');
   items.push(swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--fg);stroke-width:2"/>') + 'Net of the stacked causes');
   document.getElementById('bars-legend').innerHTML = items.map(x => '<span>' + x + '</span>').join('');
 }
 
 // Under each firm's bars: a sentence on the residual, then a diverging strip of the totals since the first week, by
-// cause, in the bars' colours. Coin price and flips are not in the bars, so they stay neutral; observed is the firm colour.
+// cause, in dollars. Grays, the residual hatched, the observed total in ink.
 function residualSentence(firm, x) {
   const r = x.residual;
   let t = 'Residual ' + usd(r, true) + ', against filed actions of ' + usd(x.actions, true) + '. ';
@@ -513,9 +558,9 @@ function residualSentence(firm, x) {
 
 function totals() {
   for (const [firm, x] of Object.entries(DATA.totals)) {
-    const rows = [['Filed actions', x.actions, 'var(--fg);opacity:0.55'], ...(x.est_issuance ? [['Estimated issuance', x.est_issuance, 'est']] : []),
-      ['Carry', x.carry, 'var(--c4)'], ['Residual', x.residual, 'resid'], ['Coin price', x.price, 'var(--neutral)'],
-      ['In-the-money flips', x.itm_flip, 'var(--neutral)'], ['Observed', x.observed, 'var(' + FIRM[firm].color + ')']];
+    const rows = [['Filed actions', x.actions, 'var(--ink2)'], ...(x.est_issuance ? [['Estimated issuance', x.est_issuance, 'est']] : []),
+      ['Carry', x.carry, 'var(--gray2)'], ['Residual', x.residual, 'resid'], ['Coin price', x.price, 'var(--gray1)'],
+      ['In-the-money flips', x.itm_flip, 'var(--gray1)'], ['Observed', x.observed, 'var(--fg)']];
     const lo = Math.min(0, ...rows.map(r => r[1])), hi = Math.max(0, ...rows.map(r => r[1])), pct = v => (v - lo) / (hi - lo || 1) * 100;
     const html = rows.map(([label, v, fill], i) => {
       const obs = i === rows.length - 1, a = pct(Math.min(0, v)), b = pct(Math.max(0, v));
@@ -526,7 +571,7 @@ function totals() {
         + '<span class="strip-val">' + usd(v, true) + '</span></div>';
     }).join('');
     document.getElementById('bars-' + firm).closest('.firm-panel').insertAdjacentHTML('beforeend',
-      '<div class="strip"><p class="strip-title">Since ' + esc(x.since) + ', value to common by cause</p>'
+      '<div class="strip"><p class="strip-title">Since ' + esc(x.since) + ', value to common by cause, USD</p>'
       + '<p class="strip-note">' + esc(residualSentence(firm, x)) + '</p>' + html + '</div>');
   }
 }
@@ -535,13 +580,14 @@ function table() {
   const cols = DATA.categories;
   let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved ($)</th>'
     + cols.map(c => '<th>' + CAT[c][0].toLowerCase() + ' ($)</th>').join('')
-    + '<th>of which estimated issuance ($)</th><th>coin price ($)</th><th>in-the-money flips ($)</th><th>observed ($)</th><th>filing</th></tr></thead><tbody>';
+    + '<th>of which estimated issuance ($)</th><th>coin price ($)</th><th>in-the-money flips ($)</th><th>observed ($)</th><th>observed (bp of net value)</th><th>filing</th></tr></thead><tbody>';
   for (const w of DATA.weeks) {
     const v = w.value || {};
     h += '<tr><td>' + FIRM[w.firm].name + '</td><td>' + w.week_end + '</td><td>' + fix(w.m, 3) + '</td><td>' + fix(w.q, 4) + '</td><td>' + usd(w.dollars_moved) + '</td>'
       + cols.map(c => '<td>' + (w.value ? usd(v[c], true) : '-') + '</td>').join('')
       + '<td>' + (w.est_issuance ? usd(w.est_issuance, true) : '-') + '</td><td>' + usd(w.price, true) + '</td><td>' + usd(w.itm_flip, true) + '</td><td>'
-      + usd(w.observed, true) + '</td><td>' + w.filing_urls.map(u => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(fileName(u)) + '</a>').join(' ') + '</td></tr>';
+      + usd(w.observed, true) + '</td><td>' + (w.observed == null ? '-' : bps(w.observed * toBp(w), true)) + '</td><td>'
+      + w.filing_urls.map(u => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(fileName(u)) + '</a>').join(' ') + '</td></tr>';
   }
   document.getElementById('week-table').innerHTML = h + '</tbody>';
 }
@@ -582,7 +628,7 @@ function theme() {
   if (saved) root.dataset.theme = saved;
   const label = () => {
     btn.textContent = dark() ? 'light theme' : 'dark theme';
-    document.querySelector('meta[name="theme-color"]').content = dark() ? '#0d1015' : '#f7f8fa';
+    document.querySelector('meta[name="theme-color"]').content = dark() ? '#0d1015' : '#fbfbf9';
   };
   label();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', label);
@@ -596,8 +642,9 @@ function theme() {
 theme();
 fetch('data.json').then(r => r.json()).then(d => {
   DATA = d;
+  ruler();
+  barDomain();
   headline();
-  prefLegend();
   mapLegend();
   barsLegend();
   totals();

@@ -189,6 +189,18 @@ The earlier agent reader tests cover intermediate layouts. Three fresh AI reader
 The same readers confirmed that the revised heading resolves that confusion.
 `docs/reader-test.md` records both rounds and a reusable human-test protocol.
 
+## Graphics redesign, 2026-10-13
+
+Outside feedback on the page asked for four changes: lead with the economic intuition before the formulas, make
+the mechanism visual with a before/after balance sheet, cut colors and labels, and use consistent scales. The
+redesign follows Tufte's *The Visual Display of Quantitative Information*. A toy balance sheet and a small
+rotation table now come before the formulas, because the filed trade adds about 0.01% of Strategy's net coin
+value and can't be seen at true scale. The by-week chart and the attribution bars each moved to one scale shared
+by the three firms (percent of break-even; basis points of n). Firm colors stay only on the map, where firms share
+an axis. The gauges became a table with sparklines, since the hero holds nine numbers. Decision M24 records it.
+The social cards lost their filled bands and firm colors the same way. The new design hasn't been reader-tested
+yet.
+
 ## Plan against result
 
 | spec said | result | why |

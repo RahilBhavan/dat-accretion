@@ -80,7 +80,8 @@ split in this order, each step exact (recompute n after it) and the rest left as
    (the Step 2 tolerance, converted to Δn); the output says which. Decided 2026-09-25, extending
    the R rounding decision: a quiet week with rounded disclosures otherwise fails with nothing
    wrong (8/30: −$10.6M on a $107M week, inside ±$20M rounding).
-Unit: Δn in coins per share; the page also shows Δn × S × p in USD ("value to common"), using
+Unit: Δn in coins per share; the page bars draw Δn / n in basis points (one scale for all three firms, decided
+2026-10-13) and also show Δn × S × p in USD ("value to common"), using
 this week's S and p. First order uses the price q or m; exact uses the cash actually received,
 so issue fees show as the gap between them (BMNP issue: q = 0.80 at $80, net $273.8M on $350M
 notional, a $6.2M gap).

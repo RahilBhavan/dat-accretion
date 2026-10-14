@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f7f8fa">
+<meta name="theme-color" content="#fbfbf9">
 <title>Net coins per share: Strategy, BitMine and SharpLink</title>
 <meta name="description" content="Every capital action by Strategy, BitMine and SharpLink since 2026-06-01, measured in net coins per share, and the preferred price where each rotation stops adding.">
 <link rel="stylesheet" href="style.css">
@@ -12,7 +12,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="site-bar">
   <a class="brand" href="#top" aria-label="DAT Accretion, back to top"><span class="brand-mark" aria-hidden="true">D<span>·</span></span><span>DAT <strong>Accretion</strong></span></a>
-  <nav aria-label="Primary navigation"><a href="#example-section">Example</a><a href="#pref-section">By week</a><a href="#map-section">Break-even map</a><a href="#bars-section">Attribution</a><a href="#method">Method</a><a href="#downloads">Downloads</a></nav>
+  <nav aria-label="Primary navigation"><a href="#example-section">Why it adds</a><a href="#pref-section">By week</a><a href="#map-section">Break-even map</a><a href="#bars-section">Attribution</a><a href="#method">Method</a><a href="#downloads">Downloads</a></nav>
   <button type="button" id="theme" class="theme">Theme</button>
 </div>
 <main id="main">
@@ -27,24 +27,27 @@
 </header>
 
 <section class="terms" aria-label="Key terms">
-  <div class="term"><h3>Rotation</h3><p>The pair of trades a firm repeats. Strategy sells common stock to buy back STRC, its preferred stock. BitMine sells BMNP, its preferred stock, to buy back common.</p></div>
-  <div class="term"><h3>Break-even</h3><p>$100 × net mNAV. The two rotations run in opposite directions: Strategy's adds while STRC is below it, BitMine's while BMNP is above it.</p></div>
-  <div class="term"><h3>Net mNAV</h3><p>The share price divided by the coin value behind each share, net of debt and preferred. Coins per share for bitcoin are counted in sats (0.00000001 BTC).</p></div>
+  <dl>
+    <dt>Rotation</dt><dd>The pair of trades a firm repeats. Strategy sells common stock to buy back STRC, its preferred stock. BitMine sells BMNP, its preferred stock, to buy back common.</dd>
+    <dt>Break-even</dt><dd>$100 × net mNAV. The two rotations run in opposite directions: Strategy's adds while STRC is below it, BitMine's while BMNP is above it.</dd>
+    <dt>Net mNAV</dt><dd>The share price divided by the coin value behind each share, net of debt and preferred. Coins per share for bitcoin are counted in sats (0.00000001 BTC).</dd>
+  </dl>
 </section>
 
 <section id="example-section">
-  <div class="section-heading"><div><h2 id="example-title">One trade, step by step</h2></div><p>Strategy, week ending 2026-07-26.</p></div>
+  <div class="section-heading"><div><h2 id="example-title">Why retiring a cheap claim adds coins per share</h2></div><p>The mechanism first, with toy numbers; then Strategy's filed trade.</p></div>
   <div id="example"></div>
 </section>
 
 <section id="pref-section">
-  <div class="section-heading"><div><h2>Preferred close against break-even, by week</h2></div><p>Each firm on its own scale.</p></div>
+  <div class="section-heading"><div><h2>Preferred close as a percent of break-even, by week</h2></div><p>Three firms on one scale.</p></div>
   <p class="counts" id="counts"></p>
-  <p class="explain">Line: the preferred close. Dashed: break-even ($100 × net mNAV). Shaded: the gap between them. SharpLink has no preferred, so its panel shows net mNAV against 1.</p>
-  <div class="legend" id="pref-legend"></div>
-  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol mstr">MSTR</span><h3>Strategy: STRC</h3></div><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
-  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol bmnr">BMNR</span><h3>BitMine: BMNP</h3></div><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
-  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol sbet">SBET</span><h3>SharpLink: m against 1</h3><span class="firm-note">Filed holdings dates only</span></div><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
+  <p class="explain">Each panel shows the preferred close divided by break-even ($100 × net mNAV), so 100% is break-even for every firm. The scale and dates are the same in all three panels. Strategy's rotation adds below the line; BitMine's adds above it. SharpLink has no preferred, so its panel shows 1 ÷ m, and buying back adds above the line (m below 1). Dollar closes are in each point's details.</p>
+  <div class="multiples">
+  <div class="chart-panel firm-panel"><h3 class="firm-heading">Strategy · STRC</h3><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
+  <div class="chart-panel firm-panel"><h3 class="firm-heading">BitMine · BMNP</h3><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
+  <div class="chart-panel firm-panel"><h3 class="firm-heading">SharpLink · 1 ÷ m <span class="firm-note">filed dates only</span></h3><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
+  </div>
   <p class="dl">Downloads: <a href="data/attribution.csv">attribution.csv</a>, <a href="data/actions.csv">actions.csv</a>, <a href="data/balances.csv">balances.csv</a></p>
 </section>
 
@@ -52,19 +55,19 @@
 
 <section id="map-section">
   <div class="section-heading"><div><h2 id="map-title">Break-even map</h2></div><p>Each mark represents a firm and a reporting week.</p></div>
-  <p class="explain">x is q, y is m: one mark per firm-week (SharpLink: per filed holdings date, at q = 1). The diagonal is m = q; Strategy's rotation adds above it and BitMine's below it. Lines join each firm's weeks in date order. Select a mark to open its filing.</p>
+  <p class="explain">x is q, y is m: one mark per firm-week (SharpLink: per filed holdings date, at q = 1). The diagonal is m = q; Strategy's rotation adds above it and BitMine's below it. Each axis line spans only the range of the data, labeled at its ends. Select a mark to open its filing.</p>
   <div class="legend" id="map-legend"></div>
   <div class="chart-panel"><div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div><div class="pin" hidden></div></div>
   <p class="dl">Downloads: <a href="data/attribution.csv">attribution.csv</a>, <a href="data/actions.csv">actions.csv</a></p>
 </section>
 
 <section id="bars-section">
-  <div class="section-heading"><div><h2>Weekly change in net coins per share, as value to common</h2></div><p>Each firm on its own scale.</p></div>
-  <p class="explain">Each bar splits a week's change in n by cause, in USD at that week's S and p (value to common = Δn × S × p). The tick marks the net of the stacked causes. Coin price moves and in-the-money flips are left out of the bars and listed in the tooltip, the strip under each chart and the table.</p>
+  <div class="section-heading"><div><h2>Weekly change in net coins per share, by cause</h2></div><p>Three firms on one scale, in basis points.</p></div>
+  <p class="explain">Each bar splits a week's change in n by cause, as basis points of that week's n (1 bp = 0.01%), so firms of different size share one scale. The tick marks the net of the stacked causes. Coin price moves and in-the-money flips are left out of the bars and listed in the details, the strip under each chart and the table. Dollars ("value to common" = Δn × S × p) are in the details, the strips and the table.</p>
   <div class="legend" id="bars-legend"></div>
-  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol mstr">MSTR</span><h3>Strategy</h3></div><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
-  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol bmnr">BMNR</span><h3>BitMine</h3></div><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
-  <div class="chart-panel firm-panel"><div class="firm-heading"><span class="firm-symbol sbet">SBET</span><h3>SharpLink</h3><span class="firm-note">Filed holdings dates only</span></div><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  <div class="chart-panel firm-panel"><h3 class="firm-heading">Strategy</h3><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  <div class="chart-panel firm-panel"><h3 class="firm-heading">BitMine</h3><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  <div class="chart-panel firm-panel"><h3 class="firm-heading">SharpLink <span class="firm-note">filed holdings dates only</span></h3><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
   <details class="fold">
     <summary>Table</summary>
     <p class="muted">USD value to common per week (for SharpLink, per filed holdings date). Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
