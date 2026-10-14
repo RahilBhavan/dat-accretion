@@ -5,10 +5,9 @@ description: Run one dat-accretion build step (0-6) end to end - branch, delegat
 
 # build-step <n>
 
-1. **Read.** The step's row in CLAUDE.md's build plan, its section in the full spec
-   (`~/projects/networking/projects/dat-accretion-spec.md`), and `.claude/rules/*`.
-   If the spec leaves a decision open that changes the output (see the spec's open questions),
-   ask the user before building.
+1. **Read.** The step's row in CLAUDE.md's build plan, `.claude/rules/*` and `docs/decisions.md`. (The original
+   spec is no longer on disk.) If a decision the output depends on is not recorded there, ask the user before
+   building.
 
 2. **Branch.** `git switch main && git pull --ff-only && git switch -c <branch from CLAUDE.md>`.
 
