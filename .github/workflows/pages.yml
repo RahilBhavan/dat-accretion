@@ -27,10 +27,10 @@ jobs:
           python -c 'import json; assert json.load(open("/tmp/check.json"))["status"] == "pass"'
           mv /tmp/check.json data/check.json
       - run: python -m dat.build_site
-      - name: stage site (site/* at the root, the CSVs under data/)
+      - name: stage site (site/ at the root with its fonts, the CSVs under data/)
         run: |
           mkdir -p _site/data
-          cp site/* _site/
+          cp -r site/. _site/
           cp data/*.csv _site/data/
       - uses: actions/upload-pages-artifact@v5
         with: { path: _site }

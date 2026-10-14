@@ -96,3 +96,28 @@ Copy one row per participant. Leave cells empty until a real reader responds.
 
 Keep names and contact details in gitignored `private/`, not in this report. Add anonymized results
 here once the test is complete. Recruitment and responses are still pending.
+
+## Redesign (M25 to M29): AI reader test, 2026-10-14
+
+Same protocol and the same three roles as above, each a fresh agent given only two screenshots of the redesigned
+first screen (desktop 1280 × 800 and iPhone 390 × 844, light theme, data through 2026-10-11, branch
+`site-redesign` before the fixes listed below). Simulated readers, not people; a weak signal.
+
+| AI reader role | purpose understood | correct figure and condition | verdict read | first confusion | score |
+|---|---|---|---|---|---|
+| Equity analyst | yes | STRC below $119.07 (closed $99.65); BMNP above $99.79 (closed $99.53) | no ("adds" only hints adding is the aim) | "rotation" behind a tooltip; whether 84% means adding | 4/5 |
+| Business journalist | yes | both, with correct conditions | no | "net mNAV", "rotation", SharpLink's 124% | 3/5 |
+| Fintech hiring manager | yes | both, with correct conditions | no ("stops adding" faintly implies adding is good) | "rotation"; opposite directions; the percent column | 3/5 |
+
+Mean 3.3/5, against 4.0 for the previous first screen. All three read both break-even figures and their
+opposite conditions correctly and read no verdict. Repeated findings and the response:
+
+- The percent-of-break-even column had no stated direction. Each row's condition now names its line: "Adds while
+  STRC is below break-even (100%)"; SharpLink's says "while 1 ÷ m is above 100%".
+- "below" and "above" in the accent color looked like links. They are now bold ink.
+- The dotted terms did not look tappable, on phones especially. They now carry an accent underline and a small "?".
+- The gray meta line was small on phones. It is now 12.5px in a darker gray.
+- SharpLink's row falls below the first phone screen. Not changed: the two rotations come first, and the tab bar
+  reaches the rest.
+
+The revised screen has not been re-tested. The human protocol above still applies.

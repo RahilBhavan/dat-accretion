@@ -144,11 +144,13 @@ function ruler() {
 const ADDS = { MSTR: ['below', 'Rotation adds below 100%'], BMNR: ['above', 'Rotation adds above 100%'], SBET: ['above', 'Buyback adds above 100% (m below 1)'] };
 
 function spark(firm) {
-  const pts = ratioPts(firm), W = 104, H = 26, P = 3;
-  const X = t => P + (t - RULER.t0) / (RULER.t1 - RULER.t0) * (W - 2 * P), Y = v => P + (RULER.hi - v) / (RULER.hi - RULER.lo) * (H - 2 * P);
-  const l = pts[pts.length - 1];
+  const pts = ratioPts(firm), W = 150, H = 32, P = 3, R = 28;  // R: room at the right for the 100% label
+  const X = t => P + (t - RULER.t0) / (RULER.t1 - RULER.t0) * (W - R - P), Y = v => P + (RULER.hi - v) / (RULER.hi - RULER.lo) * (H - 2 * P);
+  const l = pts[pts.length - 1], below = ADDS[firm][0] === 'below', y0 = below ? Y(100) : P, y1 = below ? H - P : Y(100);
   return '<svg class="spark" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">'
-    + '<line class="ref" x1="' + P + '" x2="' + (W - P) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>'
+    + '<rect class="band" x="' + P + '" y="' + y0.toFixed(1) + '" width="' + (W - R - P) + '" height="' + (y1 - y0).toFixed(1) + '"/>'
+    + '<line class="ref" x1="' + P + '" x2="' + (W - R) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>'
+    + '<text x="' + (W - R + 4) + '" y="' + (Y(100) + 3.5) + '">100%</text>'
     + '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>'
     + '<circle cx="' + X(l.t).toFixed(1) + '" cy="' + Y(l.r).toFixed(1) + '" r="2.6"/></svg>';
 }
@@ -167,13 +169,21 @@ function asof() {
 }
 
 // Dek: the headline's answer in plain words, one sentence per firm, figures from data.json.
+const TERMS = {
+  rotation: ['Rotation', 'The pair of trades a firm repeats. Strategy sells common stock to buy back STRC, its preferred stock. BitMine sells BMNP, its preferred stock, to buy back common.'],
+  breakeven: ['Break-even', '$100 × net mNAV. The two rotations run in opposite directions: Strategy\'s adds while STRC is below it, BitMine\'s while BMNP is above it.'],
+  mnav: ['Net mNAV (m)', 'The share price divided by the coin value behind each share, net of debt and preferred. Above 1, new common sells for more than the coins it claims.'],
+  sats: ['Sats', 'Coins per share for bitcoin are counted in sats: 1 sat = 0.00000001 BTC.'],
+};
+const term = (k, text) => '<button type="button" class="term" data-term="' + k + '">' + text + '</button>';
 function dek() {
   const h = Object.fromEntries(DATA.headline.map(x => [x.firm, x])), a = h.MSTR, b = h.BMNR;
   document.getElementById('dek').innerHTML =
-    'Strategy sells common stock to buy back its STRC preferred. That adds bitcoin per share while STRC trades below <strong>$'
-    + a.break_even.toFixed(2) + '</strong>; it closed at $' + a.pref_close.toFixed(2) + '. '
-    + 'BitMine sells its BMNP preferred to buy back common. That adds ether per share while BMNP trades above <strong>$'
-    + b.break_even.toFixed(2) + '</strong>; it closed at $' + b.pref_close.toFixed(2) + '.';
+    'Strategy\'s ' + term('rotation', 'rotation') + ' adds bitcoin per share while STRC trades below <strong>$'
+    + a.break_even.toFixed(2) + '</strong>; it closed at <span class="fig">$' + a.pref_close.toFixed(2) + '</span>. '
+    + 'BitMine\'s adds ether per share while BMNP trades above <strong>$'
+    + b.break_even.toFixed(2) + '</strong>; it closed at <span class="fig">$' + b.pref_close.toFixed(2) + '</span>. '
+    + 'Each ' + term('breakeven', 'break-even') + ' is $100 × ' + term('mnav', 'net mNAV') + '.';
 }
 
 // Break-even table: nine numbers, so a table (Tufte: tables beat graphics for small data), with a sparkline per row on
@@ -184,20 +194,25 @@ const pct = r => (Math.abs(r - 100) < 2 ? r.toFixed(1) : r.toFixed(0)) + '%';
 function headline() {
   asof();
   dek();
+  // One row per firm. Desktop reads across (firm, three figures, condition with its sparkline); phones stack the same
+  // elements, each figure carrying its own label.
+  const fig = (lbl, v, cls) => '<p class="lr-fig' + (cls ? ' ' + cls : '') + '"><span class="lbl">' + lbl + '</span>' + v + '</p>';
   const rows = DATA.headline.map(h => {
     const sbet = h.break_even == null, r = sbet ? 100 / h.m : h.q / h.m * 100;
-    const close = sbet ? 'no preferred' : '$' + h.pref_close.toFixed(2), be = sbet ? 'm = 1' : '$' + h.break_even.toFixed(2);
-    const when = sbet ? 'Net mNAV ' + h.m.toFixed(3) + ' on ' + short_date(h.week_end) + ', last filed date (' + daysAgo(h.week_end) + ' days ago)'
-      : 'Close ' + short_date(h.price_date) + ', net mNAV ' + h.m.toFixed(3);
-    return '<tr><th scope="row">' + esc(h.name) + (sbet ? '' : ' <span class="muted">' + esc(h.pref) + '</span>') + '<span class="sub">' + when + '</span></th>'
-      + '<td class="num">' + close + '</td><td class="num">' + be + '</td><td class="num pct">' + pct(r) + '</td>'
-      + '<td>' + (sbet ? 'buyback, while m &lt; 1' : 'while ' + esc(h.pref) + ' is ' + ADDS[h.firm][0]) + '</td>'
-      + '<td class="spark-cell">' + spark(h.firm) + '</td></tr>';
+    const when = sbet ? 'm ' + h.m.toFixed(3) + ' · ' + short_date(h.week_end) + ', last filed (' + daysAgo(h.week_end) + ' days ago)'
+      : 'close ' + short_date(h.price_date) + ' · m ' + h.m.toFixed(3);
+    // The condition names the line the percent is read against, so 84% (below) or 124% (above) needs no legend.
+    const cond = '<span>' + (sbet ? 'Buyback adds while m is <span class="side">below 1</span>, so while 1 ÷ m is above 100%'
+      : 'Adds while ' + esc(h.pref) + ' is <span class="side">' + ADDS[h.firm][0] + '</span> break-even (100%)') + '</span>';
+    return '<article class="lr" aria-label="' + esc(h.name) + '"><div class="lr-name"><h3 class="lr-firm">' + esc(h.name) + (sbet ? '' : '<span class="tk">' + esc(h.pref) + '</span>') + '</h3>'
+      + '<p class="lr-when">' + when + '</p></div>'
+      + fig('Close', sbet ? 'none' : '$' + h.pref_close.toFixed(2)) + fig('Break-even', sbet ? 'm = 1' : '$' + h.break_even.toFixed(2), 'be') + fig('Of break-even', pct(r), 'pct-col')
+      + '<p class="lr-cond">' + cond + spark(h.firm) + '</p></article>';
   }).join('');
-  document.getElementById('headline-text').innerHTML = '<table class="be-table"><thead><tr><th>Firm</th><th class="num">Preferred close</th>'
-    + '<th class="num">Break-even</th><th class="num pct">% of break-even</th><th>Adds</th><th class="spark-cell">Since Jun</th></tr></thead><tbody>' + rows + '</tbody></table>'
-    + '<p class="caption">Break-even = $100 × net mNAV. <span class="spark-note">Sparklines: close ÷ break-even each week, on one shared scale; the dotted line is 100%. '
-    + 'SharpLink has no preferred, so its row shows 1 ÷ m.</span></p>';
+  document.getElementById('headline-text').innerHTML = '<div class="ledger"><div class="ledger-head" aria-hidden="true"><span>Latest filed week</span>'
+    + '<span style="text-align:right">Pref. close</span><span style="text-align:right">Break-even</span><span style="text-align:right">Of break-even</span></div>' + rows + '</div>'
+    + '<p class="caption">Break-even = $100 × net mNAV. Lines: close ÷ break-even each week since June, on one shared scale; the shaded side is where each rotation adds. '
+    + 'SharpLink has no preferred, so its row shows 1 ÷ m.</p>';
   document.getElementById('counts').textContent = DATA.counts;
   example();
 }
@@ -223,7 +238,7 @@ function sheet(after) {
   const t = TOY, assets = after ? [['Coins', t.coins]] : [['Cash', t.cash], ['Coins', t.coins]];
   const pref = after ? t.pref - t.retired : t.pref, total = assets.reduce((a, x) => a + x[1], 0);
   const claims = [['Preferred', pref], ['Common', total - pref]];
-  const W = 330, H = 236, top = 30, unit = 190 / (t.coins + t.cash), colW = 56, xs = [8, 160];
+  const W = 370, H = 236, top = 30, unit = 190 / (t.coins + t.cash), colW = 56, xs = [8, 160];
   let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((after ? 'After' : 'Before') + ': assets '
     + assets.map(a => a[0] + ' ' + a[1]).join(', ') + '; preferred ' + pref + ', common ' + (total - pref)) + '">';
   s += '<text class="label" x="0" y="14">' + (after ? 'After: retire a $100 claim for $90' : 'Before') + '</text>';
@@ -255,24 +270,34 @@ function example() {
   }).join('');
   const be = DATA.headline.find(h => h.firm === 'MSTR');
   document.getElementById('example').innerHTML =
-    '<div class="prose"><p>Start with one share of preferred stock: a $100 claim that ranks ahead of common stock. If the company buys it back '
-    + 'for $90, its claims fall by $100 while its cash falls by $90. The $10 difference now belongs to common holders. The figure draws it, '
-    + 'with assets and claims on the same scale.</p></div>'
+    // Step 1: one claim, retired below its notional (toy numbers, assets and claims on one scale).
+    '<div class="why-grid"><div class="prose"><p>Start with one share of preferred stock: a $100 claim that ranks ahead of common stock. If the company buys it back '
+    + 'for $90, its claims fall by $100 while its cash falls by $90. The $10 difference now belongs to common holders.</p></div>'
     + '<figure class="fig"><p class="fig-tag">Illustration, not filed figures</p><div class="pair">' + sheet(false) + sheet(true) + '</div>'
-    + '<figcaption>Assets equal claims on both sides. Paying $90 removes a $100 claim, so the common block grows by $10.</figcaption></figure>'
+    + '<figcaption>Assets equal claims on both sides, drawn on one scale. Paying $90 removes a $100 claim, so the common block grows by $10.</figcaption></figure></div>'
+    // Step 2: the rotation as a balance. Common sells at m per $1 of net coins; STRC retires at q per $1 of claim.
     + '<div class="prose"><p>Strategy pays for these buybacks by selling common stock. At a net mNAV of 1.2, buyers pay $1.20 for each $1 of net coins behind a '
     + 'share, so a $120 sale gives new holders $100 of net coins and leaves $20 with existing holders. The rotation adds coins per share as long as the '
-    + 'retirement does not give back more than the sale made. That happens at a STRC price of $100 × m:</p></div>'
-    + '<figure class="fig"><p class="fig-tag">Illustration at m = 1.2: raise $120 by selling common, spend it retiring STRC</p><div class="scroll-x"><table class="plain-num">'
+    + 'retirement does not give back more than the sale made. Weigh m against q: the beam is level at a STRC price of $100 × m.</p></div>'
+    + '<div class="balance-slot" id="balance"></div>'
+    + '<p class="balance-read">Latest filed week: net mNAV <b>' + be.m.toFixed(3) + '</b>, so break-even is <b>$' + be.break_even.toFixed(2) + '</b>; STRC closed at <b>$'
+    + be.pref_close.toFixed(2) + '</b>. BitMine runs the rotation the other way (sell BMNP, buy back common), so it adds while BMNP trades above $100 × m.</p>'
+    + '<details class="fold"><summary>The same illustration as a table, m = 1.2</summary><div class="scroll-x"><table class="plain-num">'
     + '<thead><tr><th class="num">STRC price</th><th class="num">Notional retired</th><th class="num">Sale of common</th><th class="num">Retirement</th><th class="num">Rotation, to common</th><th></th></tr></thead><tbody>'
-    + rows + '</tbody></table></div><figcaption>Dollars to existing common holders, first order. Today net mNAV is ' + be.m.toFixed(3) + ', so the break-even is $'
-    + be.break_even.toFixed(2) + '. BitMine runs the rotation the other way (sell BMNP, buy back common), so it adds while BMNP trades above $100 × m.</figcaption></figure>'
-    + '<div class="prose"><p><b>The filed trade.</b> In the week ending ' + nice_date(x.week_end) + ', Strategy paid ' + M(x.usd) + ' for STRC at $' + x.avg_price.toFixed(2)
-    + ' per $100 share (q = ' + x.q.toFixed(4) + '), removing ' + M(x.notional) + ' of claims. Common holders gained ' + M(x.adds_usd) + ', or +' + x.sats_per_share.toFixed(2)
+    + rows + '</tbody></table></div><p class="caption">Raise $120 by selling common, spend it retiring STRC. Dollars to existing common holders, first order. Illustration, not filed figures.</p></details>'
+    // Step 3: the filed trade, with its figures and its filing.
+    + '<div class="filed"><p class="fig-tag">The filed trade · week ending ' + nice_date(x.week_end) + '</p><ul class="filed-figs">'
+    + '<li><b>' + M(x.usd) + '</b>paid for STRC</li><li><b>$' + x.avg_price.toFixed(2) + '</b>per $100 share (q = ' + x.q.toFixed(4) + ')</li>'
+    + '<li><b>' + M(x.notional) + '</b>of claims removed</li><li><b>+' + M(x.adds_usd) + '</b>to common, +' + x.sats_per_share.toFixed(2) + ' sats per share</li></ul>'
+    + '<div class="prose"><p>Common holders gained ' + M(x.adds_usd) + ', or +' + x.sats_per_share.toFixed(2)
     + ' sats across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares (exact recompute).'
     + (net ? ' That is ' + (x.adds_usd / net * 100).toFixed(3) + '% of Strategy\'s net coin value that week (' + usd(net) + '), too small to see at true scale, '
-      + 'which is why the figure above uses toy numbers.' : '')
-    + ' Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p></div>';
+      + 'which is why the figures above use toy numbers.' : '')
+    + ' Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p></div></div>';
+  // The balance (site/balance.js, built by site-src/balance/build.mjs) starts at the table's m = 1.2 and offers the latest filed week.
+  if (window.Balance) window.Balance.mount(document.getElementById('balance'), { m: 1.2, price: 100,
+    today: { m: +be.m.toFixed(3), price: be.pref_close, label: 'm ' + be.m.toFixed(3) + ', STRC $' + be.pref_close.toFixed(2) + ', week ending ' + short_date(be.week_end) } });
+  else document.getElementById('balance').remove();
 }
 
 // ---- 2. small multiples: preferred close as a percent of break-even, one shared scale ----
@@ -302,6 +327,8 @@ function drawPref(firm) {
   // Range frame on y: the shared domain's ends and 100%, nothing else.
   s += '<line class="axis" x1="' + (M.l - 8) + '" x2="' + (M.l - 8) + '" y1="' + Y(RULER.hi) + '" y2="' + Y(RULER.lo) + '"/>';
   for (const v of [RULER.lo, 100, RULER.hi]) s += '<text x="' + (M.l - 12) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v + '%</text>';
+  const below0 = ADDS[firm][0] === 'below', b0 = below0 ? Y(100) : Y(RULER.hi), b1 = below0 ? Y(RULER.lo) : Y(100);
+  s += '<rect class="band" x="' + M.l + '" y="' + b0 + '" width="' + (W - M.l - M.r) + '" height="' + (b1 - b0) + '"/>';
   s += '<line class="ref" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>';
   // Labels on the left, on the side of the line where the program adds (the data sits clear of it there).
   const below = ADDS[firm][0] === 'below';
@@ -349,8 +376,8 @@ function mapPoints() {
 function drawMap() {
   const el = document.getElementById('map');
   const pts = mapPoints();
-  const W = el.clientWidth || 640, H = Math.round(Math.max(320, Math.min(480, W * 0.75)));
-  const M = { l: 48, r: 14, t: 12, b: 40 };
+  const W = el.clientWidth || 640, M = { l: 48, r: 14, t: 12, b: 40 };
+  const H = W - M.l - M.r + M.t + M.b;  // a square plot: one range on both axes makes m = q a true 45° line (M7)
   const vals = pts.flatMap(w => [w.m, w.qx]);
   // One domain for both axes so m = q is a true diagonal: [min − 0.05, max + 0.05] rounded out to 0.05.
   const lo = Math.floor((Math.min(...vals) - 0.05) * 20) / 20, hi = Math.ceil((Math.max(...vals) + 0.05) * 20) / 20;
@@ -371,7 +398,11 @@ function drawMap() {
   s += '<text x="' + M.l + '" y="' + (M.t + 4) + '">↑ m = net mNAV</text>';
   s += '<line class="ref" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
   s += '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 22) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
-  s += '<text class="label" x="' + (W - M.r - 8) + '" y="' + (H - M.b - 10) + '" text-anchor="end">BitMine\'s rotation adds here (m &lt; q)</text>';
+  // BitMine's region label sits at the right edge, a third of the way up, clear of the marks near q = 1 (SharpLink's sit low there).
+  const by = Y(lo + (hi - lo) * 0.3);
+  s += W < 500
+    ? '<text class="label" x="' + (W - M.r) + '" y="' + by + '" text-anchor="end">BitMine\'s rotation</text><text class="label" x="' + (W - M.r) + '" y="' + (by + 14) + '" text-anchor="end">adds here (m &lt; q)</text>'
+    : '<text class="label" x="' + (W - M.r) + '" y="' + by + '" text-anchor="end">BitMine\'s rotation adds here (m &lt; q)</text>';
   if (W >= 500) s += '<text x="' + (X(hi) - 40) + '" y="' + (Y(hi) + 6) + '" text-anchor="end">m = q</text>';
   for (const firm of Object.keys(FIRM)) {
     const path = pts.filter(w => w.firm === firm).sort((a, b) => a.week_end < b.week_end ? -1 : 1);
@@ -389,13 +420,13 @@ function drawMap() {
       + markSvg(w.firm, cx, cy, last ? r + 1.5 : r, 'mark', 'fill:' + (last ? c : 'var(--bg)') + ';stroke:' + c + ';stroke-width:1.25') + '</a>';
   }
   // Direct label on each firm's latest week: right, left, above, below at growing distance; the first box that stays
-  // inside the plot and hits no mark or placed label wins. Box width is estimated at 6.3px per character (11px bold).
+  // inside the plot and hits no mark or placed label wins. Box width is estimated at 6.6px per character (10.5px monospace).
   const boxes = pts.map(w => { const r = rad(w); return [X(w.qx) - r, Y(w.m) - r, X(w.qx) + r, Y(w.m) + r]; });
   const hit = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
   for (const firm of Object.keys(FIRM)) {
     const i = latest[firm];
     if (i == null) continue;
-    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + short_date(w.week_end), tw = text.length * 6.3;
+    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + short_date(w.week_end), tw = text.length * 6.6;
     const cands = [4, 18, 36].flatMap(d => [[cx + r + d, cy + 4, 'start'], [cx - r - d, cy + 4, 'end'], [cx, cy - r - d - 1, 'middle'],
       [cx, cy + r + d + 9, 'middle']]);
     const box = ([x, y, a]) => { const x0 = a === 'start' ? x : a === 'end' ? x - tw : x - tw / 2; return [x0, y - 10, x0 + tw, y + 2]; };
@@ -417,19 +448,16 @@ function drawMap() {
       + '<div>Filing: ' + esc(fileName(w.filing_urls[0])) + '</div>';
   };
   bindTips(el, tipHtml);
-  // Touch: the first tap on a mark pins its details below the chart instead of navigating; a second tap on the same
-  // mark, or the pin's link, opens the filing. Mouse and keyboard follow the link directly.
-  const pin = el.closest('.chart-panel').querySelector('.pin');
+  // Touch: a tap on a mark opens its details in the sheet instead of navigating; the sheet's link opens the filing.
+  // Mouse and keyboard follow the link directly.
   let touch = false;
   el.onpointerdown = ev => { touch = ev.pointerType === 'touch'; };
   el.onclick = ev => {
     const a = ev.target.closest('a[data-tip]');
-    if (!a || !touch || pin.dataset.tip === a.dataset.tip) return;
+    if (!a || !touch) return;
     ev.preventDefault();
     hideTip(el.parentElement);
-    pin.dataset.tip = a.dataset.tip;
-    pin.innerHTML = tipHtml(a) + '<a href="' + a.getAttribute('href') + '" target="_blank" rel="noopener">View filing</a>';
-    pin.hidden = false;
+    openSheet('<div class="data-rows">' + tipHtml(a) + '<a href="' + a.getAttribute('href') + '" target="_blank" rel="noopener">View filing</a></div>', a);
   };
 }
 
@@ -611,14 +639,82 @@ function method() {
   document.getElementById('footer').textContent = 'Data through the week ending ' + through + '. Page built ' + DATA.generated_at + ' from the CSVs below.';
 }
 
+// ---- the sheet: term definitions and map details ----
+// Phones: a bottom sheet (CSS). Desktop: a small card under its trigger, kept inside the viewport.
+let SHEET_FROM = null;
+function openSheet(html, from) {
+  const sh = document.getElementById('sheet');
+  sh.querySelector('.sheet-body').innerHTML = html;
+  if (sh.matches(':popover-open')) sh.hidePopover();
+  SHEET_FROM = from || null;
+  sh.style.left = sh.style.top = '';
+  sh.showPopover();
+  if (from && !matchMedia('(max-width: 720px)').matches) {
+    const r = from.getBoundingClientRect(), w = sh.offsetWidth, h = sh.offsetHeight;
+    sh.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left)) + 'px';
+    sh.style.top = (r.bottom + h + 12 < innerHeight ? r.bottom + 8 : Math.max(12, r.top - h - 8)) + 'px';
+  }
+}
+function sheetUi() {
+  const sh = document.getElementById('sheet');
+  sh.addEventListener('toggle', ev => { if (ev.newState === 'closed' && SHEET_FROM && document.contains(SHEET_FROM)) SHEET_FROM.focus({ preventScroll: true }); });
+  document.addEventListener('click', ev => {
+    const t = ev.target.closest('.term');
+    if (!t) return;
+    const [title, body] = TERMS[t.dataset.term];
+    openSheet('<h4>' + esc(title) + '</h4><p>' + esc(body) + '</p>', t);
+  });
+}
+
+// ---- phones: one firm at a time on the shared scale; the selection survives redraws ----
+function segControls() {
+  document.querySelectorAll('.seg-control').forEach(ctl => {
+    const box = document.getElementById(ctl.dataset.for), tabs = [...ctl.querySelectorAll('[role="tab"]')];
+    box.dataset.solo = '';
+    const pick = firm => {
+      tabs.forEach(b => { const on = b.dataset.firm === firm; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+      box.querySelectorAll('.firm-panel').forEach(p => p.classList.toggle('on', p.dataset.firm === firm));
+      draw();  // a hidden panel had no width; draw it at its width now
+    };
+    ctl.addEventListener('click', ev => { const b = ev.target.closest('[role="tab"]'); if (b) pick(b.dataset.firm); });
+    ctl.addEventListener('keydown', ev => {
+      const i = tabs.findIndex(b => b.getAttribute('aria-selected') === 'true'), d = { ArrowLeft: -1, ArrowRight: 1 }[ev.key];
+      if (d == null) return;
+      const j = (i + d + tabs.length) % tabs.length;
+      pick(tabs[j].dataset.firm);
+      tabs[j].focus();
+    });
+    pick('MSTR');
+  });
+}
+
+// ---- section links: the current section is marked in the top links and the phone tab bar ----
+function sectionNav() {
+  const links = [...document.querySelectorAll('[data-sec]')], ids = [...new Set(links.map(a => a.dataset.sec))];
+  // The tab bar's "Detail" stands for everything from the map down.
+  const group = id => ['bars-section', 'method', 'built', 'downloads'].includes(id) ? 'map-section' : id;
+  const secs = [...document.querySelectorAll('main > section')];
+  const mark = () => {
+    const y = (document.querySelector('.site-bar').offsetHeight || 56) + innerHeight * 0.25;
+    let cur = secs[0].id;
+    for (const s of secs) if (s.getBoundingClientRect().top <= y) cur = s.id;
+    links.forEach(a => {
+      const on = a.closest('.tab-bar') ? a.dataset.sec === group(cur) : a.dataset.sec === cur;
+      if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    });
+  };
+  let raf = 0;
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; mark(); }); }, { passive: true });
+  mark();
+  return ids;
+}
+
+// Panels hidden by the phone's firm switch have no width: skip them, and draw them when selected.
 function draw() {
-  drawPref('MSTR');
-  drawPref('BMNR');
-  drawPref('SBET');
+  const shown = id => document.getElementById(id).offsetParent !== null;
+  for (const f of Object.keys(FIRM)) if (shown('pref-' + f)) drawPref(f);
   drawMap();
-  drawBars('MSTR');
-  drawBars('BMNR');
-  drawBars('SBET');
+  for (const f of Object.keys(FIRM)) if (shown('bars-' + f)) drawBars(f);
 }
 
 function theme() {
@@ -627,8 +723,9 @@ function theme() {
   const saved = localStorage.getItem('theme');
   if (saved) root.dataset.theme = saved;
   const label = () => {
-    btn.textContent = dark() ? 'light theme' : 'dark theme';
-    document.querySelector('meta[name="theme-color"]').content = dark() ? '#0d1015' : '#fbfbf9';
+    root.classList.toggle('is-dark', dark());
+    btn.setAttribute('aria-label', dark() ? 'Switch to light theme' : 'Switch to dark theme');
+    document.querySelector('meta[name="theme-color"]').content = dark() ? '#0f1216' : '#fbfbf9';
   };
   label();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', label);
@@ -651,7 +748,12 @@ fetch('data.json').then(r => r.json()).then(d => {
   table();
   method();
   built();
+  sheetUi();
+  segControls();
+  sectionNav();
   draw();
+  // The page was empty when the browser looked for the hash target; go there now that it has content.
+  if (location.hash.length > 1) { const t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
   let lastW = innerWidth;
   addEventListener('resize', () => { if (innerWidth !== lastW) { lastW = innerWidth; draw(); } });
 }).catch(e => {

@@ -230,19 +230,22 @@ The tooltip follows focus, and Escape closes it. A `<details>` table under the b
 `site/style.css` defines three firm colors (`--f1` to `--f3`), used only on the map, plus ink, one accent and grays for everything else, with a second set for dark mode:
 
 ```css
-  --accent: #1f6fd1; --ink2: #3b4250; --gray1: #9aa3ae; --gray2: #cdd3da; --neutral: #7d8693;
+  --accent: #1f6fd1; --ink2: #3b4250; --gray1: #9aa3ae; --gray2: #cdd3da; --neutral: #7d8693; --wash: #eff1f3;
   --f1: #2a78d6; --f2: #eb6834; --f3: #4a3aa7;
 ```
 
-The firm palette was checked in both modes before use; visible labels, the mark shapes and the table view back up any pair that is hard to tell apart. `dat/memo.py` uses the same three light-mode firm colors in `COLOR`. `site/index.html` loads one stylesheet and one script, both local:
+The firm palette was checked in both modes before use; visible labels, the mark shapes and the table view back up any pair that is hard to tell apart. `dat/memo.py` uses the same three light-mode firm colors in `COLOR`. `site/index.html` loads one stylesheet, two self-hosted fonts and two scripts (the balance figure, then the page), all local:
 
 ```
-grep -nE "<script|<link" site/index.html
+grep -nE "<script|<link" site/index.html | grep -v 'rel="icon"'
 ```
 
 ```
-9:<link rel="stylesheet" href="style.css">
-151:<script src="app.js"></script>
+9:<link rel="preload" href="fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
+10:<link rel="preload" href="fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+11:<link rel="stylesheet" href="style.css">
+209:<script src="balance.js"></script>
+210:<script src="app.js"></script>
 ```
 
 ## Use It
