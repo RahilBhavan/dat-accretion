@@ -20,18 +20,14 @@
 
 ## The Concept
 
-```mermaid
-flowchart LR
-  A[slip] --> B{caught by}
-  B --> R[reviewer: 14, 16, 20, 21]
-  B --> U[runner: 13, 15, 19, 23]
-  B --> G[git or output: 12, 17, 18]
-  B --> W[watchdog: 22]
-  R --> H[habit written into rules or code]
-  U --> H
-  G --> H
-  W --> H
-```
+Twelve slips, grouped by what caught them. Each became a habit written into the rules or the code.
+
+| caught by | notes | count |
+|---|---|---:|
+| reviewer | #14, #16, #20, #21 | 4 |
+| runner | #13, #15, #19, #23 | 4 |
+| git or empty output | #12, #17, #18 | 3 |
+| watchdog | #22 | 1 |
 
 | habit | notes | the slip |
 |---|---|---|

@@ -42,6 +42,11 @@ flowchart LR
 ruler
 ```
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../figures/ruler-MSTR-2026-09-20-dark.svg">
+  <img alt="Strategy's net coins on 2026-09-20: 846,000 BTC held, plus USD assets, less debt and preferred notional, each divided by the BTC price, gives N = 671,441 BTC, or 156,379 sats per share" src="../../figures/ruler-MSTR-2026-09-20-light.svg">
+</picture>
+
 **Roll both ways.** The preferred anchor is 2026-06-30 and the class A anchor is the 10-Q cover date, taken as week 2026-07-26. Weeks before the anchor back the changes out; weeks after add them in. One function does both.
 
 **Flip at each week's price.** The convert list is fixed; its split between D and S is not. Each week `net()` tests every note against that week's MSTR close (decision R3). In `data/balances.csv`, D is $5,913,659,000 on 2026-05-31 (MSTR $159.09) and 2026-09-20 ($153.92), and $6,713,659,000 in every other week. The $800M difference is the 2030A note, conversion price $149.77.

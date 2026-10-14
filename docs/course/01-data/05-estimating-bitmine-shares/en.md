@@ -127,6 +127,13 @@ The same week as a waterfall of its attribution parts:
 weekparts BMNR 2026-08-23
 ```
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../figures/weekparts-BMNR-2026-08-23-dark.svg">
+  <img alt="BitMine, week ending 2026-08-23, in basis points of n: coin price +64.1, in-the-money flips -6.1, buy ETH 0, BMNP dividends -0.5, estimated issuance -14.5, residual 0, observed +43.0" src="../../figures/weekparts-BMNR-2026-08-23-light.svg">
+</picture>
+
+The estimated issuance is the accent bar: −14.5 bp, the largest part after the coin price. Its hatching on the page marks it as an estimate, not a filed figure. The residual is zero this week: the estimate is built from the same unexplained change in R.
+
 ### Step 3: Size the bias
 
 ```

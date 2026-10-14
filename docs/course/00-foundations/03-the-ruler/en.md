@@ -44,15 +44,12 @@ m = s / (p · n)              net mNAV
 ruler
 ```
 
-```mermaid
-flowchart LR
-  C[coins held C] --> N
-  R[USD assets R] -->|+ R / p| N
-  D[out-of-the-money debt D] -->|− D / p| N
-  F[preferred notional F] -->|− F / p| N
-  N[net coins N] -->|÷ S| n[net coins per share n]
-  n -->|s ÷ p·n| m[net mNAV m]
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../figures/ruler-MSTR-2026-09-20-dark.svg">
+  <img alt="Strategy's net coins on 2026-09-20: 846,000 BTC held, plus USD assets, less debt and preferred notional, each divided by the BTC price, gives N = 671,441 BTC, or 156,379 sats per share" src="../../figures/ruler-MSTR-2026-09-20-light.svg">
+</picture>
+
+The table's figures, drawn: start from the coins, add the USD assets and subtract the claims ahead of common, each converted to coins at p. The claims are larger than the cash, so N is below C.
 
 Two rules come straight from the glossary and matter every week:
 

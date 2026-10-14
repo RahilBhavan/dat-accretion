@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 286" width="860" height="286" role="img" aria-label="Strategy week ending 2026-09-20: Coin price +131.1 bp; In-the-money flips +23.1 bp; Buy BTC $75.7M +0.2 bp; Retire STRC $174.0M at q 0.982 +0.6 bp; Carry: dividends and interest -10.6 bp; Residual (unexplained) -0.5 bp; observed +143.8 bp" font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif" font-size="13" fill="#15171b" style="font-variant-numeric: tabular-nums">
+<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#9aa3ae" stroke-width="2"/></pattern></defs>
+<text x="0" y="16" font-weight="600">Strategy, week ending 2026-09-20: change in net BTC per share, by part</text>
+<text x="0" y="34" fill="#5d6470">Basis points of this week's n (1 bp = 0.01%), in the engine's order. Dollars are value to common, Δn × S × p.</text>
+<text x="250" y="66" text-anchor="end">Coin price</text>
+<rect x="262.0" y="55" width="269.0" height="14" fill="#9aa3ae"/>
+<text x="592" y="66">+131.1 bp<tspan fill="#5d6470" dx="8">+$711.7M</tspan></text>
+<text x="250" y="96" text-anchor="end">In-the-money flips</text>
+<rect x="531.0" y="85" width="47.4" height="14" fill="#9aa3ae"/>
+<text x="592" y="96">+23.1 bp<tspan fill="#5d6470" dx="8">+$125.3M</tspan></text>
+<text x="250" y="126" text-anchor="end">Buy BTC $75.7M</text>
+<rect x="578.4" y="115" width="1.0" height="14" fill="#9aa3ae"/>
+<text x="592" y="126">+0.2 bp<tspan fill="#5d6470" dx="8">+$1.1M</tspan></text>
+<text x="250" y="156" text-anchor="end" font-weight="600">Retire STRC $174.0M at q 0.982</text>
+<rect x="578.8" y="145" width="1.2" height="14" fill="#1f6fd1"/>
+<text x="592" y="156">+0.6 bp<tspan fill="#5d6470" dx="8">+$3.1M, too small to see at true scale</tspan></text>
+<text x="250" y="186" text-anchor="end">Carry: dividends and interest</text>
+<rect x="558.3" y="175" width="21.7" height="14" fill="#9aa3ae"/>
+<text x="592" y="186">−10.6 bp<tspan fill="#5d6470" dx="8">−$57.4M</tspan></text>
+<text x="250" y="216" text-anchor="end">Residual (unexplained)</text>
+<rect x="557.2" y="205" width="1.1" height="14" fill="url(#hatch)"/>
+<text x="592" y="216">−0.5 bp<tspan fill="#5d6470" dx="8">−$2.9M</tspan></text>
+<line x1="262" x2="740" y1="233" y2="233" stroke="#9aa1ab"/>
+<text x="250" y="253" text-anchor="end" font-weight="600">Observed change</text>
+<rect x="262.0" y="241" width="295.2" height="14" fill="#3b4250"/>
+<text x="592" y="253" font-weight="600">+143.8 bp<tspan fill="#5d6470" font-weight="400" dx="8">+$780.9M</tspan></text>
+<line x1="262.0" x2="262.0" y1="50" y2="260" stroke="#15171b"/>
+<text x="262.0" y="276" text-anchor="middle" fill="#5d6470">0</text>
+</svg>

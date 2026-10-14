@@ -25,16 +25,6 @@ The first-order formulas from lesson 00-04 give each action's effect alone. They
 
 Start from last week's state. Change one thing at a time, in a fixed order, and recompute n after each change. The difference in n at each step is that part's `dn_exact`. What remains between the last recomputed n and this week's actual n is the residual.
 
-```mermaid
-flowchart LR
-  A[last week state] --> P[price: new p]
-  P --> F[itm_flip: new s]
-  F --> X[each action in actions.csv order]
-  X --> C[carry rows]
-  C --> E[est_issuance BMNR only]
-  E --> R[residual: rest of observed dn]
-```
-
 1. `price`: last week's balances revalued at this week's coin price p. Only the (R − D − F)/p term moves.
 2. `itm_flip`: the same balances at this week's share price s. Converts or STRK that cross their conversion price move between D or F and S.
 3. Each action row, in `actions.csv` order, at its own price: common at its `avg_price`, preferred at q = `avg_price`/100, coins at their stated dollars.
@@ -44,11 +34,18 @@ flowchart LR
 
 Order matters because every step changes the state the next one starts from. One fixed order makes the split reproducible.
 
-The unit is Δn in coins per share. The page converts it to dollars, "value to common" = Δn × S × p, at this week's S and p. Here is Strategy's week ending 2026-09-20:
+The unit is Δn in coins per share. The page converts it to dollars, "value to common" = Δn × S × p, at this week's S and p, for the tooltips, the totals strips and the table. The bars draw the same parts as basis points of that week's n, Δn ÷ n × 10,000, so all three firms share one scale (lesson 03-01). Here is Strategy's week ending 2026-09-20:
 
 ```widget
 weekparts MSTR 2026-09-20
 ```
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../figures/weekparts-MSTR-2026-09-20-dark.svg">
+  <img alt="Strategy, week ending 2026-09-20, in basis points of n: coin price +131.1, in-the-money flips +23.1, buy BTC +0.2, retire STRC +0.6, carry -10.6, residual -0.5, observed +143.8" src="../../figures/weekparts-MSTR-2026-09-20-light.svg">
+</picture>
+
+Each bar starts where the one above it ended, in the engine's order, and the last bar is the observed change drawn from zero. The STRC retirement is +0.6 bp: true to scale, it is a sliver next to the coin price.
 
 ## Build It
 
@@ -155,7 +152,7 @@ BitMine issued 3.5M BMNP shares ($350.0M of notional, the $100 liquidation prefe
 
 ## Use It
 
-- The page's attribution bars stack `dn_exact` × S × p per category (lesson 03-01).
+- The page's attribution bars stack `dn_exact` ÷ n × 10,000 per category, in basis points on one scale for all three firms; each bar's details, the totals strip and the table give the same parts as `dn_exact` × S × p in dollars (lesson 03-01).
 - `check.py` check 4 reruns `attribute()` for every Strategy week from 2026-08-02 and tests the residual (lesson 02-02).
 - `dat/build_site.py` recomputes the observed change through the same `states()` so the bars can be checked against it.
 

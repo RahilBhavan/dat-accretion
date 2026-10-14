@@ -24,13 +24,13 @@ The row: Strategy's retirement of STRC preferred in the week ending 2026-07-26. 
 
 ```mermaid
 flowchart LR
-  K[8-K filed 2026-07-27] --> A[actions.csv retire_pref row]
-  A --> B[balances.csv F rolls down]
-  A --> T[attribution.csv retire_pref row]
+  K["8-K filed 2026-07-27: $25.0M paid for STRC at $86.53"] --> A["actions.csv retire_pref: usd 25,000,000, units 28,893,000"]
+  A --> B["balances.csv F: $15.4669B to $15.4380B, down $28.9M"]
+  A --> T["attribution.csv: q 0.8653, +15.65 sats per share, +$3.9M to common"]
   B --> T
-  P[prices.csv closes] --> W[weekly.csv m and q]
+  P["prices.csv: STRC $86.89, BTC $64,093, MSTR $91.67"] --> W["weekly.csv: q 0.8689, m 0.997"]
   B --> W
-  W --> M[map dot]
+  W --> M["map dot at q 0.8689, m 0.997"]
   A --> M
 ```
 
@@ -42,6 +42,8 @@ Two different q values appear on this path, and both are correct for their use:
 ```widget
 map
 ```
+
+![Break-even map: net mNAV m against q, one mark per firm-week, latest week solid and labeled](../../../map.svg)
 
 ## Build It
 
@@ -159,11 +161,12 @@ print(w['m'], w['q'], w['dollars_moved'], w['filing_urls'][0])
 0.997365 0.8688500213623047 569500000.0 https://www.sec.gov/Archives/edgar/data/1050446/000119312526316917/mstr-20260727.htm
 ```
 
-That is m, q, dollars moved ($544.5M of MSTR sold plus $25.0M of STRC retired, which sets the dot's area) and the link the dot opens: the same 8-K as Step 1. The dot sits above the m = q line (0.997 > 0.869), on the side where Strategy's rotation adds.
+That is m, q, dollars moved ($544.5M of MSTR sold plus $25.0M of STRC retired, shown in the mark's tooltip; every mark is one size) and the link the dot opens: the same 8-K as Step 1. The dot sits above the m = q line (0.997 > 0.869), on the side where Strategy's rotation adds.
 
 ## Use It
 
 - The page's table view lists every week's filing links, so a reader can run this trace from the page back to EDGAR.
+- This row is the filed trade at the end of the page's "Why retiring a cheap claim adds coins per share" section, after the toy balance sheet. The page gives its $3.893M to common as a share of that week's net coin value, n × S × p = $35.7B: 0.011%, too small to draw at true scale. In the week's attribution bar it is a 1.09 bp segment (`dn_exact` ÷ n × 10,000), drawn in the preferred accent.
 - `check.py` check 5 GETs every unique `filing_url` in `data/actions.csv`; urllib raises on a non-2xx status, and any exception (network included) fails the check.
 - The filing-verifier agent matched every row of `actions.csv` and `stated.csv` to its filing (build notes, "Checks that hold today").
 

@@ -139,6 +139,8 @@ Each week's change in n split into parts. Written by `dat.engine`. 198 rows; the
 
 Order within a week: price, itm_flip, each action in actions.csv order, carry, est_issuance, residual (decision A1). The `dn_exact` column of a week sums to the observed change in n.
 
+The page draws `dn_exact` two ways. The attribution bars use basis points of that week's n, `dn_exact` ÷ n × 10,000 (the STRC row above: 0.58 bp), one scale for all three firms. Each bar's details, the totals strips and the table give value to common in USD, `dn_exact` × S × p.
+
 ## staking.csv
 
 BitMine only. Written by `dat.parse_bmnr`. A diagnostic that sizes the upward bias in BitMine's estimated shares; never booked (decision B2).
@@ -195,5 +197,5 @@ Read the committed copy with `git show origin/data:data/check.json` (needs a fet
 ## Exercises
 
 1. Pick the MSTR 2026-08-23 row in `stated.csv` and confirm that its `usd_reserve` plus `usd_cash` equals `usd_reserve` in `balances.csv` for the same date.
-2. For MSTR 2026-09-20, divide `dn_exact` by `usd` on the `retire_pref` row of `attribution.csv` and confirm you get `dn_per_dollar`. Then multiply `dn_exact` by that week's S and p to get the value to common in USD.
+2. For MSTR 2026-09-20, divide `dn_exact` by `usd` on the `retire_pref` row of `attribution.csv` and confirm you get `dn_per_dollar`. Then multiply `dn_exact` by that week's S and p to get the value to common in USD, and divide it by that week's n and multiply by 10,000 to get the basis points the bar draws.
 3. Write a ten-line script that loads `prices.csv` and prints, for each ticker, the first and last date and the row count. Explain why BTC has more rows than MSTR.
