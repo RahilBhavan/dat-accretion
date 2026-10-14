@@ -14,3 +14,10 @@ jobs:
         with: { python-version: '3.12' }
       - run: pip install pytest numpy
       - run: python -m pytest -q tests
+      - uses: actions/setup-node@v6
+        with: { node-version: '24' }
+      - name: balance figure (M28) model test, and site/balance.js matches its source
+        run: |
+          node site-src/balance/model.test.mjs
+          node site-src/balance/build.mjs
+          git diff --exit-code -- site/balance.js

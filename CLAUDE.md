@@ -11,6 +11,8 @@ The original spec (it included outreach, so it stayed out of this public repo) i
 
 Python 3.12, stdlib plus numpy. One `python -m dat.<module>` per step. Static site in `site/`.
 No database, no framework, no new dependency without asking. Shape copied from `~/projects/spine`.
+Node is used at build time only, for the balance figure (`node site-src/balance/build.mjs` writes `site/balance.js`;
+approved 2026-10-14). Fonts are self-hosted in `site/fonts/`.
 
 ```
 uv venv && uv pip install -e '.[dev]'   # once

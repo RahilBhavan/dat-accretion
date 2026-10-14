@@ -2,88 +2,120 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#fbfbf9">
 <title>Net coins per share: Strategy, BitMine and SharpLink</title>
 <meta name="description" content="Every capital action by Strategy, BitMine and SharpLink since 2026-06-01, measured in net coins per share, and the preferred price where each rotation stops adding.">
+<link rel="preload" href="fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2315171b'/%3E%3Cpath d='M8 7v17h17' fill='none' stroke='%23fbfbf9' stroke-width='2'/%3E%3Cpath d='M8 24L24 8' stroke='%235c9ef0' stroke-width='2.4'/%3E%3C/svg%3E">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<div class="site-bar">
-  <a class="brand" href="#top" aria-label="DAT Accretion, back to top"><span class="brand-mark" aria-hidden="true">D<span>·</span></span><span>DAT <strong>Accretion</strong></span></a>
-  <nav aria-label="Primary navigation"><a href="#example-section">Why it adds</a><a href="#pref-section">By week</a><a href="#map-section">Break-even map</a><a href="#bars-section">Attribution</a><a href="#method">Method</a><a href="#downloads">Downloads</a></nav>
-  <button type="button" id="theme" class="theme">Theme</button>
-</div>
-<main id="main">
-<header id="top" class="hero">
-  <div class="hero-text">
-    <p class="eyebrow">Crypto treasury companies · updated weekly from SEC filings</p>
-    <h1 id="title">The preferred stock price where each rotation stops adding coins per share</h1>
-    <p class="dek" id="dek">loading</p>
-    <p class="meta" id="asof"></p>
+<header class="site-bar">
+  <div class="site-bar-inner">
+    <a class="brand" href="#top" aria-label="DAT Accretion, back to top">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path class="frame" d="M8 7v17h17"/><path class="diag" d="M8 24L24 8"/></svg>
+      <span>DAT <strong>Accretion</strong></span>
+    </a>
+    <nav class="top-nav" aria-label="Sections">
+      <a href="#top" data-sec="top">Break-even</a><a href="#why" data-sec="why">Why it adds</a><a href="#pref-section" data-sec="pref-section">By week</a><a href="#map-section" data-sec="map-section">Map</a><a href="#bars-section" data-sec="bars-section">Attribution</a><a href="#method" data-sec="method">Method</a>
+    </nav>
+    <button type="button" id="theme" class="icon-btn" aria-label="Switch to dark theme">
+      <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+    </button>
   </div>
-  <div class="hero-gauges" id="headline-text" aria-live="polite"><p class="muted">loading</p></div>
 </header>
 
-<section class="terms" aria-label="Key terms">
-  <dl>
-    <dt>Rotation</dt><dd>The pair of trades a firm repeats. Strategy sells common stock to buy back STRC, its preferred stock. BitMine sells BMNP, its preferred stock, to buy back common.</dd>
-    <dt>Break-even</dt><dd>$100 × net mNAV. The two rotations run in opposite directions: Strategy's adds while STRC is below it, BitMine's while BMNP is above it.</dd>
-    <dt>Net mNAV</dt><dd>The share price divided by the coin value behind each share, net of debt and preferred. Coins per share for bitcoin are counted in sats (0.00000001 BTC).</dd>
-  </dl>
+<main id="main">
+<section id="top" class="hero" aria-labelledby="title">
+  <div class="hero-text">
+    <p class="eyebrow">Crypto treasury companies <span aria-hidden="true">·</span> rebuilt weekly from SEC filings</p>
+    <h1 id="title">The preferred stock price where each rotation stops adding coins per share</h1>
+    <p class="dek" id="dek">Loading the latest filed week.</p>
+    <p class="meta" id="asof"></p>
+  </div>
+  <div class="hero-ledger" id="headline-text" aria-live="polite"></div>
 </section>
 
-<section id="example-section">
-  <div class="section-heading"><div><h2 id="example-title">Why retiring a cheap claim adds coins per share</h2></div><p>The mechanism first, with toy numbers; then Strategy's filed trade.</p></div>
+<section id="why" aria-labelledby="why-title">
+  <header class="section-heading">
+    <p class="kicker">1 · The mechanism</p>
+    <h2 id="why-title">Why retiring a cheap claim adds coins per share</h2>
+    <p class="standfirst">The intuition first, with toy numbers labeled as an illustration; then Strategy's filed trade.</p>
+  </header>
   <div id="example"></div>
 </section>
 
-<section id="pref-section">
-  <div class="section-heading"><div><h2>Preferred close as a percent of break-even, by week</h2></div><p>Three firms on one scale.</p></div>
+<section id="pref-section" aria-labelledby="pref-title">
+  <header class="section-heading">
+    <p class="kicker">2 · Every week since June</p>
+    <h2 id="pref-title">Preferred close as a percent of break-even</h2>
+    <p class="standfirst">Three firms on one scale: 100% is break-even for each.</p>
+  </header>
   <p class="counts" id="counts"></p>
-  <p class="explain">Each panel shows the preferred close divided by break-even ($100 × net mNAV), so 100% is break-even for every firm. The scale and dates are the same in all three panels. Strategy's rotation adds below the line; BitMine's adds above it. SharpLink has no preferred, so its panel shows 1 ÷ m, and buying back adds above the line (m below 1). Dollar closes are in each point's details.</p>
-  <div class="multiples">
-  <div class="chart-panel firm-panel"><h3 class="firm-heading">Strategy · STRC</h3><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
-  <div class="chart-panel firm-panel"><h3 class="firm-heading">BitMine · BMNP</h3><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
-  <div class="chart-panel firm-panel"><h3 class="firm-heading">SharpLink · 1 ÷ m <span class="firm-note">filed dates only</span></h3><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
+  <div class="seg-control" role="tablist" aria-label="Firm" data-for="multiples">
+    <button role="tab" type="button" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" data-firm="SBET" aria-selected="false">SharpLink</button>
   </div>
-  <p class="dl">Downloads: <a href="data/attribution.csv">attribution.csv</a>, <a href="data/actions.csv">actions.csv</a>, <a href="data/balances.csv">balances.csv</a></p>
+  <div class="multiples" id="multiples">
+    <div class="chart-panel firm-panel" data-firm="MSTR"><h3 class="firm-heading">Strategy <span class="tk">STRC</span></h3><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
+    <div class="chart-panel firm-panel" data-firm="BMNR"><h3 class="firm-heading">BitMine <span class="tk">BMNP</span></h3><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
+    <div class="chart-panel firm-panel" data-firm="SBET"><h3 class="firm-heading">SharpLink <span class="tk">1 ÷ m</span> <span class="firm-note">filed dates only</span></h3><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
+  </div>
+  <p class="explain after">Each panel divides the preferred close by break-even ($100 × net mNAV). The scale and dates are the same in all three panels. Strategy's rotation adds below the line; BitMine's adds above it; the shaded side is where each adds. SharpLink has no preferred, so its panel shows 1 ÷ m, and buying back adds above the line (m below 1). Dollar closes are in each point's details.</p>
+  <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a> · <a href="data/balances.csv">balances.csv</a></p>
 </section>
 
-<div class="divider" role="separator"><span>Detail for analysts: the break-even map, attribution by cause, method and data</span></div>
+<div class="divider" role="separator"><span>Detail for analysts</span></div>
 
-<section id="map-section">
-  <div class="section-heading"><div><h2 id="map-title">Break-even map</h2></div><p>Each mark represents a firm and a reporting week.</p></div>
-  <p class="explain">x is q, y is m: one mark per firm-week (SharpLink: per filed holdings date, at q = 1). The diagonal is m = q; Strategy's rotation adds above it and BitMine's below it. Each axis line spans only the range of the data, labeled at its ends. Select a mark to open its filing.</p>
-  <div class="legend" id="map-legend"></div>
-  <div class="chart-panel"><div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div><div class="pin" hidden></div></div>
-  <p class="dl">Downloads: <a href="data/attribution.csv">attribution.csv</a>, <a href="data/actions.csv">actions.csv</a></p>
+<section id="map-section" aria-labelledby="map-title">
+  <header class="section-heading">
+    <p class="kicker">3 · Break-even map</p>
+    <h2 id="map-title">Break-even map</h2>
+    <p class="standfirst">One mark per firm and reporting week. Select a mark to open its filing.</p>
+  </header>
+  <div class="map-grid">
+    <div class="map-plot chart-panel"><div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+    <div class="map-side">
+      <div class="legend legend-col" id="map-legend"></div>
+      <p class="explain">x is q, y is m: one mark per firm-week (SharpLink: per filed holdings date, at q = 1). Both axes share one range, so the diagonal m = q is a true 45° line; Strategy's rotation adds above it and BitMine's below it. Each axis line spans only the range of the data, labeled at its ends.</p>
+    </div>
+  </div>
+  <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a></p>
 </section>
 
-<section id="bars-section">
-  <div class="section-heading"><div><h2>Weekly change in net coins per share, by cause</h2></div><p>Three firms on one scale, in basis points.</p></div>
+<section id="bars-section" aria-labelledby="bars-title">
+  <header class="section-heading">
+    <p class="kicker">4 · Attribution</p>
+    <h2 id="bars-title">Weekly change in net coins per share, by cause</h2>
+    <p class="standfirst">Three firms on one scale, in basis points of that week's net coins per share.</p>
+  </header>
   <p class="explain">Each bar splits a week's change in n by cause, as basis points of that week's n (1 bp = 0.01%), so firms of different size share one scale. The tick marks the net of the stacked causes. Coin price moves and in-the-money flips are left out of the bars and listed in the details, the strip under each chart and the table. Dollars ("value to common" = Δn × S × p) are in the details, the strips and the table.</p>
   <div class="legend" id="bars-legend"></div>
-  <div class="chart-panel firm-panel"><h3 class="firm-heading">Strategy</h3><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
-  <div class="chart-panel firm-panel"><h3 class="firm-heading">BitMine</h3><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
-  <div class="chart-panel firm-panel"><h3 class="firm-heading">SharpLink <span class="firm-note">filed holdings dates only</span></h3><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  <div class="seg-control" role="tablist" aria-label="Firm" data-for="bars">
+    <button role="tab" type="button" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" data-firm="SBET" aria-selected="false">SharpLink</button>
+  </div>
+  <div id="bars">
+    <div class="chart-panel firm-panel" data-firm="MSTR"><h3 class="firm-heading">Strategy</h3><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+    <div class="chart-panel firm-panel" data-firm="BMNR"><h3 class="firm-heading">BitMine</h3><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+    <div class="chart-panel firm-panel" data-firm="SBET"><h3 class="firm-heading">SharpLink <span class="firm-note">filed holdings dates only</span></h3><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+  </div>
   <details class="fold">
-    <summary>Table</summary>
+    <summary>Table: every week, every cause, in dollars</summary>
     <p class="muted">USD value to common per week (for SharpLink, per filed holdings date). Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
     <div class="scroll-x"><table id="week-table"></table></div>
   </details>
-  <p class="dl">Downloads: <a href="data/attribution.csv">attribution.csv</a>, <a href="data/actions.csv">actions.csv</a>, <a href="data/balances.csv">balances.csv</a></p>
+  <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a> · <a href="data/balances.csv">balances.csv</a></p>
 </section>
 
-<section id="built" aria-label="How this is built">
-  <div class="section-heading"><div><h2>How this is built</h2></div><p>Python and plain JavaScript; no framework, no database.</p></div>
-  <div class="built-grid" id="built-grid"></div>
-  <p class="muted">By Rahil Bhavan. Code, data and tests: <a href="https://github.com/RahilBhavan/dat-accretion" target="_blank" rel="noopener">github.com/RahilBhavan/dat-accretion</a>.</p>
-</section>
-
-<section id="method">
-  <div class="section-heading"><div><h2>Method</h2></div><p>One definition for all three firms.</p></div>
+<section id="method" aria-labelledby="method-title">
+  <header class="section-heading">
+    <p class="kicker">5 · Method</p>
+    <h2 id="method-title">One definition for all three firms</h2>
+    <p class="standfirst">Strategy's own net coins per share, applied to BitMine and SharpLink.</p>
+  </header>
   <p>The metric is Strategy's own net coins per share definition, applied to all three firms, taken from the glossary in Strategy's <a href="https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm" target="_blank" rel="noopener">2026-08-24 FWP</a>. Full note: <a href="https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md" target="_blank" rel="noopener">methodology</a>.</p>
   <div class="formula">
     <p><span>N = C + (R − D − F) / p</span> <span>n = N / S</span> <span>m = s·S / (p·N) = s / (p·n)</span></p>
@@ -137,17 +169,44 @@
   <div id="check"></div>
 </section>
 
-<section id="downloads">
-  <div class="section-heading"><div><h2>Downloads</h2></div><p>The CSVs behind every figure on this page.</p></div>
+<section id="built" aria-labelledby="built-title">
+  <header class="section-heading">
+    <p class="kicker">6 · How this is built</p>
+    <h2 id="built-title">Python and plain JavaScript; no framework, no database</h2>
+  </header>
+  <div class="built-grid" id="built-grid"></div>
+  <p class="muted">By Rahil Bhavan. Code, data and tests: <a href="https://github.com/RahilBhavan/dat-accretion" target="_blank" rel="noopener">github.com/RahilBhavan/dat-accretion</a>.</p>
+</section>
+
+<section id="downloads" aria-labelledby="dl-title">
+  <header class="section-heading">
+    <p class="kicker">7 · Downloads</p>
+    <h2 id="dl-title">The CSVs behind every figure on this page</h2>
+  </header>
   <ul>
-    <li><a href="data/actions.csv">actions.csv</a>: every capital action with its filing</li>
-    <li><a href="data/balances.csv">balances.csv</a>: weekly C, R, D, F, S per firm</li>
-    <li><a href="data/attribution.csv">attribution.csv</a>: weekly change in n by cause</li>
+    <li><a href="data/actions.csv">actions.csv</a>every capital action with its filing</li>
+    <li><a href="data/balances.csv">balances.csv</a>weekly C, R, D, F, S per firm</li>
+    <li><a href="data/attribution.csv">attribution.csv</a>weekly change in n by cause</li>
   </ul>
 </section>
 </main>
 
 <footer class="muted" id="footer"></footer>
+
+<nav class="tab-bar" aria-label="Sections">
+  <a href="#top" data-sec="top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M4 19V5M4 19L19 6"/></svg><span>Break-even</span></a>
+  <a href="#why" data-sec="why"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M5 7h14M5 7l-2.5 6h5zM19 7l-2.5 6h5zM8 19h8"/></svg><span>Why</span></a>
+  <a href="#pref-section" data-sec="pref-section"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M3 15l4-2 4 1 4-5 6 1"/></svg><span>By week</span></a>
+  <a href="#map-section" data-sec="map-section"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16M4 20L20 4"/><circle cx="9" cy="10" r="1.6"/><circle cx="15" cy="16" r="1.6"/></svg><span>Detail</span></a>
+</nav>
+
+<div id="sheet" class="sheet" popover>
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="sheet-body"></div>
+  <button type="button" class="sheet-close" popovertarget="sheet" popovertargetaction="hide">Close</button>
+</div>
+
+<script src="balance.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

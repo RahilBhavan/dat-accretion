@@ -17,5 +17,7 @@ text, and commit messages.
   drawn with toy numbers labeled "Illustration" and the filed figures beside it. Panels a reader compares share
   one scale. Bars start at zero. Firm colors appear only where firms share an axis (the map). Labels sit on the
   data. Page and memo figures use one accent and grays, with no boxes or shadows.
+  Exception (decided 2026-10-14): the isometric balance in the mechanism section is an illustration, not a data
+  graphic, so it keeps its framed card and shading; it is labeled "Illustration" and its numbers come from the method's formulas.
 - Fallbacks get labeled on the page: levels anchored to Strategy's published figure, first-order
   values, BMNP terms taken from the offering release.
