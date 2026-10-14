@@ -4,8 +4,8 @@ Measures every capital action by Strategy (BTC), BitMine (ETH) and SharpLink (ET
 net coins per share, and shows the price where each program stops adding. Output: a GitHub Pages
 site, a one-page memo, and the CSVs plus engine behind them.
 
-Full spec (includes outreach, kept out of this public repo):
-`~/projects/networking/projects/dat-accretion-spec.md`. Read it before starting a build step.
+The original spec (it included outreach, so it stayed out of this public repo) is no longer on disk (checked
+2026-10-14). Steps 0 to 6 are built; the source of truth is now `.claude/rules/*` and `docs/decisions.md`.
 
 ## Stack
 

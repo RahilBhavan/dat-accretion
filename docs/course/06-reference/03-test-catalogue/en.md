@@ -57,6 +57,7 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_bmnr_basic_scales_to_anchor_then_accumulates` | BitMine S not landing on the 7/09 anchor exactly, or negative cash adding shares (decision B3) |
 | `test_bmnr_buyback_in_anchor_week_raises` | a buyback in the anchor week being rolled without a split |
 | `test_bmnr_follow_on_bmnp_sale_raises` | a second BMNP `issue_pref` row building on, when q = close/100 no longer holds after a follow-on sale (decision B10) |
+| `test_quarter_end_row_rolls_r_by_filed_flows` | the 9/30 holdings-only row taking R from anywhere but the 9/27 R plus the filed flows dated after it, or 6/30 not being carried (decision S15) |
 
 ## test_build_site.py
 
@@ -74,6 +75,9 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_dollars_moved_excludes_carry` | carry rows counted as dollars moved (MSTR 9/20: $249.7M) |
 | `test_est_issuance_in_issue_common_and_flagged` | BitMine's estimated issuance missing from its issue bar (9/20: 6,583,230) |
 | `test_bad_check_json_is_not_yet_run` (3 cases) | an empty, non-JSON or non-object `check.json` breaking the build (decision O2) |
+| `test_every_note_has_a_group` | a page caveat without one of the three groups (estimate, coverage, convention) |
+| `test_title_states_break_even_figures` | a title that drops the break-even prices or net mNAV, or picks up counts or an em dash (framing.md) |
+| `test_worked_example_traces_to_its_row` | the worked example drifting from its filed 7/26 row: $25.0M paid, $3.893M to common as filed |
 
 ## test_check.py
 
@@ -113,7 +117,8 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_main_writes_memo_with_computed_counts` | a memo title whose counts are not computed from `weekly.csv` (decision M4) |
 | `test_stale_bias_fails` | a new BitMine week passing without a recomputed bias (decision M5) |
 | `test_each_week_uses_its_own_bias` | a week judged by the latest bias instead of its own |
-| `test_bias_that_flips_a_week_fails` | a bias large enough to move a week across the line passing |
+| `test_bias_that_flips_weeks_is_stated` | a bias that moves BitMine weeks across the line going unstated: the footnote must name every week where m × (1 − bias) is at or below q |
+| `test_memo_leads_with_break_even_table` | the memo losing its answer-first layout: the break-even table sits right under the title |
 
 ## test_parse_bmnr.py
 
@@ -130,6 +135,7 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_site_check_at_snapshot_week_and_age` | the site check off tolerance or accepting a stale snapshot (decision B9) |
 | `test_no_staking_carry_rows` | staking booked as carry for BitMine (decision B2) |
 | `test_holdings_change_without_acquired_raises` (2 cases) | a holdings change with no purchase sentence passing (decision B8) |
+| `test_bmnp_price_context_is_known` | the 10/12 sentence "BMNP was issued at $80 and last closed at $99.53" stopping the parser or being read as a sale (decision B12) |
 
 ## test_parse_mstr.py
 
@@ -150,6 +156,10 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_remaining_clause_does_not_borrow_amount` | "the remaining proceeds" taking another clause's amount |
 | `test_sentence_split_keeps_numbers_and_abbreviations` | splitting "$5.04" and "U.S." (decision S12) |
 | `test_hypothetical_or_negated_reserve_flow_raises` (2 cases) | "may use up to" or "did not use" read as a flow |
+| `test_interest_income_carry` | interest earned on cash that funds a repurchase being missed as an inflow to R (10/05 8-K) |
+| `test_roll_rebase_follows_stated_level` | a documented one-BTC rebase being applied when the gap is any other size, or later weeks not rolling from the stated level |
+| `test_split_period_repurchase_keeps_each_period_end` | a repurchase section split into two periods being dated to one week (decision S15) |
+| `test_incorporated_exhibit_is_followed` | an 8-K whose tables sit in an incorporated Exhibit 99.1 being skipped (the week ending 10/11), or an exhibit without tables passing silently (decision S16) |
 
 ## test_parse_sbet.py
 

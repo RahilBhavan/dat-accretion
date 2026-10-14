@@ -17,14 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with: { python-version: '3.12' }
       - run: pip install pytest numpy
       # Filed documents never change once filed, so data/raw is safe to keep across runs. The submissions index
       # that lists new filings is never cached (dat/edgar.py), so new 8-Ks are still found.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: data/raw
           key: edgar-raw-${{ github.run_id }}
