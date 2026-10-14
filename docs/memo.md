@@ -1,26 +1,26 @@
-# At net mNAV 1.199, Strategy's STRC rotation adds net sats per share while STRC trades below $119.92; at 1.018, BitMine's BMNP rotation adds net ETH per share while BMNP trades above $101.77 (week ending 2026-10-04)
+# At net mNAV 1.191, Strategy's STRC rotation adds net sats per share while STRC trades below $119.07; at 0.998, BitMine's BMNP rotation adds net ETH per share while BMNP trades above $99.79 (week ending 2026-10-11)
 
 | Firm | Week ending | Net mNAV m | Preferred close | Break-even ($100 × m) | Rotation adds while |
 |---|---|---|---|---|---|
-| Strategy | 2026-10-04 | 1.199 | STRC $99.41 | $119.92 | STRC below break-even |
-| BitMine | 2026-10-04 | 1.018 | BMNP $99.48 | $101.77 | BMNP above break-even |
+| Strategy | 2026-10-11 | 1.191 | STRC $99.65 | $119.07 | STRC below break-even |
+| BitMine | 2026-10-11 | 0.998 | BMNP $99.53 | $99.79 | BMNP above break-even |
 | SharpLink | 2026-08-03 (last filed) | 0.809 | no preferred | m = 1 | issuance while m > 1; buyback while m < 1 |
 
-<sub>STRC closed at $99.41 on 2026-10-02 (q = 0.9941). BMNP closed at $99.48 on 2026-10-02 (q = 0.9948). SBET closed at $6.22 on 2026-08-03. SharpLink's filings state ETH holdings only on 2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03.</sub>
+<sub>STRC closed at $99.65 on 2026-10-09 (q = 0.9965). BMNP closed at $99.53 on 2026-10-09 (q = 0.9953). SBET closed at $6.22 on 2026-08-03. SharpLink's filings state ETH holdings only on 2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03.</sub>
 
 Digital asset treasury (DAT) companies hold bitcoin or ether and raise money by selling stock. This memo measures each share sale, buyback and preferred trade since 2026-06-01 with Strategy's own net coins per share definition, applied to all three firms (glossary, Strategy's 2026-08-24 FWP). Net coins N are coins held plus USD assets, less out-of-the-money convertible debt and preferred notional, converted to coins at the coin price; n is N per fully diluted share. m is net mNAV, the share price over the net coin value per share. q is the preferred's close over its $100 notional.
 
 Issuing common adds to n while m is above 1; retiring preferred adds while q is below 1. Strategy's rotation sells common and retires STRC, so it adds while m > q: it stops adding when STRC trades above $100 × m. BitMine's rotation sells BMNP and buys back common, so it adds while m < q: it stops adding when BMNP trades below $100 × m. SharpLink has no preferred, so no rotation line applies.
 
-STRC closed below its break-even in 21 of 21 filed weeks, and BMNP closed below its break-even in 17 of 17. Strategy's rotation adds while STRC is below break-even; BitMine's adds while BMNP is above it. SharpLink's m was below 1 on 4 of 4 filed dates. Value to common since each firm's first week, by cause: filed actions +$401.6M for Strategy, −$50.7M for BitMine and +$10.9M for SharpLink. The residual, the change the filings leave unexplained, is −$255.9M for Strategy: −$257.4M before 2026-08-02, when the 8-Ks did not itemize cash flows, and +$1.5M in the weeks since, each checked against the filings. BitMine's is −$27.9M and SharpLink's −$19.2M, both report only.
+STRC closed below its break-even in 22 of 22 filed weeks, and BMNP closed below its break-even in 18 of 18. Strategy's rotation adds while STRC is below break-even; BitMine's adds while BMNP is above it. SharpLink's m was below 1 on 4 of 4 filed dates. Value to common since each firm's first week, by cause: filed actions +$406.3M for Strategy, −$50.7M for BitMine and +$10.9M for SharpLink. The residual, the change the filings leave unexplained, is −$255.9M for Strategy: −$257.4M before 2026-08-02, when the 8-Ks did not itemize cash flows, and +$1.5M in the weeks since, each checked against the filings. BitMine's is −$27.9M and SharpLink's −$19.2M, both report only.
 
 ![Break-even map: m against q, one mark per firm-week](map.svg)
 
 ---
 
-<sub>Closest weeks to the line: Strategy 2026-08-23, m 2.29% above q; BitMine 2026-08-23, m 0.53% above q. BitMine's estimated share count carries a known upward bias of up to 0.51% of S by 2026-10-04 (staked ETH costed as purchases), which raises m by the same proportion; removing it leaves m above q in every BitMine week.</sub>
+<sub>Closest weeks to the line: Strategy 2026-08-23, m 2.29% above q; BitMine 2026-10-11, m 0.27% above q. BitMine's estimated share count carries a known upward bias of up to 0.55% of S by 2026-10-11 (staked ETH costed as purchases), which raises m by the same proportion; removing it puts m at or below q in 1 of 18 BitMine weeks (2026-10-11), where BitMine's rotation would add.</sub>
 
-<sub>Period: Strategy weeks ending 2026-05-31 to 2026-10-04 (21 filed dates, including the 2026-06-30 quarter-end holdings row); BitMine weeks ending 2026-06-14 to 2026-10-04 (17 weeks with a BMNP price; BMNP was issued 2026-06-10); SharpLink filed holdings dates 2026-06-16 to 2026-08-03 (4 dates; SharpLink states holdings only on those dates, and nothing is carried forward between them).</sub>
+<sub>Period: Strategy weeks ending 2026-05-31 to 2026-10-11 (22 filed dates, including the 2026-06-30 quarter-end holdings row); BitMine weeks ending 2026-06-14 to 2026-10-11 (18 weeks with a BMNP price; BMNP was issued 2026-06-10); SharpLink filed holdings dates 2026-06-16 to 2026-08-03 (4 dates; SharpLink states holdings only on those dates, and nothing is carried forward between them).</sub>
 
 <sub>Sources: Strategy weekly 8-Ks and Q2 10-Q (EDGAR CIK 1050446); BitMine weekly 8-K releases and 10-Q (EDGAR CIK 1829311); SharpLink 8-K releases and Q2 10-Q (EDGAR CIK 1981535); Yahoo Finance daily closes for MSTR, STRC, STRK, STRF, STRD, BMNR, BMNP and SBET; CoinGecko BTC and ETH closes. Each week uses closes from the last US trading day on or before the week's end.</sub>
 

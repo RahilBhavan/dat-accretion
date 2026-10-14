@@ -29,15 +29,16 @@ def test_each_week_uses_its_own_bias():
     rows = [MSTR, {'firm': 'BMNR', 'week_end': '2026-08-23', 'm': '1.005', 'q': '1.0'},
             {'firm': 'BMNR', 'week_end': '2026-10-11', 'm': '1.05', 'q': '1.0'}]
     text = memo.closest(rows, {'2026-08-23': 0.003, '2026-10-11': 0.009})
-    assert 'up to 0.90% of S by 2026-10-11' in text
-    with pytest.raises(ValueError, match='rewrite the footnote'):
-        memo.closest(rows, {'2026-08-23': 0.006, '2026-10-11': 0.009})
+    assert 'up to 0.90% of S by 2026-10-11' in text and 'leaves m above q in every BitMine week' in text
+    text = memo.closest(rows, {'2026-08-23': 0.006, '2026-10-11': 0.009})  # its own bias now flips 8/23
+    assert 'at or below q in 1 of 2 BitMine weeks (2026-08-23)' in text
 
 
-def test_bias_that_flips_a_week_fails():
+def test_bias_that_flips_weeks_is_stated():
     rows = read('data/weekly.csv')
-    with pytest.raises(ValueError, match='rewrite the footnote'):
-        memo.closest(rows, {w: 0.02 for w in memo.week_biases('data', rows)})
+    text = memo.closest(rows, {w: 0.5 for w in memo.week_biases('data', rows)})  # a bias that flips every week
+    n = sum(r['firm'] == 'BMNR' and bool(r['m']) and bool(r['q']) for r in rows)
+    assert f'at or below q in {n} of {n} BitMine weeks' in text
 
 
 def test_memo_leads_with_break_even_table(tmp_path):

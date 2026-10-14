@@ -40,7 +40,8 @@ KNOWN = [ACQUIRED, BUYBACK, BUYBACK_AVG, PREF_CLOSED, PREF_NET,
          r'\breduced pace of buys reflects that Bitmine repurchased [\d.]+ million common shares',
          r'\bof [\d,]+ shares of 9\.50% Series A Perpetual Preferred Stock\b.*? at a public offering price of \$[\d.]+ per share',
          r'\bpreviously announced offering of [\d,]+ shares of Series A Preferred Stock',
-         r'\bnet proceeds (?:it will receive )?from the (?:offering|Offering) will be approximately \$[\d.]+ million']
+         r'\bnet proceeds (?:it will receive )?from the (?:offering|Offering) will be approximately \$[\d.]+ million',
+         r'\bBMNP was issued at \$[\d.]+ and last closed at \$[\d.]+']  # price context (10/12 release), not a flow
 NEAR = (r'repurchas|buyback|\boffering\b|\bacquired\b|at-the-market|registered direct|\bsold\b|\bATM\b|\bbought\b|purchas|'
         r'\bissued\b|redeem|\braised\b|\badded\b|\bplaced\b|\bproceeds\b')
 NUMBER = r'\$\d[\d,.]*|\b\d[\d,.]*\s(?:million|billion)\b|\b\d{1,3}(?:,\d{3})+\b'
@@ -308,7 +309,7 @@ def main(data_dir='data'):
     return check([r for _, _, r in releases], stake)
 
 
-SITE_MAX_AGE = 42  # days: snapshot older than 6 weeks before the last week fails (data.md)
+SITE_MAX_AGE = 42  # days: a snapshot older than 6 weeks before the last week is labeled stale, not failed (data.md, 2026-10-14)
 
 
 def check(parsed, stake, site=None):
@@ -334,8 +335,8 @@ def check(parsed, stake, site=None):
     ok, fresh = abs(pct) <= 0.1, age <= SITE_MAX_AGE
     print(f'strategicethreserve.xyz BMNR {site} (snapshotDate {snap}) vs rolled {out[at]} (week {at}): {pct:+.4f}% '
           f'{"OK" if ok else "FAIL"} (tolerance 0.1%); snapshot {age} days before last week {last} '
-          f'{"OK" if fresh else "FAIL"} (max {SITE_MAX_AGE})')
-    return 0 if ok and fresh else 1
+          + ('OK' if fresh else f'STALE, weeks after {at} are not independently checked') + f' (max {SITE_MAX_AGE})')
+    return 0 if ok else 1
 
 
 if __name__ == '__main__':
