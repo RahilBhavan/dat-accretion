@@ -1,6 +1,6 @@
 # dat-accretion from scratch
 
-A course that teaches this project from the ground up: the finance, parsing SEC filings, the math engine, shipping the page, and how it was built. Every lesson uses the repo's real code and data.
+A course that teaches this project from the ground up: the finance, parsing SEC filings, the math engine, shipping the page, and how it was built. Every lesson uses the repo's real code and data. Figures in `figures/` are generated from the CSVs by `python -m dat.figures`, in light and dark versions.
 
 Each lesson is a folder with `en.md` (the lesson) and `quiz.json` (two questions before reading, three after). Lessons follow one layout: Learning Objectives, The Problem, The Concept, Build It, Use It, Ship It, Decisions, Exercises. The course is currently read on GitHub: `widget` blocks appear as plain-text exercises, and quizzes are available as JSON in each lesson folder.
 

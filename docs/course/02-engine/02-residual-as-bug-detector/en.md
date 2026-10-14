@@ -44,6 +44,27 @@ Here is the week this lesson is about. The price part dominates; the residual ro
 weekparts MSTR 2026-08-23
 ```
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../figures/weekparts-MSTR-2026-08-23-dark.svg">
+  <img alt="Strategy, week ending 2026-08-23, in basis points of n: coin price +851.3, issue common -42.3, retire STRC +1.3, residual +3.9, observed +814.2" src="../../figures/weekparts-MSTR-2026-08-23-light.svg">
+</picture>
+
+Every tested week, from the committed `data/check.json`. A week passes on the first branch that holds:
+
+| week | abs residual | 5% of abs observed | R rounding | passed on |
+|---|---:|---:|---:|---|
+| 2026-08-02 | $11.7M | $19.9M | ±$55.0M | under 5% |
+| 2026-08-09 | $3.2M | $32.1M | ±$55.0M | under 5% |
+| 2026-08-16 | $0.9M | $26.5M | ±$10.0M | under 5% |
+| 2026-08-23 | $19.9M | $207.0M | ±$10.0M | under 5% |
+| 2026-08-30 | $10.6M | $5.3M | ±$20.0M | rounding |
+| 2026-09-07 | $6.3M | $18.1M | ±$20.0M | under 5% |
+| 2026-09-13 | $0.7M | $22.8M | ±$20.0M | under 5% |
+| 2026-09-20 | $2.9M | $39.0M | ±$20.0M | under 5% |
+| 2026-09-27 | $0.4M | $29.5M | ±$20.0M | under 5% |
+| 2026-10-04 | $3.0M | $2.1M | ±$15.1M | rounding |
+| 2026-10-11 | $0.0M | $16.0M | ±$10.1M | under 5% |
+
 ## Build It
 
 ### Step 1: Read the test

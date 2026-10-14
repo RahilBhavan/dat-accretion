@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 226" width="860" height="226" role="img" aria-label="Strategy week ending 2026-08-23: Coin price +851.3 bp; Issue common $2,006.5M at m 0.903 -42.3 bp; Retire STRC $136.4M at q 0.953 +1.3 bp; Residual (unexplained) +3.9 bp; observed +814.2 bp" font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif" font-size="13" fill="#15171b" style="font-variant-numeric: tabular-nums">
+<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#9aa3ae" stroke-width="2"/></pattern></defs>
+<text x="0" y="16" font-weight="600">Strategy, week ending 2026-08-23: change in net BTC per share, by part</text>
+<text x="0" y="34" fill="#5d6470">Basis points of this week's n (1 bp = 0.01%), in the engine's order. Dollars are value to common, Δn × S × p.</text>
+<text x="250" y="66" text-anchor="end">Coin price</text>
+<rect x="262.0" y="55" width="318.0" height="14" fill="#9aa3ae"/>
+<text x="592" y="66">+851.3 bp<tspan fill="#5d6470" dx="8">+$4.33B</tspan></text>
+<text x="250" y="96" text-anchor="end">Issue common $2,006.5M at m 0.903</text>
+<rect x="564.2" y="85" width="15.8" height="14" fill="#9aa3ae"/>
+<text x="592" y="96">−42.3 bp<tspan fill="#5d6470" dx="8">−$215.2M</tspan></text>
+<text x="250" y="126" text-anchor="end">Retire STRC $136.4M at q 0.953</text>
+<rect x="564.2" y="115" width="1.0" height="14" fill="#9aa3ae"/>
+<text x="592" y="126">+1.3 bp<tspan fill="#5d6470" dx="8">+$6.7M</tspan></text>
+<text x="250" y="156" text-anchor="end" font-weight="600">Residual (unexplained)</text>
+<rect x="564.7" y="145" width="1.5" height="14" fill="#1f6fd1"/>
+<text x="592" y="156">+3.9 bp<tspan fill="#5d6470" dx="8">+$19.9M, too small to see at true scale</tspan></text>
+<line x1="262" x2="740" y1="173" y2="173" stroke="#9aa1ab"/>
+<text x="250" y="193" text-anchor="end" font-weight="600">Observed change</text>
+<rect x="262.0" y="181" width="304.1" height="14" fill="#3b4250"/>
+<text x="592" y="193" font-weight="600">+814.2 bp<tspan fill="#5d6470" font-weight="400" dx="8">+$4.14B</tspan></text>
+<line x1="262.0" x2="262.0" y1="50" y2="200" stroke="#15171b"/>
+<text x="262.0" y="216" text-anchor="middle" fill="#5d6470">0</text>
+</svg>

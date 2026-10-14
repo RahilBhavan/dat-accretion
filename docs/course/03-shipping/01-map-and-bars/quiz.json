@@ -46,7 +46,31 @@
         "The page only shows negative values"
       ],
       "correct": 2,
-      "explanation": "Decision M8. At this week's scale the actions would be a sliver next to the price bar."
+      "explanation": "Decision M8. At this week's scale the actions would be a sliver next to the price bar. The price part stays in the tooltip, the totals strip and the table."
+    },
+    {
+      "stage": "post",
+      "question": "In the week ending 2026-10-04, Strategy's net mNAV is 1.199212 and STRC closed at $99.41. What does the by-week panel plot for that week?",
+      "options": [
+        "$99.41 on a dollar scale of its own",
+        "99.41 ÷ 119.92 = 83% of break-even, on the same percent scale as BitMine and SharpLink",
+        "1.199, the net mNAV",
+        "$20.51, the gap to break-even"
+      ],
+      "correct": 1,
+      "explanation": "Break-even is $100 × m = $119.92. The panel plots the close as a percent of break-even, q ÷ m × 100, on one scale shared by all three firms. Dollars move into the point's tooltip."
+    },
+    {
+      "stage": "post",
+      "question": "Why do the attribution bars use basis points of that week's n instead of dollars of value to common?",
+      "options": [
+        "Basis points are easier to compute",
+        "Dollars are not in data.json",
+        "One bp scale can be shared by firms of different size; on a dollar scale SharpLink's bars would not show next to Strategy's, so each firm would need its own scale",
+        "The framing rules ban dollar figures"
+      ],
+      "correct": 2,
+      "explanation": "bp = value to common ÷ (n × S × p) × 10,000 = Δn ÷ n × 10,000. Strategy's net coin value is about 34 times SharpLink's. Dollars stay in the tooltip, the strips and the table."
     },
     {
       "stage": "post",
@@ -59,6 +83,18 @@
       ],
       "correct": 0,
       "explanation": "sw is the document's scroll width. When it equals the viewport width w, nothing overflows sideways."
+    },
+    {
+      "stage": "post",
+      "question": "The filed 7/26 STRC retirement added $3.893M to common, 0.011% of Strategy's net coin value that week. Why does the mechanism section draw a toy balance sheet instead?",
+      "options": [
+        "The filed figures are estimates",
+        "At true scale the trade would not show; a toy with labeled numbers draws the mechanism and the text gives the real share",
+        "Toy numbers make the effect look larger than it is",
+        "The 8-K does not state the price paid"
+      ],
+      "correct": 1,
+      "explanation": "Drawing the real trade bigger than its scale would raise the Lie Factor. The toy is labeled \"Illustration, not filed figures\", and the filed trade follows in words with its 8-K link."
     }
   ]
 }

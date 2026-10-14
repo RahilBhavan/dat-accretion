@@ -135,7 +135,7 @@ A newer BitMine week with no computed bias raises too ("rerun dat.balances"), so
 
 ## Use It
 
-- The page: headlines, map labels ("Strategy's rotation adds here (m > q)"), notes and the method section.
+- The page: the h1, the dek, the break-even table's condition column ("while STRC is below"), chart labels ("Strategy's rotation adds here (m > q)", "Rotation adds below 100%"), notes and the method section. The toy balance sheet carries the tag "Illustration, not filed figures". Bar colors name the kind of action (ink for common, one accent for preferred, grays for coins and carry), not whether it helped: there is no red or green.
 - The memo: title, three paragraphs, the map, and the footnote from `closest()`.
 - PR bodies and commit messages: PR #7 reports that every line of page copy was scanned against `framing.md`; PR #8 reports the same for the memo and methodology copy.
 

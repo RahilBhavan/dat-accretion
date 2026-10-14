@@ -198,8 +198,12 @@ rotation table now come before the formulas, because the filed trade adds about 
 value and can't be seen at true scale. The by-week chart and the attribution bars each moved to one scale shared
 by the three firms (percent of break-even; basis points of n). Firm colors stay only on the map, where firms share
 an axis. The gauges became a table with sparklines, since the hero holds nine numbers. Decision M24 records it.
-The social cards lost their filled bands and firm colors the same way. The new design hasn't been reader-tested
-yet.
+The social cards lost their filled bands and firm colors the same way. The same pass covered the course: `python -m
+dat.figures` draws the figures that GitHub showed only as `widget` text: net coins built from C, R, D and F, three
+weeks split into parts in basis points, and the toy balance sheet, each in light and dark. Diagrams that drew
+quantities as boxes and arrows became figures or tables (the residual test, the twelve slips); the trace-one-row
+flowchart now carries the 7/26 row's numbers. Process flowcharts stayed as they were. The new design hasn't been
+reader-tested yet.
 
 ## Plan against result
 

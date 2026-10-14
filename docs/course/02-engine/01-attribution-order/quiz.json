@@ -22,7 +22,7 @@
         "The dividend paid to common shareholders"
       ],
       "correct": 2,
-      "explanation": "The ruler is coins per share; multiplying by S and p turns it into dollars for all shares at the week's coin price."
+      "explanation": "The ruler is coins per share; multiplying by S and p turns it into dollars for all shares at the week's coin price. The bars draw the same change as basis points of n; the dollars appear in each bar's details, the totals strip and the table."
     },
     {
       "stage": "post",

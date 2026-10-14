@@ -61,6 +61,15 @@ The other three follow by symmetry:
 
 A coin trade swaps x of R for x / p of C at the coin price, so N does not change.
 
+Formula 4, drawn with toy numbers before the filed ones. A firm with 1,000 of coins and 90 of cash owes 300 of preferred. It pays $90 to retire a $100 claim:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../figures/balance-sheet-toy-dark.svg">
+  <img alt="Illustration: before, cash 90 and coins 1,000 against preferred 300 and common 790; after paying $90 to retire a $100 preferred claim, preferred is 200 and common 800" src="../../figures/balance-sheet-toy-light.svg">
+</picture>
+
+Common gains the $10 the preferred holders gave up, which is k·(1/q − 1) at q = 0.9 in dollars: 90 × (1/0.9 − 1) = 10.
+
 **Rotations.** A rotation is two legs with the same x. Multiply Δn by p · S to get dollars, the page's "value to common":
 
 ```
@@ -77,6 +86,8 @@ calc
 ```widget
 map
 ```
+
+![Break-even map: net mNAV m against q, one mark per firm-week, latest week solid and labeled](../../../map.svg)
 
 ## Build It
 
@@ -175,6 +186,8 @@ These are the four method.md anchors: the $3.895M STRC case to the dollar, each 
 
 - `data/attribution.csv` stores `dn_first_order` next to `dn_exact` for every action row. For the 7/26 MSTR sale of $544.5M (1.5% of market cap, larger than the 1% test scope), first order gives $46.93M to common and the exact recompute $46.27M.
 - The page's break-even map plots q across and m up for every firm-week, with m = q as the diagonal.
+- The page's break-even table and by-week panels put each rotation on one ruler: the preferred close as a percent of break-even, q ÷ m × 100, so 100% is the m = q line for both firms. The page's "Why retiring a cheap claim adds coins per share" section tabulates the Strategy rotation above at m = 1.2: raise $120 selling common (+$20 to common), retire STRC at $90 to $130, and the total reaches zero at $120 = $100 × m.
+- The attribution bars show these Δn values as basis points of n, Δn ÷ n × 10,000; value to common in dollars stays in each bar's details, the totals strips and the table.
 - `sentence()` in `dat/build_site.py` writes each firm's headline in the form set by `framing.md`, with the break-even price; `dat/memo.py` reuses those sentences.
 
 ## Ship It
