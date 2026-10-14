@@ -86,15 +86,18 @@ line for both rotations.
 
 1. **A public page** (https://rahilbhavan.github.io/dat-accretion/). A plain-language heading identifies the preferred-stock price threshold
    for the two rotations. The sentence below it gives both rotations' break-even prices and closes, using
-   the same figures as the memo. Beside it are a gauge for each preferred and SharpLink's latest filed
-   holdings line. The page then shows:
-   - three key-term cards defining rotation, break-even and net mNAV;
-   - a four-step worked example of Strategy's July 26 STRC retirement, linked to its filing;
-   - preferred close against break-even by week for STRC and BMNP, and SharpLink's m against 1;
+   the same figures as the memo. Beside it is a break-even table (close, break-even, close as a percent of
+   break-even, the condition) with a sparkline per firm on one shared scale. The page then shows:
+   - three key terms defining rotation, break-even and net mNAV;
+   - the mechanism before the formulas: a toy before/after balance sheet, the rotation at m = 1.2 as a
+     small table, then Strategy's filed July 26 STRC retirement, linked to its filing;
+   - preferred close as a percent of break-even by week, as three small multiples on one shared scale
+     (SharpLink: 1 ÷ m on its filed dates);
    - a break-even map with equal-size marks, paths joining each firm's dates and a solid latest mark.
      Every mark links to its SEC filing;
-   - attribution bars with a net-change tick, a hatched residual and separate totals for filed actions,
-     carry, estimated issuance (BitMine only) and residual, as value to common;
+   - attribution bars in basis points of net coins per share on one scale shared by the three firms,
+     with a net-change tick, a hatched residual, and USD totals for filed actions, carry, estimated
+     issuance (BitMine only) and residual;
    - a "How this is built" strip with figures from the current build: filings, firm-weeks, KPI comparison
      and checks, plus the author's name and source-code link;
    - the method, grouped caveats, done check and CSV downloads. Symbols, formulas and sources fold;
@@ -125,7 +128,7 @@ instead of taking anyone's view of it.
 1. Pick a dot on the map. Its position is that week's q (across) and m (up); the diagonal is m = q.
 2. Open its filing from the dot's link and find the action rows in `actions.csv` for that week.
 3. In `attribution.csv`, the week's parts (price, convert flips, each action, carry, residual) sum to
-   the observed change in net coins per share. The bars show the same parts as value to common.
+   the observed change in net coins per share. The bars show the same parts in basis points of n; the details and table give them as value to common in USD.
 
 ### What it does not tell you
 

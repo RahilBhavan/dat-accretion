@@ -1,6 +1,7 @@
 """`python -m dat.social`: post-ready X cards and drafts -> private/social/<latest MSTR week_end>/. stdlib only.
 
-Cards are 1200x675 dark SVGs; PNG, MP4 and GIF rendering lives outside the repo in private/social/render.mjs.
+Cards are 1200x675 dark SVGs; PNG, MP4 and GIF rendering lives outside the repo in private/social/render.py.
+Graphics follow framing.md (Tufte): one accent for the subject, grays for context, square bars from zero, no fills.
 Figures come from dat.build_site.build and data/attribution.csv; framing.md applies to every string.
 """
 import html, math, os, re, shutil, sys
@@ -10,8 +11,9 @@ from dat.build_site import build, FIRMS, LIQ_PREF
 
 # Theme
 W, H, PAD = 1200, 675, 64
-SURFACE, PANEL, TEXT, SECOND, MUTED, GRID, BORDER = '#0d1015', '#131820', '#f3f5f7', '#a1aab7', '#6b7480', '#222a33', '#2b333e'
-COLOR = {'MSTR': '#3987e5', 'BMNR': '#d95926', 'SBET': '#199e70'}
+SURFACE, TEXT, SECOND, MUTED, GRID, CONTEXT = '#0d1015', '#f3f5f7', '#a1aab7', '#6b7480', '#222a33', '#3a424d'  # CONTEXT: bars that are not the subject
+COLOR = {'MSTR': '#3987e5', 'BMNR': '#d95926', 'SBET': '#199e70'}  # firm hues: the replay map only (firms share its axes)
+ACCENT, BAR = '#5c9ef0', '#7b8592'  # site dark --accent and --gray1
 FONT = 'Inter, -apple-system, &quot;SF Pro Display&quot;, system-ui, sans-serif'
 MINUS = '−'
 FOOT_L = "Strategy's own net coins per share definition, applied to all three firms"
@@ -78,20 +80,9 @@ def tw(s, size):
     return len(s) * size * 0.56
 
 
-def chip(x, y, firm):
-    """Ticker chip with its left edge at x, centered on baseline y; returns (svg, width)."""
-    c, w = COLOR[firm], 16 + len(firm) * 10
-    return (f'<rect x="{x}" y="{y - 17}" width="{w}" height="24" rx="6" fill="{c}" fill-opacity="0.15" stroke="{c}"/>'
-            f'<text x="{x + w / 2}" y="{y}" font-size="14" font-weight="600" letter-spacing="0.06em" text-anchor="middle" fill="{c}">{firm}</text>'), w
-
-
-def card(firms, body, asof):
+def card(body, asof):
+    """Header, body, footer. No firm badges: each card's eyebrow, labels or side panel name the firm."""
     head = [f'<text x="{PAD}" y="56" font-size="13" font-weight="600" letter-spacing="0.14em" fill="{SECOND}">DAT ACCRETION</text>']
-    x = PAD + 152
-    for f in firms:
-        svg, w = chip(x, 56, f)
-        head.append(svg)
-        x += w + 8
     return '\n'.join([
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
         f'font-family="{FONT}" style="font-variant-numeric: tabular-nums" fill="{TEXT}">',
@@ -111,16 +102,12 @@ def hero(eyebrow, number, label, context):
 
 
 def vbar(x, w, y0, y1, fill, op):
-    """Vertical bar from the zero line y0 to y1, square at y0, 4px rounded at the far end."""
-    sg, r = (1 if y1 > y0 else -1), min(4, w / 2, abs(y1 - y0))
-    return (f'<path d="M{x:.1f},{y0:.1f}H{x + w:.1f}V{y1 - sg * r:.1f}Q{x + w:.1f},{y1:.1f} {x + w - r:.1f},{y1:.1f}'
-            f'H{x + r:.1f}Q{x:.1f},{y1:.1f} {x:.1f},{y1 - sg * r:.1f}Z" fill="{fill}" fill-opacity="{op}"/>')
+    """Vertical bar from the zero line y0 to y1, square ends."""
+    return f'<rect x="{x:.1f}" y="{min(y0, y1):.1f}" width="{w:.1f}" height="{abs(y1 - y0):.1f}" fill="{fill}" fill-opacity="{op}"/>'
 
 
 def hbar(y, h, x0, x1, fill):
-    sg, r = (1 if x1 > x0 else -1), min(4, h / 2, abs(x1 - x0))
-    return (f'<path d="M{x0:.1f},{y:.1f}H{x1 - sg * r:.1f}Q{x1:.1f},{y:.1f} {x1:.1f},{y + r:.1f}V{y + h - r:.1f}'
-            f'Q{x1:.1f},{y + h:.1f} {x1 - sg * r:.1f},{y + h:.1f}H{x0:.1f}Z" fill="{fill}"/>')
+    return f'<rect x="{min(x0, x1):.1f}" y="{y:.1f}" width="{abs(x1 - x0):.1f}" height="{h:.1f}" fill="{fill}"/>'
 
 
 def text_out(svg):
@@ -151,9 +138,8 @@ def split_svg(d, firm, asof):
     X = lambda i: L + (days[i] - days[0]) / (days[-1] - days[0]) * (R - L)
     lo, hi, yt = domain(obs + ex)
     Y = lambda v: B - (v - lo) / (hi - lo) * (B - T)
-    c, s = COLOR[firm], []
-    for v in yt:
-        s.append(f'<line x1="{L}" x2="{R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="{GRID}"/>')
+    c, s = ACCENT, []
+    for v in yt:  # tick labels only; the zero rule is the one reference line
         s.append(f'<text x="{L - 12}" y="{Y(v) + 5:.1f}" font-size="16" text-anchor="end" fill="{MUTED}">'
                  f'{tick_usd(v, max(abs(x) for x in yt))}</text>')
     s.append(f'<line x1="{L}" x2="{R}" y1="{Y(0):.1f}" y2="{Y(0):.1f}" stroke="{TEXT}" stroke-width="1.5"/>')
@@ -163,43 +149,9 @@ def split_svg(d, firm, asof):
             continue
         lastx = X(i)
         s.append(f'<text x="{X(i):.1f}" y="{B + 28}" font-size="16" text-anchor="middle" fill="{MUTED}">{w["week_end"][5:]}</text>')
-    band = [f'{X(i):.1f},{Y(v):.1f}' for i, v in enumerate(obs)] + [f'{X(i):.1f},{Y(v):.1f}' for i, v in reversed(list(enumerate(ex)))]
-    s.append(f'<polygon points="{" ".join(band)}" fill="{c}" fill-opacity="0.18"/>')
     s.append(f'<polyline points="{" ".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in enumerate(ex))}" fill="none" stroke="{SECOND}" stroke-width="2" stroke-linejoin="round"/>')
     s.append(f'<polyline points="{" ".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in enumerate(obs))}" fill="none" stroke="{c}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>')
-    # band label: where the band (with the total's sign, so the label reads true where it sits) is tallest
-    # across the label's whole width
-    lab = ('coin price step', usd(t['price'], True))
-    half = tw(lab[0], 15) / 2 + 6
-    sgn = 1 if t['price'] >= 0 else -1
-    xs = [X(i) for i in range(len(ws))]
-    upper, lower = (obs, ex) if sgn > 0 else (ex, obs)
-
-    def at(vals, x):  # line's screen y at screen x
-        k = max([i for i in range(len(xs) - 1) if xs[i] <= x] + [0])
-        f = (x - xs[k]) / (xs[k + 1] - xs[k])
-        return Y(vals[k] + (vals[k + 1] - vals[k]) * f)
-    Y0 = Y(0)
-    best, out = None, None
-    for cx in range(int(L + half), int(R - half) + 1, 4):
-        span = [cx - half + j * (2 * half) / 8 for j in range(9)]
-        top = max(at(upper, x) for x in span)   # lowest point of the upper line under the label
-        bot = min(at(lower, x) for x in span)   # highest point of the lower line under the label
-        for a, b in ((top, min(bot, Y0 - 2)), (max(top, Y0 + 2), bot)):  # keep off the zero line
-            if best is None or b - a > best[0]:
-                best = (b - a, cx, (a + b) / 2)
-        # fallback spot: just below the band, clear of the zero line and the x labels
-        cy = max(max(at(obs, x), at(ex, x)) for x in span) + 34
-        if cy + 20 < B and (cy + 20 < Y0 - 4 or cy - 18 > Y0 + 4):
-            h = abs(at(obs, cx) - at(ex, cx))
-            if out is None or h > out[0]:
-                out = (h, cx, cy)
-    room, cx, cy = best
-    if room < 36 and out:  # band too thin for the label inside it
-        _, cx, cy = out
-    s.append(f'<text x="{cx:.1f}" y="{cy - 3:.1f}" font-size="15" font-weight="600" text-anchor="middle" '
-             f'stroke="{SURFACE}" stroke-width="5" stroke-linejoin="round" paint-order="stroke">'
-             f'<tspan x="{cx:.1f}" fill="{SECOND}">{lab[0]}</tspan><tspan x="{cx:.1f}" dy="18">{lab[1]}</tspan></text>')
+    # no band label: the dek states the coin price step and the end labels name both lines
     ya, yb = Y(obs[-1]), Y(ex[-1])
     for vals, col in ((obs, c), (ex, SECOND)):
         s.append(f'<circle cx="{R:.1f}" cy="{Y(vals[-1]):.1f}" r="5" fill="{col}" stroke="{SURFACE}" stroke-width="2"/>')
@@ -210,7 +162,7 @@ def split_svg(d, firm, asof):
         s.append(f'<text x="{R + 18}" y="{y - 2:.1f}" font-size="24" font-weight="700">{usd(vals[-1], True)}</text>')
         s.append(f'<text x="{R + 18}" y="{y + 20:.1f}" font-size="16" fill="{SECOND}">{label}</text>')
     body = hero(eyebrow, usd(t['observed'], True), 'value to common', context) + s
-    return card([firm], body, asof), f"{name} since {ws[0]['week_end']}: {usd(t['observed'], True)} to common. {context}"
+    return card(body, asof), f"{name} since {ws[0]['week_end']}: {usd(t['observed'], True)} to common. {context}"
 
 
 # 2. gap: preferred close minus break-even, per week
@@ -245,13 +197,12 @@ def gap_svg(d, firm, asof):
     L, R, T, B = 96, W - PAD, 272, 540
     lo, hi, yt = domain([r['gap'] for r in rows])
     Y = lambda v: B - (v - lo) / (hi - lo) * (B - T)
-    bw, c, s = (R - L) / len(rows), COLOR[firm], []
-    for v in yt:
-        s.append(f'<line x1="{L}" x2="{R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="{GRID}"/>')
+    bw, c, s = (R - L) / len(rows), ACCENT, []
+    for v in yt:  # tick labels only; the break-even rule is the one reference line
         s.append(f'<text x="{L - 12}" y="{Y(v) + 5:.1f}" font-size="16" text-anchor="end" fill="{MUTED}">{tick_usd(v, 1)}</text>')
     cx = lambda i: L + i * bw + bw / 2
     for i, r in enumerate(rows):
-        s.append(vbar(L + i * bw + 1, bw - 2, Y(0), Y(r['gap']), c, 1 if r is last else 0.35))
+        s.append(vbar(L + i * bw + 1, bw - 2, Y(0), Y(r['gap']), c if r is last else CONTEXT, 1))  # accent: latest week only
         s.append(f'<text x="{cx(i):.1f}" y="{B + 28}" font-size="16" text-anchor="middle" fill="{MUTED}">{r["week_end"][5:]}</text>')
     i = len(rows) - 1
     vy = Y(last['gap']) + (22 if last['gap'] < 0 else -8)
@@ -269,7 +220,7 @@ def gap_svg(d, firm, asof):
         s.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="16" font-weight="600" text-anchor="middle">{e(lab)}</text>')
     s.append(f'<line x1="{L}" x2="{R}" y1="{Y(0):.1f}" y2="{Y(0):.1f}" stroke="{TEXT}" stroke-width="1.5"/>')
     s.append(f'<text x="{L + 4}" y="{Y(0) - 8:.1f}" font-size="16" fill="{SECOND}">break-even ($100 × net mNAV)</text>')
-    return card([firm], hero(eyebrow, number, '', context) + s, asof), f'{eyebrow}: {number}. {context}', near
+    return card(hero(eyebrow, number, '', context) + s, asof), f'{eyebrow}: {number}. {context}', near
 
 
 # 3. replay: the (q, m) map week by week
@@ -301,18 +252,12 @@ def replay(d, asof):
     near, caption = nearest_date(d)
     a, b = min(qlo, mlo) - 1, max(qhi, mhi) + 1  # diagonal endpoints well outside the plot, clipped
     base = [f'<clipPath id="plot"><rect x="{L}" y="{T}" width="{R - L}" height="{B - T}"/></clipPath>',
-            f'<rect x="{L}" y="{T}" width="{R - L}" height="{B - T}" fill="{PANEL}"/>',
-            '<g clip-path="url(#plot)">',
-            f'<polygon points="{X(a):.1f},{Y(a):.1f} {X(b):.1f},{Y(b):.1f} {X(a):.1f},{Y(b):.1f}" fill="{COLOR["MSTR"]}" fill-opacity="0.06"/>',
-            f'<polygon points="{X(a):.1f},{Y(a):.1f} {X(b):.1f},{Y(b):.1f} {X(b):.1f},{Y(a):.1f}" fill="{COLOR["BMNR"]}" fill-opacity="0.06"/>']
-    for t in nice(qlo, qhi, 5):
-        if qlo <= t <= qhi:
-            base.append(f'<line x1="{X(t):.1f}" x2="{X(t):.1f}" y1="{T}" y2="{B}" stroke="{GRID}"/>')
-    for t in nice(mlo, mhi, 5):
-        if mlo <= t <= mhi:
-            base.append(f'<line x1="{L}" x2="{R}" y1="{Y(t):.1f}" y2="{Y(t):.1f}" stroke="{GRID}"/>')
+            '<g clip-path="url(#plot)">']
     base.append(f'<line x1="{X(a):.1f}" y1="{Y(a):.1f}" x2="{X(b):.1f}" y2="{Y(b):.1f}" stroke="{TEXT}" stroke-width="1.5" stroke-dasharray="7 6"/>')
     base.append('</g>')
+    # range frames: each axis line spans only the data's min to max
+    base.append(f'<line x1="{X(min(qs)):.1f}" x2="{X(max(qs)):.1f}" y1="{B + 4}" y2="{B + 4}" stroke="{MUTED}"/>')
+    base.append(f'<line x1="{L - 4}" x2="{L - 4}" y1="{Y(min(ms)):.1f}" y2="{Y(max(ms)):.1f}" stroke="{MUTED}"/>')
     for t in nice(qlo, qhi, 5):
         if qlo <= t <= qhi:
             base.append(f'<text x="{X(t):.1f}" y="{B + 24}" font-size="16" text-anchor="middle" fill="{MUTED}">{t:.2f}</text>')
@@ -360,13 +305,11 @@ def replay(d, asof):
                 s.append(f'<line x1="{X(q0):.1f}" y1="{Y(m0):.1f}" x2="{X(q1):.1f}" y2="{Y(m1):.1f}" stroke="{c}" stroke-width="2" stroke-opacity="{op:.2f}" stroke-linecap="round"/>')
             for k, (q0, m0) in enumerate(trail[:-1]):
                 s.append(f'<circle cx="{X(q0):.1f}" cy="{Y(m0):.1f}" r="3" fill="{c}" fill-opacity="{0.25 + 0.5 * (k + 1) / n:.2f}"/>')
-            s.append(f'<circle cx="{X(q):.1f}" cy="{Y(m):.1f}" r="24" fill="{c}" fill-opacity="0.2"/>')
-            s.append(f'<circle cx="{X(q):.1f}" cy="{Y(m):.1f}" r="7" fill="{c}" stroke="{SURFACE}" stroke-width="3"/>')
+            s.append(f'<circle cx="{X(q):.1f}" cy="{Y(m):.1f}" r="8" fill="{c}" stroke="{SURFACE}" stroke-width="3"/>')
         s.append(f'<text x="{W - PAD}" y="{T + 46}" font-size="56" font-weight="750" letter-spacing="-1.5" text-anchor="end">{dates[i]}</text>')
         y = T + 104
         for f in ('MSTR', 'BMNR'):
-            svg, _ = chip(PX, y, f)
-            s.append(svg)
+            s.append(f'<text x="{PX}" y="{y}" font-size="18" font-weight="700" fill="{COLOR[f]}">{FIRMS[f]["name"]}</text>')
             pref = FIRMS[f]['pref']
             if f in now:
                 q, m = now[f]
@@ -378,9 +321,8 @@ def replay(d, asof):
                 s.append(f'<text x="{PX}" y="{y + 34}" font-size="22" fill="{MUTED}">{pref} not yet issued</text>')
             y += 120
         if cap:
-            s.append(f'<rect x="{PX}" y="{y - 16}" width="{W - PAD - PX}" height="52" rx="12" fill="{PANEL}" stroke="{BORDER}"/>')
-            s.append(f'<text x="{PX + 18}" y="{y + 17}" font-size="20" font-weight="600">Closest week for both firms</text>')
-        return card(['MSTR', 'BMNR'], s, asof)
+            s.append(f'<text x="{PX}" y="{y + 17}" font-size="20" font-weight="600">Closest week for both firms</text>')
+        return card(s, asof)
 
     out = []
     for i in range(len(dates)):
@@ -430,15 +372,15 @@ def top_svg(rows, since, asof):
     Z = x0 + room + neg * sc
     for k, r in enumerate(top):
         y = T + k * rh
-        c, v = COLOR[r['firm']], r['value']
-        s.append(f'<text x="{PAD}" y="{y + 25}" font-size="17"><tspan font-weight="600" fill="{c}">'
-                 f"{FIRMS[r['firm']]['name']} {r['week_end'][5:]}</tspan><tspan fill=\"{SECOND}\"> · {e(r['what'])}</tspan></text>")
+        v = r['value']
+        s.append(f'<text x="{PAD}" y="{y + 25}" font-size="17"><tspan font-weight="600">'
+                 f"{FIRMS[r['firm']]['name']} {r['week_end'][5:]}</tspan><tspan dx=\"6\" fill=\"{SECOND}\">· {e(r['what'])}</tspan></text>")
         xe = Z + v * sc
-        s.append(hbar(y + 8, 24, Z, xe, c))
+        s.append(hbar(y + 8, 24, Z, xe, BAR))
         s.append(f'<text x="{xe + (8 if v > 0 else -8):.1f}" y="{y + 26}" font-size="17" font-weight="700" '
                  f'text-anchor="{"start" if v > 0 else "end"}">{usd(v, True)}</text>')
     s.append(f'<line x1="{Z}" x2="{Z}" y1="{T - 4}" y2="{T + len(top) * rh + 4}" stroke="{TEXT}" stroke-width="1.5"/>')
-    return card(list(COLOR), s, asof)
+    return card(s, asof)
 
 
 def posts(d, data_dir, gaps, dates, caption, rows):

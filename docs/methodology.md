@@ -63,7 +63,7 @@ this order. Each step recomputes n exactly; the rest is the residual.
 5. BitMine only: estimated share issuance (see below), at that week's BMNR close.
 6. Residual: observed change minus the sum of the above.
 
-The page shows each part as value to common: Δn × S × p at this week's S and p. First-order values use the
+The page draws each part in basis points of that week's n (Δn / n × 10,000), so the three firms share one scale, and gives it in its details as value to common: Δn × S × p at this week's S and p. First-order values use the
 table's formulas; exact values use the cash actually received, so issue fees show as the gap between them.
 
 ## Labeled estimates and decisions
