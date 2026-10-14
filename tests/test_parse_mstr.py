@@ -257,3 +257,23 @@ def test_sentence_split_keeps_numbers_and_abbreviations():
 def test_hypothetical_or_negated_reserve_flow_raises(t):
     with pytest.raises(ValueError, match='hypothetical or negated'):
         parse(BTC_SELL + p(t), F)
+
+
+def test_incorporated_exhibit_is_followed():
+    """From 2026-10-13 the 8-K body only incorporates Exhibit 99.1; the tables are read there and rows cite it."""
+    from dat.parse_mstr import exhibit_url, parse_filing, Skip
+    body = ('<html><p>On October 12, 2026, Strategy Inc issued a press release. A copy of the press release is filed as '
+            'Exhibit 99.1 to this Current Report on Form 8-K and is incorporated herein by reference.</p>'
+            '<a href="mstr-ex99_1.htm">99.1</a></html>')
+    f = {'accession': '0001193125-26-419726', 'filed': '2026-10-13',
+         'url': 'https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-20261012.htm'}
+    assert exhibit_url(body, f) == 'https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-ex99_1.htm'
+    assert exhibit_url('<html><p>Item 5.02 only.</p></html>', f) is None
+    seen = []
+
+    def fetch(url):
+        seen.append(url)
+        return body if url == f['url'] else '<html><p>No tables here.</p></html>'
+    with pytest.raises(Skip, match='Exhibit 99.1'):  # an exhibit without sections still skips, saying where it looked
+        parse_filing(fetch, f)
+    assert seen[-1].endswith('mstr-ex99_1.htm')

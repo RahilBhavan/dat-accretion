@@ -34,13 +34,13 @@ def closest(weekly, biases):
         raise ValueError(f'BitMine weeks {missing} have no S bias: rerun dat.balances')
     asof = max(r['week_end'] for r in rows('BMNR'))
     b = biases[asof]
-    bad = [(r['week_end'], f"{biases[r['week_end']]:.4%}") for r in rows('BMNR')
-           if not float(r['m']) * (1 - biases[r['week_end']]) > float(r['q'])]
-    if bad:
-        raise ValueError(f'BitMine m x (1 - that week\'s S bias) is not above q in weeks {bad}: rewrite the footnote')
+    cross = [r['week_end'] for r in rows('BMNR') if not float(r['m']) * (1 - biases[r['week_end']]) > float(r['q'])]
+    tail = ("removing it leaves m above q in every BitMine week." if not cross else
+            f"removing it puts m at or below q in {len(cross)} of {len(rows('BMNR'))} BitMine weeks "
+            f"({', '.join(cross)}), where BitMine's rotation would add.")
     return (f"Closest weeks to the line: {near['MSTR']}; {near['BMNR']}. BitMine's estimated share count carries a "
             f"known upward bias of up to {b:.2%} of S by {asof} (staked ETH costed as purchases), which raises "
-            "m by the same proportion; removing it leaves m above q in every BitMine week.")
+            f"m by the same proportion; {tail}")
 
 
 def mark(firm, cx, cy, r, style):

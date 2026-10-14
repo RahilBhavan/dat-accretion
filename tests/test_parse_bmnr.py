@@ -67,6 +67,12 @@ def test_unknown_near_variant_raises(s):
         parse(p(HOLD, s), F, URL)
 
 
+def test_bmnp_price_context_is_known():
+    """10/12 release (0001493152-26-046744): the issue price and last close are context, not a flow."""
+    r = parse(p(HOLD, 'BMNP was issued at $80 and last closed at $99.53.'), F, URL)
+    assert r['pref'] == []
+
+
 def test_date_before_prior_week_raises():
     with pytest.raises(ValueError, match='not after prior'):
         parse(p(HOLD), F, URL, prev_week='2026-09-20')
@@ -119,7 +125,8 @@ def test_site_check_at_snapshot_week_and_age():
     assert check(parsed, {}, site=(Decimal(1010), '2026-08-23')) == 0
     assert check(parsed, {}, site=(Decimal(1020), '2026-08-23')) == 1  # 0.99% off
     old = [rel('2026-08-16', 1000, 0)] + [rel(f'2026-10-{d:02d}', 1000, 0) for d in (4, 11)]
-    assert check(old, {}, site=(Decimal(1000), '2026-08-16')) == 1  # 56 days stale
+    assert check(old, {}, site=(Decimal(1000), '2026-08-16')) == 0  # 56 days stale: labeled, not failed (2026-10-14)
+    assert check(old, {}, site=(Decimal(1100), '2026-08-16')) == 1  # stale and off: the tolerance still fails
 
 
 def test_no_staking_carry_rows():

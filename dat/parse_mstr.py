@@ -490,13 +490,42 @@ def roll(actions, stated, gaps=KNOWN_FILING_GAPS, rebases=KNOWN_FILING_REBASES):
     return out
 
 
+INCORPORATED = re.compile(r'filed as Exhibit 99\.1 to this Current Report on Form 8-K and is incorporated herein by reference')
+
+
+def exhibit_url(html, filing):
+    """From 2026-10-13 the weekly tables sit in a press release incorporated by reference as Exhibit 99.1; the 8-K body
+    only points to it. -> that exhibit's URL, or None when the 8-K does not incorporate one."""
+    text = ' '.join(t for k, t in blocks(html) if k == 'p')
+    docs = re.findall(r'href="([^"/]*ex99[-_]?0?1[^"]*\.htm)"', html, re.I)
+    if not INCORPORATED.search(text) or not docs:
+        return None
+    return filing['url'].rsplit('/', 1)[0] + '/' + docs[0]
+
+
+def parse_filing(fetch, f):
+    """parse() the 8-K, or its incorporated Exhibit 99.1 when the body has no sections; rows cite the document
+    whose tables they come from."""
+    html = fetch(f['url'])
+    try:
+        return parse(html, f)
+    except Skip:
+        url = exhibit_url(html, f)
+        if url is None:
+            raise
+        try:
+            return parse(fetch(url), dict(f, url=url))
+        except Skip as e:
+            raise Skip(f'{e} (8-K body or its Exhibit 99.1)') from None
+
+
 def main(data_dir='data'):
     from dat import edgar
     actions, stated, read, skipped = [], [], 0, []
     for f in edgar.filings(CIK):
         read += 1
         try:
-            a, s = parse(edgar.fetch(f['url']), f)
+            a, s = parse_filing(edgar.fetch, f)
         except Skip as e:
             skipped.append(f"skip {f['accession']} ({f['form']} filed {f['filed']}): {e}")
             continue

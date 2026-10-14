@@ -36,7 +36,9 @@
   (dat.balances.bmnr_s_bias). The page says BitMine's releases do not separate staking rewards
   from purchases.
 - strategicethreserve.xyz check: compare rolled ETH at the week matching the site's
-  `snapshotDate` (the site lags), print both dates, fail if the snapshot is over 6 weeks old.
+  `snapshotDate` (the site lags), print both dates. A snapshot over 6 weeks old is labeled STALE and passes
+  (decided 2026-10-14: the site stopped updating BitMine after 8/23 and a fail froze every refresh); the 0.1%
+  tolerance still fails.
   SharpLink (decided 2026-09-26): same 0.1% tolerance at the site's snapshotDate; the 6-week limit is measured
   against SharpLink's own last filed holdings date, not the calendar, so the check passes while SharpLink
   is not filing. The check prints how many days that filing is before today.
