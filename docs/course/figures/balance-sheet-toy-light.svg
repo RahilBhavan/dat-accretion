@@ -1,29 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 298" width="700" height="298" role="img" aria-label="Illustration: before, cash 90 and coins 1,000 against preferred 300 and common 790; after paying $90 to retire a $100 preferred claim, coins 1,000 against preferred 200 and common 800" font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif" font-size="13" fill="#15171b" style="font-variant-numeric: tabular-nums">
-<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#9aa3ae" stroke-width="2"/></pattern></defs>
+<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#707884" stroke-width="2"/></pattern></defs>
 <text x="0" y="14" font-size="11" letter-spacing="0.08em" fill="#5d6470">ILLUSTRATION, NOT FILED FIGURES</text>
 <text x="0" y="38" font-weight="600">Before</text>
-<rect x="8" y="52.0" width="56" height="15.7" fill="#cdd3da" stroke="#9aa3ae" stroke-width="0.5"/>
+<rect x="8" y="52.0" width="56" height="15.7" fill="#8b919c" stroke="#707884" stroke-width="0.5"/>
 <text x="70" y="63.8">Cash 90</text>
-<rect x="8" y="67.7" width="56" height="174.3" fill="#cdd3da" stroke="#9aa3ae" stroke-width="0.5"/>
+<rect x="8" y="67.7" width="56" height="174.3" fill="#8b919c" stroke="#707884" stroke-width="0.5"/>
 <text x="70" y="158.8">Coins 1,000</text>
 <text x="36.0" y="260" text-anchor="middle" fill="#5d6470">Assets</text>
-<rect x="158" y="52.0" width="56" height="52.3" fill="#cdd3da" stroke="#9aa3ae" stroke-width="0.5"/>
+<rect x="158" y="52.0" width="56" height="52.3" fill="#8b919c" stroke="#707884" stroke-width="0.5"/>
 <text x="220" y="82.1">Preferred 300</text>
 <rect x="158" y="104.3" width="56" height="137.7" fill="#1f6fd1" stroke="none" stroke-width="0.5"/>
 <text x="220" y="177.1" font-weight="600">Common 790</text>
 <text x="186.0" y="260" text-anchor="middle" fill="#5d6470">Claims</text>
-<line x1="0" x2="320" y1="242" y2="242" stroke="#9aa1ab"/>
+<line x1="0" x2="320" y1="242" y2="242" stroke="#8a919c"/>
 <text x="360" y="38" font-weight="600">After: retire a $100 claim for $90</text>
-<rect x="368" y="52" width="56" height="15.7" fill="none" stroke="#9aa3ae" stroke-dasharray="3 3"/>
+<rect x="368" y="52" width="56" height="15.7" fill="none" stroke="#707884" stroke-dasharray="3 3"/>
 <text x="430" y="63.8" fill="#5d6470">cash −90</text>
-<rect x="368" y="67.7" width="56" height="174.3" fill="#cdd3da" stroke="#9aa3ae" stroke-width="0.5"/>
+<rect x="368" y="67.7" width="56" height="174.3" fill="#8b919c" stroke="#707884" stroke-width="0.5"/>
 <text x="430" y="158.8">Coins 1,000</text>
 <text x="396.0" y="260" text-anchor="middle" fill="#5d6470">Assets</text>
-<rect x="518" y="67.7" width="56" height="34.9" fill="#cdd3da" stroke="#9aa3ae" stroke-width="0.5"/>
+<rect x="518" y="67.7" width="56" height="34.9" fill="#8b919c" stroke="#707884" stroke-width="0.5"/>
 <text x="580" y="89.1">Preferred 200 −100</text>
 <rect x="518" y="102.6" width="56" height="139.4" fill="#1f6fd1" stroke="none" stroke-width="0.5"/>
 <text x="580" y="176.3" font-weight="600">Common 800 +10</text>
 <text x="546.0" y="260" text-anchor="middle" fill="#5d6470">Claims</text>
-<line x1="360" x2="680" y1="242" y2="242" stroke="#9aa1ab"/>
+<line x1="360" x2="680" y1="242" y2="242" stroke="#8a919c"/>
 <text x="0" y="286" fill="#5d6470">Assets equal claims on both sides, on one scale. Paying $90 removes a $100 claim, so the common block grows by $10.</text>
 </svg>

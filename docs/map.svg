@@ -1,67 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="800" height="480" role="img" aria-label="Break-even map: net mNAV m against preferred price over notional q, one mark per firm-week" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#222">
-<rect width="800" height="480" fill="#fff"/>
-<line x1="139.7" x2="356.9" y1="418" y2="418" stroke="#888"/>
-<line x1="50" x2="50" y1="50.7" y2="376.4" stroke="#888"/>
-<text x="139.7" y="434" text-anchor="middle" fill="#555">0.75</text>
-<text x="356.9" y="434" text-anchor="middle" fill="#555">1.00</text>
-<text x="45" y="380.4" text-anchor="end" fill="#555">0.72</text>
-<text x="45" y="250.9" text-anchor="end" fill="#555">1.00</text>
-<text x="45" y="54.7" text-anchor="end" fill="#555">1.42</text>
-<text x="784" y="454" text-anchor="end" fill="#555">q = preferred close / $100 notional (STRC, BMNP; SharpLink, no preferred, at q = 1) →</text>
-<text x="58" y="18" fill="#555">↑ m = net mNAV</text>
-<line x1="58.0" y1="410.0" x2="784.0" y2="14.0" stroke="#222" stroke-dasharray="5 4" stroke-opacity="0.7"/>
-<text x="744.0" y="20.0" text-anchor="end">m = q</text>
-<text x="68" y="38" font-weight="bold">Strategy's rotation adds here (m &gt; q)</text>
-<text x="774" y="398" text-anchor="end" font-weight="bold">BitMine's rotation adds here (m &lt; q)</text>
-<polyline points="348.3,66.8 300.6,50.7 312.5,77.7 259.5,128.3 139.7,252.1 227.6,204.9 253.3,166.7 250.0,232.9 231.3,229.1 244.9,248.2 266.9,224.9 314.3,215.1 312.4,228.8 324.3,254.5 334.1,219.4 337.7,175.9 345.3,200.1 344.2,145.8 344.5,156.6 351.4,171.9 351.9,154.1 354.0,158.1" fill="none" stroke="#2a78d6" stroke-opacity="0.5" stroke-width="1"/>
-<circle cx="348.3" cy="66.8" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="300.6" cy="50.7" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="312.5" cy="77.7" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="259.5" cy="128.3" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="139.7" cy="252.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="227.6" cy="204.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="253.3" cy="166.7" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="250.0" cy="232.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="231.3" cy="229.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="244.9" cy="248.2" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="266.9" cy="224.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="314.3" cy="215.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="312.4" cy="228.8" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="324.3" cy="254.5" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="334.1" cy="219.4" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="337.7" cy="175.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="345.3" cy="200.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="344.2" cy="145.8" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="344.5" cy="156.6" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="351.4" cy="171.9" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<circle cx="351.9" cy="154.1" r="5.0" style="fill:#fff;stroke:#2a78d6;stroke-width:1.25"/>
-<polyline points="186.1,246.6 244.6,256.9 194.7,298.1 214.6,304.1 235.0,308.9 236.4,300.5 240.8,302.6 263.0,264.1 265.6,237.6 276.7,248.1 299.4,276.0 328.7,243.9 340.8,223.8 345.3,233.9 339.1,233.9 352.3,219.6 352.5,238.7 352.9,247.9" fill="none" stroke="#eb6834" stroke-opacity="0.5" stroke-width="1"/>
-<rect x="181.7" y="242.1" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="240.2" y="252.4" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="190.3" y="293.7" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="210.1" y="299.6" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="230.5" y="304.5" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="232.0" y="296.0" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="236.4" y="298.2" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="258.6" y="259.6" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="261.1" y="233.2" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="272.2" y="243.7" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="294.9" y="271.6" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="324.2" y="239.5" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="336.4" y="219.3" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="340.9" y="229.4" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="334.7" y="229.4" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="347.9" y="215.1" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<rect x="348.1" y="234.2" width="8.9" height="8.9" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.25"/>
-<polyline points="356.9,366.0 356.9,376.4 356.9,375.6 356.9,335.9" fill="none" stroke="#4a3aa7" stroke-opacity="0.5" stroke-width="1"/>
-<path d="M356.9,358.2L363.7,369.9L350.2,369.9Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.25"/>
-<path d="M356.9,368.6L363.7,380.3L350.2,380.3Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.25"/>
-<path d="M356.9,367.8L363.7,379.5L350.2,379.5Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.25"/>
-<circle cx="354.0" cy="158.1" r="6.5" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.25"/>
-<text x="365.0" y="162.1" font-weight="bold">Strategy 2026-10-11</text>
-<rect x="347.2" y="242.1" width="11.5" height="11.5" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.25"/>
-<text x="363.9" y="251.9" font-weight="bold">BitMine 2026-10-11</text>
-<path d="M356.9,325.7L365.7,340.9L348.2,340.9Z" style="fill:#4a3aa7;stroke:#4a3aa7;stroke-width:1.25"/>
-<text x="367.9" y="339.9" font-weight="bold">SharpLink 2026-08-03</text>
-<text x="58" y="472" fill="#555">Open marks: earlier weeks, joined in date order. Solid: latest, labeled. Circle Strategy, square BitMine, triangle SharpLink.</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 484" width="240" height="484" role="img" aria-label="Break-even map: net mNAV m against preferred price over notional q, one mark per firm-week" font-family='"IBM Plex Mono", Menlo, Consolas, monospace' font-size="10" fill="#222">
+<style>
+@font-face { font-family: "Source Serif 4"; src: url("../site/fonts/source-serif-4.woff2") format("woff2"); font-weight: 200 900; }
+@font-face { font-family: "IBM Plex Mono"; src: url("../site/fonts/ibm-plex-mono-400.woff2") format("woff2"); font-weight: 400; }
+@font-face { font-family: "IBM Plex Mono"; src: url("../site/fonts/ibm-plex-mono-500.woff2") format("woff2"); font-weight: 500 700; }
+</style>
+<rect width="240" height="484" fill="#fff"/>
+<text x="28.0" y="14.0" text-anchor="start" fill="#333">m = net mNAV</text>
+<line x1="46.8" x2="153.6" y1="402.4" y2="402.4" stroke="#777"/>
+<line x1="30" x2="30" y1="64.1" y2="357.7" stroke="#777"/>
+<text x="46.8" y="414.4" text-anchor="start" fill="#333">0.75</text>
+<text x="153.6" y="414.4" text-anchor="end" fill="#333">1.00</text>
+<text x="27.0" y="361.2" text-anchor="end" fill="#333">0.72</text>
+<text x="27.0" y="244.5" text-anchor="end" fill="#333">1.00</text>
+<text x="27.0" y="67.6" text-anchor="end" fill="#333">1.42</text>
+<text x="28.0" y="428.4" text-anchor="start" fill="#333">q = preferred close / $100</text>
+<text x="28.0" y="440.4" text-anchor="start" fill="#333">(SharpLink, no preferred, at q = 1)</text>
+<line x1="36.0" y1="358.6" x2="162.0" y2="232.6" stroke="#222" stroke-width="0.9" stroke-dasharray="7 3.5"/>
+<text x="46.0" y="360.6" text-anchor="start">m = q</text>
+<text x="38.0" y="30.0" text-anchor="start" font-weight="500">Strategy's rotation</text>
+<text x="38.0" y="42.0" text-anchor="start" font-weight="500">adds above the line (m &gt; q)</text>
+<text x="160.0" y="380.4" text-anchor="end" font-weight="500">BitMine's rotation adds</text>
+<text x="160.0" y="392.4" text-anchor="end" font-weight="500">below the line (m &lt; q)</text>
+<polyline points="149.4,78.6 125.9,64.1 131.8,88.5 105.7,134.1 46.8,245.7 90.0,203.1 102.7,168.7 101.0,228.4 91.8,224.9 98.5,242.1 109.3,221.1 132.6,212.3 131.7,224.6 137.6,247.8 142.4,216.1 144.2,177.0 147.9,198.7 147.3,149.8 147.5,159.5 150.9,173.4 151.1,157.3 152.2,160.9" fill="none" stroke="#2a78d6" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="none"/>
+<circle cx="149.4" cy="78.6" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="125.9" cy="64.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="131.8" cy="88.5" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="105.7" cy="134.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="46.8" cy="245.7" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="90.0" cy="203.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="102.7" cy="168.7" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="101.0" cy="228.4" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="91.8" cy="224.9" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="98.5" cy="242.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="109.3" cy="221.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="132.6" cy="212.3" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="131.7" cy="224.6" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="137.6" cy="247.8" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="142.4" cy="216.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="144.2" cy="177.0" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="147.9" cy="198.7" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="147.3" cy="149.8" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="147.5" cy="159.5" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="150.9" cy="173.4" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<circle cx="151.1" cy="157.3" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<polyline points="69.6,240.7 98.4,249.9 73.8,287.1 83.6,292.5 93.6,296.8 94.3,289.3 96.5,291.2 107.4,256.4 108.7,232.6 114.1,242.1 125.3,267.2 139.7,238.3 145.7,220.1 147.9,229.2 144.8,229.2 151.3,216.3 151.4,233.5 151.6,241.9" fill="none" stroke="#eb6834" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="5 2.5"/>
+<rect x="66.4" y="237.5" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="95.2" y="246.7" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="70.7" y="284.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="80.4" y="289.3" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="90.4" y="293.7" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="91.1" y="286.1" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="93.3" y="288.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="104.2" y="253.2" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="105.5" y="229.4" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="110.9" y="238.9" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="122.1" y="264.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="136.5" y="235.1" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="142.5" y="216.9" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="144.7" y="226.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="141.6" y="226.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="148.1" y="213.1" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="148.2" y="230.4" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<polyline points="153.6,348.3 153.6,357.7 153.6,357.0 153.6,321.2" fill="none" stroke="#4a3aa7" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="1.2 2.4"/>
+<path d="M153.6,342.7L158.4,351.1L148.8,351.1Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.1"/>
+<path d="M153.6,352.1L158.4,360.5L148.8,360.5Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.1"/>
+<path d="M153.6,351.4L158.4,359.8L148.8,359.8Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.1"/>
+<circle cx="152.2" cy="160.9" r="4.9" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.1"/>
+<text x="168.0" y="159.9" text-anchor="start" font-weight="500">Strategy</text>
+<text x="168.0" y="170.9" text-anchor="start" fill="#333">2026-10-11</text>
+<rect x="147.3" y="237.5" width="8.7" height="8.7" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.1"/>
+<text x="168.0" y="240.9" text-anchor="start" font-weight="500">BitMine</text>
+<text x="168.0" y="251.9" text-anchor="start" fill="#333">2026-10-11</text>
+<path d="M153.6,313.5L160.2,325.0L147.0,325.0Z" style="fill:#4a3aa7;stroke:#4a3aa7;stroke-width:1.1"/>
+<text x="168.0" y="320.2" text-anchor="start" font-weight="500">SharpLink</text>
+<text x="168.0" y="331.2" text-anchor="start" fill="#333">2026-08-03</text>
+<text x="28.0" y="459.0" text-anchor="start" fill="#333">Open marks: earlier weeks, joined</text>
+<text x="28.0" y="471.0" text-anchor="start" fill="#333">in date order. Circle Strategy,</text>
+<text x="28.0" y="483.0" text-anchor="start" fill="#333">square BitMine, triangle SharpLink.</text>
 </svg>

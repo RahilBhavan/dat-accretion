@@ -20,11 +20,19 @@ LIQ_PREF = 100  # STRC stated amount and BMNP liquidation preference, USD (metho
 BMNR_R_NOTE = ('BitMine R is its stated "total cash & marketable securities", so it includes marketable securities. '
                'BitMine\'s BTC holdings and equity stakes are excluded, as Strategy\'s definition counts only the coin '
                'reserve and USD assets.')
+# The BitMine S bias, worded once for the page notes and the memo (dat.balances.bmnr_s_bias gives an upper bound).
+S_BIAS = 'an upward bias of up to {bias} of S by {week}'
+
+
+def s_bias_text(bias, week):
+    return S_BIAS.format(bias=f'{bias:.2%}', week=week)
+
+
 NOTES = [  # (group, text): estimate = an estimated figure; coverage = what is in or out; convention = a stated rule
     ('estimate', 'BitMine S is estimated between filings. It is anchored to the 10-Q share counts for 2026-05-31 and 2026-07-09 '
     'and rolled by disclosed buybacks. Unreported issuance each week is estimated as the week\'s unexplained change '
     'in R divided by that week\'s BMNR close; the bars show it hatched as estimated issuance. ETH counted as bought '
-    'includes staking, which raises the S estimate by about {bias} by {bias_week}; the next 10-K count resets it.'),
+    'includes staking, which gives the S estimate {s_bias}; the next 10-K count resets it.'),
     ('estimate', 'BitMine releases give ETH bought in coins only. The USD of each BitMine ETH purchase is estimated as units × that '
     'week\'s ETH close. Coin trades are neutral on day one, so the estimate does not move the bars. The releases do '
     'not separate staking rewards from purchases.'),
@@ -237,7 +245,7 @@ def build(data_dir='data', online=False):
         headline.append({**h, 'sentence': sentence(h), 'close_sentence': close_sentence(h)})
     bmnr_url = max((r for r in all_st if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])['filing_url']
     bias, bias_week = bmnr_s_bias(data_dir)
-    notes = [{'group': g, 'text': n.replace('{bias}', f'{bias:.2%}').replace('{bias_week}', bias_week), 'url': None}
+    notes = [{'group': g, 'text': n.replace('{s_bias}', s_bias_text(bias, bias_week)), 'url': None}
              for g, n in NOTES]
     notes.insert(1, bmnr_r_note(bmnr_url, online))
     sbet = sorted(r['week_end'] for r in all_st if r['firm'] == 'SBET')

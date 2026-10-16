@@ -22,11 +22,14 @@ const GROUP = { common: ['Common', '--ink2'], pref: ['Preferred', '--accent'], c
   carry: ['Carry (dividends, interest, staking)', '--gray2'], residual: ['Residual', '--neutral'] };
 const EST = 'Estimated issuance (BitMine)';
 const RESID_FILL = id => 'url(#' + id + ')';
+// Hatches, one direction each everywhere (bars, legend, tooltip swatch, totals strip): residual "\", estimated issuance "/".
+// In SVG's y-down space, rotate(45) turns the pattern's vertical line into "/" and rotate(-45) into "\".
 function hatchPattern(id, color, angle) {
   return '<pattern id="' + id + '" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(' + angle + ')">'
     + '<rect width="5" height="5" style="fill:var(' + color + ');fill-opacity:0.2"/><line x1="0" y1="0" x2="0" y2="5" style="stroke:var(' + color + ');stroke-width:2"/></pattern>';
 }
-const RESID_SWATCH = '<rect x="1" y="1" width="12" height="12" style="fill:var(--neutral);fill-opacity:0.2"/><path d="M1,5 L5,1 M1,9 L9,1 M1,13 L13,1 M5,13 L13,5 M9,13 L13,9" style="stroke:var(--neutral);stroke-width:1.5"/>';
+const RESID_SWATCH = '<rect x="1" y="1" width="12" height="12" style="fill:var(--neutral);fill-opacity:0.2"/><path d="M1,9 L5,13 M1,5 L9,13 M1,1 L13,13 M5,1 L13,9 M9,1 L13,5" style="stroke:var(--neutral);stroke-width:1.5"/>';
+const EST_SWATCH = '<rect x="1" y="1" width="12" height="12" style="fill:var(--ink2);fill-opacity:0.2"/><path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--ink2);stroke-width:2"/>';
 const MINUS = '−';
 
 function esc(s) {
@@ -94,11 +97,33 @@ function bindTips(el, html) {
     return [b.left - r.left + b.width / 2, b.top - r.top];
   };
   const target = ev => ev.target.closest('[data-tip]');
-  el.addEventListener('pointermove', ev => { const t = target(ev); if (t) showTip(wrap, html(t), ...at(t, ev)); else hideTip(wrap); });
+  el.addEventListener('pointermove', ev => { const t = target(ev); if (t) showTip(wrap, html(t, ev.target), ...at(t, ev)); else hideTip(wrap); });
   el.addEventListener('pointerleave', () => hideTip(wrap));
-  el.addEventListener('focusin', ev => { const t = target(ev); if (t) showTip(wrap, html(t), ...at(t)); });
+  el.addEventListener('focusin', ev => { const t = target(ev); if (t) showTip(wrap, html(t, null), ...at(t)); });
   el.addEventListener('focusout', () => hideTip(wrap));
 }
+
+// Touch: a tap opens a column's or mark's details in the sheet instead of navigating; the sheet links to the filings.
+// Mouse and keyboard follow the link directly. pick(ev) returns the link to describe (default: the one tapped);
+// head(a) is the sheet's title, rows(a) its detail rows, urls(a) its filings.
+function touchSheet(el, head, rows, urls, pick) {
+  let touch = false;
+  el.onpointerdown = ev => { touch = ev.pointerType === 'touch'; };
+  el.onclick = ev => {
+    if (!touch) return;
+    const a = pick ? pick(ev) : ev.target.closest('a[data-tip]');
+    if (ev.target.closest('a')) ev.preventDefault();
+    if (!a) return;
+    hideTip(el.parentElement);
+    // urls(a): plain URLs, or [url, what it covers] pairs; each filing is listed once.
+    const seen = new Set(), list = urls(a).map(u => Array.isArray(u) ? u : [u, '']).filter(([u]) => !seen.has(u) && seen.add(u));
+    const links = list.map(([u, what]) => '<a href="' + esc(u) + '" target="_blank" rel="noopener">View filing' + (what ? ' for ' + esc(what) : '')
+      + ' (' + esc(fileName(u)) + ')</a>').join('<br>');
+    openSheet('<h4 id="sheet-title">' + head(a) + '</h4><div class="data-rows">' + rows(a) + links + '</div>', a);
+  };
+}
+const whenLabel = w => (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end;
+const filingRow = urls => '<div>Filing: ' + urls.map(u => esc(fileName(u))).join(', ') + '</div>';
 
 function markSvg(firm, cx, cy, r, cls, style) {
   if (FIRM[firm].shape === 'triangle') {  // equilateral, area of the circle of radius r
@@ -144,7 +169,7 @@ function ruler() {
 const ADDS = { MSTR: ['below', 'Rotation adds below 100%'], BMNR: ['above', 'Rotation adds above 100%'], SBET: ['above', 'Buyback adds above 100% (m below 1)'] };
 
 function spark(firm) {
-  const pts = ratioPts(firm), W = 150, H = 32, P = 3, R = 28;  // R: room at the right for the 100% label
+  const pts = ratioPts(firm), W = 156, H = 32, P = 3, R = 34;  // R: room at the right for the 100% label (12px)
   const X = t => P + (t - RULER.t0) / (RULER.t1 - RULER.t0) * (W - R - P), Y = v => P + (RULER.hi - v) / (RULER.hi - RULER.lo) * (H - 2 * P);
   const l = pts[pts.length - 1], below = ADDS[firm][0] === 'below', y0 = below ? Y(100) : P, y1 = below ? H - P : Y(100);
   return '<svg class="spark" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">'
@@ -156,15 +181,15 @@ function spark(firm) {
 }
 
 // ---- 1. headline ----
-// Meta line under the dek: what the figures cover, how old that is, where each number comes from, the definition.
+// Meta line under the dek: what the figures cover, how old that is, where each number comes from. The definition
+// ("Strategy's own net coins per share definition, applied to all three firms") is stated in the method section.
 // Weekly firms file on Mondays for the week ending Sunday, so more than 9 days since the latest week means a missed refresh.
 function asof() {
   const weekly = DATA.headline.filter(h => h.break_even != null);
   const through = weekly.map(h => h.week_end).sort()[0], age = daysAgo(through);
-  let s = 'Data through ' + nice_date(through) + ' (' + age + ' days ago) · Every figure links to its SEC filing · '
-    + 'Measured with Strategy\'s own net coins per share definition, applied to all three firms · '
-    + '<a href="#built">How this is built</a>';
-  if (age > 9) s += ' <strong class="stale">Behind: filings after ' + esc(through) + ' are not yet included.</strong>';
+  let s = 'Data through <span class="num-m">' + nice_date(through) + '</span> (<span class="num-m">' + age + '</span> days ago) · '
+    + 'Every figure links to its SEC filing · <a href="#built">How this is built</a>';
+  if (age > 9) s += ' <strong class="stale">Behind: filings after <span class="num-m">' + esc(through) + '</span> are not yet included.</strong>';
   document.getElementById('asof').innerHTML = s;
 }
 
@@ -175,7 +200,7 @@ const TERMS = {
   mnav: ['Net mNAV (m)', 'The share price divided by the coin value behind each share, net of debt and preferred. Above 1, new common sells for more than the coins it claims.'],
   sats: ['Sats', 'Coins per share for bitcoin are counted in sats: 1 sat = 0.00000001 BTC.'],
 };
-const term = (k, text) => '<button type="button" class="term" data-term="' + k + '">' + text + '</button>';
+const term = (k, text) => '<button type="button" class="term" data-term="' + k + '" aria-controls="sheet" aria-expanded="false">' + text + '</button>';
 function dek() {
   const h = Object.fromEntries(DATA.headline.map(x => [x.firm, x])), a = h.MSTR, b = h.BMNR;
   document.getElementById('dek').innerHTML =
@@ -183,7 +208,7 @@ function dek() {
     + a.break_even.toFixed(2) + '</strong>; it closed at <span class="fig">$' + a.pref_close.toFixed(2) + '</span>. '
     + 'BitMine\'s adds ether per share while BMNP trades above <strong>$'
     + b.break_even.toFixed(2) + '</strong>; it closed at <span class="fig">$' + b.pref_close.toFixed(2) + '</span>. '
-    + 'Each ' + term('breakeven', 'break-even') + ' is $100 × ' + term('mnav', 'net mNAV') + '.';
+    + 'Each ' + term('breakeven', 'break-even') + ' is <span class="nw">$100 × ' + term('mnav', 'net mNAV') + '</span>.';
 }
 
 // Break-even table: nine numbers, so a table (Tufte: tables beat graphics for small data), with a sparkline per row on
@@ -199,14 +224,16 @@ function headline() {
   const fig = (lbl, v, cls) => '<p class="lr-fig' + (cls ? ' ' + cls : '') + '"><span class="lbl">' + lbl + '</span>' + v + '</p>';
   const rows = DATA.headline.map(h => {
     const sbet = h.break_even == null, r = sbet ? 100 / h.m : h.q / h.m * 100;
-    const when = sbet ? 'm ' + h.m.toFixed(3) + ' · ' + short_date(h.week_end) + ', last filed (' + daysAgo(h.week_end) + ' days ago)'
+    const when = sbet ? short_date(h.week_end) + ', last filed (' + daysAgo(h.week_end) + ' days ago)'
       : 'close ' + short_date(h.price_date) + ' · m ' + h.m.toFixed(3);
     // The condition names the line the percent is read against, so 84% (below) or 124% (above) needs no legend.
     const cond = '<span>' + (sbet ? 'Buyback adds while m is <span class="side">below 1</span>, so while 1 ÷ m is above 100%'
       : 'Adds while ' + esc(h.pref) + ' is <span class="side">' + ADDS[h.firm][0] + '</span> break-even (100%)') + '</span>';
     return '<article class="lr" aria-label="' + esc(h.name) + '"><div class="lr-name"><h3 class="lr-firm">' + esc(h.name) + (sbet ? '' : '<span class="tk">' + esc(h.pref) + '</span>') + '</h3>'
       + '<p class="lr-when">' + when + '</p></div>'
-      + fig('Close', sbet ? 'none' : '$' + h.pref_close.toFixed(2)) + fig('Break-even', sbet ? 'm = 1' : '$' + h.break_even.toFixed(2), 'be') + fig('Of break-even', pct(r), 'pct-col')
+      // SharpLink has no preferred: one cell across the price columns instead of placeholder figures.
+      + (sbet ? '<p class="lr-span">No preferred · m ' + h.m.toFixed(3) + ' · 1 ÷ m = ' + pct(r) + '</p>'
+        : fig('Close', '$' + h.pref_close.toFixed(2)) + fig('Break-even', '$' + h.break_even.toFixed(2), 'be') + fig('Of break-even', pct(r), 'pct-col'))
       + '<p class="lr-cond">' + cond + spark(h.firm) + '</p></article>';
   }).join('');
   document.getElementById('headline-text').innerHTML = '<div class="ledger"><div class="ledger-head" aria-hidden="true"><span>Latest filed week</span>'
@@ -223,10 +250,14 @@ function built() {
   const weeks = DATA.weeks.filter(w => w.firm !== 'SBET').length;
   const c = DATA.check || {}, checks = Array.isArray(c.checks) ? c.checks : [];
   const api = checks.find(x => /netSatsPerShare/.test(x.name)), pct = api && (api.compared.match(/([+-]\d+\.\d+)%/) || [])[1];
+  // M16: a check run before the latest filed week says so, so a pass never vouches for weeks it did not see.
+  const run = (c.run_at || '').slice(0, 10), latest = DATA.weeks.map(w => w.week_end).sort().pop();
+  const runText = run && run < latest ? 'Last run ' + nice_date(run) + ', before the week ending ' + nice_date(latest) + '; the page deploys only on a pass.'
+    : 'Run ' + esc(run) + '; the page deploys only on a pass.';
   const tiles = [[filings, 'SEC filings parsed', 'Every action row links to its filing.'],
     [weeks, 'firm-weeks rebuilt', 'Coin holdings rolled from each trade and reconciled to the filed total.'],
     ...(pct ? [[pct.replace('-', '−') + '%', 'from Strategy\'s published net sats per share', 'The rebuild of Strategy\'s own KPI, checked against its API.']] : []),
-    [checks.filter(x => x.ok).length + ' of ' + checks.length, 'checks pass', 'Run ' + esc((c.run_at || '').slice(0, 10)) + '; the page deploys only on a pass.']];
+    [checks.filter(x => x.ok).length + ' of ' + checks.length, 'checks pass', runText]];
   document.getElementById('built-grid').innerHTML = tiles.map(([v, k, d]) =>
     '<div class="tile"><p class="tile-value">' + v + '</p><p class="tile-key">' + k + '</p><p class="tile-desc">' + d + '</p></div>').join('');
 }
@@ -262,40 +293,50 @@ function sheet(after) {
 function example() {
   const x = DATA.example, M = v => '$' + (v / 1e6).toFixed(1) + 'M';
   const wk = DATA.weeks.find(w => w.firm === 'MSTR' && w.week_end === x.week_end), net = wk ? wk.n * wk.S * wk.p : null;
+  const sg = v => (v < -0.5 ? MINUS : v > 0.5 ? '+' : '') + Math.abs(v).toFixed(0);
+  // The rotation at m = 1.2: the toy trade ($90, q = 0.90) and break-even ($120 = $100 × m) are highlighted.
   const m = 1.2, raise = 120, rows = [90, 100, 110, 120, 130].map(P => {
     const sale = raise * (1 - 1 / m), retire = raise * 100 / P - raise;
-    return '<tr' + (P === 120 ? ' class="hl"' : '') + '><td class="num">$' + P + '</td><td class="num">' + (raise * 100 / P).toFixed(0) + '</td><td class="num">+' + sale.toFixed(0)
-      + '</td><td class="num">' + (retire < 0 ? MINUS : '+') + Math.abs(retire).toFixed(0) + '</td><td class="num"><b>' + (sale + retire < -0.5 ? MINUS : sale + retire > 0.5 ? '+' : '')
-      + Math.abs(sale + retire).toFixed(0) + '</b></td><td>' + (P === 120 ? 'break-even: $100 × m' : '') + '</td></tr>';
+    const note = P === 90 ? 'the toy trade: q = 0.90' : P === 120 ? 'break-even: $100 × m' : '';
+    return '<tr' + (note ? ' class="hl"' : '') + '><td class="num">$' + P + '</td><td class="num">' + (raise * 100 / P).toFixed(0) + '</td><td class="num">' + sg(sale)
+      + '</td><td class="num">' + sg(retire) + '</td><td class="num"><b>' + sg(sale + retire) + '</b></td><td>' + note + '</td></tr>';
   }).join('');
-  const be = DATA.headline.find(h => h.firm === 'MSTR');
+  const be = DATA.headline.find(h => h.firm === 'MSTR'), bm = DATA.headline.find(h => h.firm === 'BMNR');
+  const fig = v => '<b>' + v + '</b>';
   document.getElementById('example').innerHTML =
-    // Step 1: one claim, retired below its notional (toy numbers, assets and claims on one scale).
+    // Step 1: one claim, retired below its notional (toy numbers, assets and claims on one scale). q is defined here.
     '<div class="why-grid"><div class="prose"><p>Start with one share of preferred stock: a $100 claim that ranks ahead of common stock. If the company buys it back '
-    + 'for $90, its claims fall by $100 while its cash falls by $90. The $10 difference now belongs to common holders.</p></div>'
+    + 'for $90, its claims fall by $100 while its cash falls by $90. The $10 difference now belongs to common holders. Paying $90 for a $100 claim '
+    + 'is q = 0.90: q is the price paid per $1 of claim.</p></div>'
     + '<figure class="fig"><p class="fig-tag">Illustration, not filed figures</p><div class="pair">' + sheet(false) + sheet(true) + '</div>'
     + '<figcaption>Assets equal claims on both sides, drawn on one scale. Paying $90 removes a $100 claim, so the common block grows by $10.</figcaption></figure></div>'
-    // Step 2: the rotation as a balance. Common sells at m per $1 of net coins; STRC retires at q per $1 of claim.
-    + '<div class="prose"><p>Strategy pays for these buybacks by selling common stock. At a net mNAV of 1.2, buyers pay $1.20 for each $1 of net coins behind a '
+    // Step 2: the rotation at one m, as a table, then as a balance. Common sells at m per $1 of net coins; STRC retires at q per $1 of claim.
+    + '<div class="prose"><p>Strategy pays for these buybacks by selling common stock. At a net mNAV, m, of 1.2, buyers pay $1.20 for each $1 of net coins behind a '
     + 'share, so a $120 sale gives new holders $100 of net coins and leaves $20 with existing holders. The rotation adds coins per share as long as the '
-    + 'retirement does not give back more than the sale made. Weigh m against q: the beam is level at a STRC price of $100 × m.</p></div>'
-    + '<div class="balance-slot" id="balance"></div>'
-    + '<p class="balance-read">Latest filed week: net mNAV <b>' + be.m.toFixed(3) + '</b>, so break-even is <b>$' + be.break_even.toFixed(2) + '</b>; STRC closed at <b>$'
-    + be.pref_close.toFixed(2) + '</b>. BitMine runs the rotation the other way (sell BMNP, buy back common), so it adds while BMNP trades above $100 × m.</p>'
-    + '<details class="fold"><summary>The same illustration as a table, m = 1.2</summary><div class="scroll-x"><table class="plain-num">'
+    + 'retirement does not give back more than the sale made.</p></div>'
+    + '<div class="rot-table"><p class="fig-tag">Illustration: the rotation at m = 1.2</p><div class="scroll-x"><table class="plain-num">'
     + '<thead><tr><th class="num">STRC price</th><th class="num">Notional retired</th><th class="num">Sale of common</th><th class="num">Retirement</th><th class="num">Rotation, to common</th><th></th></tr></thead><tbody>'
-    + rows + '</tbody></table></div><p class="caption">Raise $120 by selling common, spend it retiring STRC. Dollars to existing common holders, first order. Illustration, not filed figures.</p></details>'
+    + rows + '</tbody></table></div><p class="caption">Raise $120 by selling common, spend it retiring STRC. Dollars to existing common holders, first order; '
+    + 'the rotation is the sale plus the retirement. At $120, which is $100 × m, the rotation is zero: break-even. Illustration, not filed figures.</p></div>'
+    + '<div class="prose"><p>Weigh m against q: the beam is level at a STRC price of $100 × m.</p></div>'
+    + '<div class="balance-slot" id="balance"></div>'
+    + '<p class="balance-read">Latest filed week, net mNAV ' + fig(be.m.toFixed(3)) + ': Strategy\'s rotation adds while STRC trades below ' + fig('$' + be.break_even.toFixed(2))
+    + '; it closed at ' + fig('$' + be.pref_close.toFixed(2)) + '.</p>'
     // Step 3: the filed trade, with its figures and its filing.
+    + '<div class="prose"><p>Dollars to common ÷ (coin price × shares) is the change in coins per share.</p></div>'
     + '<div class="filed"><p class="fig-tag">The filed trade · week ending ' + nice_date(x.week_end) + '</p><ul class="filed-figs">'
     + '<li><b>' + M(x.usd) + '</b>paid for STRC</li><li><b>$' + x.avg_price.toFixed(2) + '</b>per $100 share (q = ' + x.q.toFixed(4) + ')</li>'
     + '<li><b>' + M(x.notional) + '</b>of claims removed</li><li><b>+' + M(x.adds_usd) + '</b>to common, +' + x.sats_per_share.toFixed(2) + ' sats per share</li></ul>'
     + '<div class="prose"><p>Common holders gained ' + M(x.adds_usd) + ', or +' + x.sats_per_share.toFixed(2)
     + ' sats across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares (exact recompute).'
-    + (net ? ' That is ' + (x.adds_usd / net * 100).toFixed(3) + '% of Strategy\'s net coin value that week (' + usd(net) + '), too small to see at true scale, '
+    + (net ? ' That is ' + (x.adds_usd / net * 100).toFixed(3) + '% of Strategy\'s net coin value that week (' + usd(net) + '), below one pixel at true scale, '
       + 'which is why the figures above use toy numbers.' : '')
-    + ' Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p></div></div>';
-  // The balance (site/balance.js, built by site-src/balance/build.mjs) starts at the table's m = 1.2 and offers the latest filed week.
-  if (window.Balance) window.Balance.mount(document.getElementById('balance'), { m: 1.2, price: 100,
+    + ' Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p>'
+    + '<p>BitMine runs the rotation the other way (sell BMNP, buy back common). In the latest filed week, net mNAV ' + bm.m.toFixed(3) + ', BitMine\'s rotation adds while BMNP trades above $'
+    + bm.break_even.toFixed(2) + '; it closed at $' + bm.pref_close.toFixed(2) + '.</p></div></div>';
+  // The balance (site/balance.js, built by site-src/balance/build.mjs) starts at the toy trade: m = 1.2, STRC $90 (q = 0.90).
+  // It offers the latest filed week.
+  if (window.Balance) window.Balance.mount(document.getElementById('balance'), { m: 1.2, price: 90,
     today: { m: +be.m.toFixed(3), price: be.pref_close, label: 'm ' + be.m.toFixed(3) + ', STRC $' + be.pref_close.toFixed(2) + ', week ending ' + short_date(be.week_end) } });
   else document.getElementById('balance').remove();
 }
@@ -332,15 +373,18 @@ function drawPref(firm) {
   s += '<line class="ref" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>';
   // Labels on the left, on the side of the line where the program adds (the data sits clear of it there).
   const below = ADDS[firm][0] === 'below';
-  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) - 5 : Y(100) + 14) + '">break-even</text>';
-  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 14 : Y(100) - 5) + '" class="adds">' + ADDS[firm][1] + '</text>';
-  // Columns: each point owns the span halfway to its neighbours.
+  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 15 : Y(100) - 5) + '">break-even</text>';
+  // 12px monospace is about 7.2px a character; a narrow panel drops the parenthesis.
+  const addsText = ADDS[firm][1].length * 7.2 > W - M.l - M.r - 8 ? ADDS[firm][1].replace(/ \(.*\)$/, '') : ADDS[firm][1];
+  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 30 : Y(100) - 20) + '" class="adds">' + addsText + '</text>';
+  // Columns: each point owns the span halfway to its neighbours, and links to its filing (M9).
   const mid = i => i < 0 ? M.l : i >= pts.length - 1 ? W - M.r : (X(pts[i].t) + X(pts[i + 1].t)) / 2;
   const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? pts.length - 1, pts.length - 1);
   pts.forEach((p, i) => {
     const x0 = Math.min(mid(i - 1), X(p.t) - 6), x1 = Math.max(mid(i), X(p.t) + 6);
-    s += '<rect class="col" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" x="' + x0 + '" y="' + M.t + '" width="' + Math.max(1, x1 - x0) + '" height="' + (H - M.t - M.b)
-      + '" aria-label="' + esc(FIRM[firm].name + (sbet ? ' filed date ' : ' week ending ') + p.w.week_end + ': ' + label + ' ' + p.r.toFixed(1) + '%') + '"/>';
+    s += '<a class="col" href="' + esc(p.w.filing_urls[0]) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
+      + esc(FIRM[firm].name + ' ' + whenLabel(p.w) + ': ' + label + ' ' + p.r.toFixed(1) + '%. Opens filing.') + '">'
+      + '<rect class="hit" x="' + x0 + '" y="' + M.t + '" width="' + Math.max(1, x1 - x0) + '" height="' + (H - M.t - M.b) + '"/></a>';
   });
   s += '<text x="' + M.l + '" y="' + (H - 6) + '">' + short_date(new Date(RULER.t0).toISOString().slice(0, 10)) + '</text>';
   s += '<text x="' + (W - M.r) + '" y="' + (H - 6) + '" text-anchor="end">' + short_date(new Date(RULER.t1).toISOString().slice(0, 10)) + '</text>';
@@ -349,18 +393,21 @@ function drawPref(firm) {
   const l = pts[pts.length - 1];
   s += '<circle class="last" cx="' + X(l.t) + '" cy="' + Y(l.r) + '" r="4"/>';
   const room = X(l.t) < W - M.r - 40;  // SharpLink's last filed date is mid-range: label to the right of the dot
-  s += '<text class="label" x="' + (X(l.t) + (room ? 8 : -7)) + '" y="' + (room ? Y(l.r) + 4 : Y(l.r) + (l.r > 100 ? -9 : 17)) + '" text-anchor="' + (room ? 'start' : 'end') + '">' + pct(l.r) + '</text>';
+  // The end label goes on the side the line does not come from, so the line never runs through it.
+  const prev = pts[pts.length - 2], over = prev ? prev.r <= l.r : l.r > 100;
+  s += '<text class="label" x="' + (X(l.t) + (room ? 8 : -7)) + '" y="' + (room ? Y(l.r) + 4 : Y(l.r) + (over ? -9 : 17)) + '" text-anchor="' + (room ? 'start' : 'end') + '">' + pct(l.r) + '</text>';
   el.innerHTML = s + '</svg>';
-  bindTips(el, t => {
+  const rows = t => {
     const p = pts[+t.dataset.tip], g = p.close - p.be;
     const gap = sbet ? Math.abs(g).toFixed(3) + (g < 0 ? ' below 1' : ' above 1') : '$' + Math.abs(g).toFixed(2) + (g < 0 ? ' below' : ' above');
-    return '<b>' + FIRM[firm].name + '</b>, ' + (sbet ? 'filed date ' : 'week ending ') + p.w.week_end
-      + '<div class="row"><span>' + (sbet ? 'm (net mNAV)' : esc(h.pref) + ' close') + '</span><span>' + (sbet ? p.close.toFixed(3) : '$' + p.close.toFixed(2)) + '</span></div>'
+    return '<div class="row"><span>' + (sbet ? 'm (net mNAV)' : esc(h.pref) + ' close') + '</span><span>' + (sbet ? p.close.toFixed(3) : '$' + p.close.toFixed(2)) + '</span></div>'
       + '<div class="row"><span>Break-even' + (sbet ? '' : ' (100 × m)') + '</span><span>' + (sbet ? '1' : '$' + p.be.toFixed(2)) + '</span></div>'
       + '<div class="row"><span>' + (sbet ? '1 ÷ m' : 'Close ÷ break-even') + '</span><span>' + p.r.toFixed(1) + '%</span></div>'
-      + '<div class="row on"><span>Gap</span><span>' + gap + '</span></div>'
-      + '<div>Filing: ' + esc(fileName(p.w.filing_urls[0])) + '</div>';
-  });
+      + '<div class="row on"><span>Gap</span><span>' + gap + '</span></div>';
+  };
+  const w = t => pts[+t.dataset.tip].w;
+  bindTips(el, t => '<b>' + FIRM[firm].name + '</b>, ' + whenLabel(w(t)) + rows(t) + filingRow(w(t).filing_urls));
+  touchSheet(el, t => FIRM[firm].name + ', ' + whenLabel(w(t)), rows, t => w(t).filing_urls);
   colKeys(el);
   const n = new Set(pts.flatMap(p => p.w.filing_urls)).size;
   document.getElementById('src-' + firm).innerHTML = (sbet ? 'Last: m ' + l.close.toFixed(3) : 'Last: ' + esc(h.pref) + ' $' + l.close.toFixed(2) + ', break-even $' + l.be.toFixed(2))
@@ -397,7 +444,11 @@ function drawMap() {
   s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">q = preferred close / $100 notional →</text>';
   s += '<text x="' + M.l + '" y="' + (M.t + 4) + '">↑ m = net mNAV</text>';
   s += '<line class="ref" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
-  s += '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 22) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
+  // A narrow plot takes it on three short lines, right-aligned just left of the diagonal: the marks sit at low q, so that corner is empty.
+  const diagX = y => X(mhi - (y - Y(mhi)) / (Y(mlo) - Y(mhi)) * (mhi - mlo)), sx = Math.min(W - M.r, diagX(M.t + 50) - 10);
+  s += W < 500 || 36 * 7.2 > W - M.l - M.r - 8
+    ? ['Strategy\'s', 'rotation adds', 'here (m &gt; q)'].map((t, k) => '<text class="label" x="' + sx + '" y="' + (M.t + 22 + 14 * k) + '" text-anchor="end">' + t + '</text>').join('')
+    : '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 22) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
   // BitMine's region label sits at the right edge, a third of the way up, clear of the marks near q = 1 (SharpLink's sit low there).
   const by = Y(lo + (hi - lo) * 0.3);
   s += W < 500
@@ -420,13 +471,13 @@ function drawMap() {
       + markSvg(w.firm, cx, cy, last ? r + 1.5 : r, 'mark', 'fill:' + (last ? c : 'var(--bg)') + ';stroke:' + c + ';stroke-width:1.25') + '</a>';
   }
   // Direct label on each firm's latest week: right, left, above, below at growing distance; the first box that stays
-  // inside the plot and hits no mark or placed label wins. Box width is estimated at 6.6px per character (10.5px monospace).
+  // inside the plot and hits no mark or placed label wins. Box width is estimated at 7.2px per character (12px monospace).
   const boxes = pts.map(w => { const r = rad(w); return [X(w.qx) - r, Y(w.m) - r, X(w.qx) + r, Y(w.m) + r]; });
   const hit = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
   for (const firm of Object.keys(FIRM)) {
     const i = latest[firm];
     if (i == null) continue;
-    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + short_date(w.week_end), tw = text.length * 6.6;
+    const w = pts[i], cx = X(w.qx), cy = Y(w.m), r = rad(w), text = FIRM[firm].name + ' ' + short_date(w.week_end), tw = text.length * 7.2;
     const cands = [4, 18, 36].flatMap(d => [[cx + r + d, cy + 4, 'start'], [cx - r - d, cy + 4, 'end'], [cx, cy - r - d - 1, 'middle'],
       [cx, cy + r + d + 9, 'middle']]);
     const box = ([x, y, a]) => { const x0 = a === 'start' ? x : a === 'end' ? x - tw : x - tw / 2; return [x0, y - 10, x0 + tw, y + 2]; };
@@ -438,33 +489,35 @@ function drawMap() {
     s += '<text class="label" x="' + pick[0] + '" y="' + pick[1] + '" text-anchor="' + pick[2] + '">' + text + '</text>';
   }
   el.innerHTML = s + '</svg>';
-  const tipHtml = t => {
-    const w = pts[+t.dataset.tip];
-    return '<b>' + FIRM[w.firm].name + '</b>, ' + (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end
-      + '<div class="row"><span>m (net mNAV)</span><span>' + fix(w.m, 3) + '</span></div>'
+  // Marks that overlap (SharpLink's 6/28 and 6/30 sit about a pixel apart) share one tooltip and one sheet that list both.
+  const near = i => pts.map((w, j) => j).filter(j => j === i || Math.hypot(X(pts[j].qx) - X(pts[i].qx), Y(pts[j].m) - Y(pts[i].m)) < 2 * R + 2)
+    .sort((a, b) => a === i ? -1 : b === i ? 1 : pts[a].week_end < pts[b].week_end ? -1 : 1);
+  const one = w => '<div class="row"><span>m (net mNAV)</span><span>' + fix(w.m, 3) + '</span></div>'
       + '<div class="row"><span>q (preferred / notional)</span><span>' + (w.q == null ? 'no preferred, plotted at 1' : fix(w.q, 4)) + '</span></div>'
       + '<div class="row"><span>Dollars moved</span><span>' + usd(w.dollars_moved) + '</span></div>'
-      + '<div class="row"><span>Value to common of actions</span><span>' + (w.actions_value == null ? 'anchor week' : usd(w.actions_value, true)) + '</span></div>'
-      + '<div>Filing: ' + esc(fileName(w.filing_urls[0])) + '</div>';
-  };
-  bindTips(el, tipHtml);
-  // Touch: a tap on a mark opens its details in the sheet instead of navigating; the sheet's link opens the filing.
-  // Mouse and keyboard follow the link directly.
-  let touch = false;
-  el.onpointerdown = ev => { touch = ev.pointerType === 'touch'; };
-  el.onclick = ev => {
-    const a = ev.target.closest('a[data-tip]');
-    if (!a || !touch) return;
-    ev.preventDefault();
-    hideTip(el.parentElement);
-    openSheet('<div class="data-rows">' + tipHtml(a) + '<a href="' + a.getAttribute('href') + '" target="_blank" rel="noopener">View filing</a></div>', a);
-  };
+      + '<div class="row"><span>Value to common of actions</span><span>' + (w.actions_value == null ? 'anchor week' : usd(w.actions_value, true)) + '</span></div>';
+  const ids = t => near(+t.dataset.tip);
+  bindTips(el, t => ids(t).map((j, k) => (k ? '<div class="also">' : '<div>') + '<b>' + FIRM[pts[j].firm].name + '</b>, ' + whenLabel(pts[j])
+    + one(pts[j]) + filingRow(pts[j].filing_urls) + '</div>').join(''));
+  const first = t => pts[+t.dataset.tip];
+  touchSheet(el, t => FIRM[first(t).firm].name + ', ' + whenLabel(first(t)) + (ids(t).length > 1 ? ', and ' + (ids(t).length - 1) + ' more at the same spot' : ''),
+    t => ids(t).map((j, k) => (k ? '<div class="also"><b>' + whenLabel(pts[j]) + '</b>' : '<div>') + one(pts[j]) + '</div>').join(''),
+    t => ids(t).flatMap(j => pts[j].filing_urls.map(u => [u, whenLabel(pts[j])])),
+    // A tap goes to the nearest mark within 22px, whatever sits on top.
+    ev => {
+      const svg = el.querySelector('svg'), b = svg.getBoundingClientRect(), k = W / b.width;
+      const px = (ev.clientX - b.left) * k, py = (ev.clientY - b.top) * k;
+      let best = -1, dist = 22 * k;
+      pts.forEach((w, i) => { const d = Math.hypot(X(w.qx) - px, Y(w.m) - py); if (d <= dist) { dist = d; best = i; } });
+      return best < 0 ? null : el.querySelector('a[data-tip="' + best + '"]');
+    });
 }
 
+// The h2 says what the map shows; the standfirst under it carries the latest m and q (M18).
 function mapTitle() {
   const h = Object.fromEntries(DATA.headline.map(x => [x.firm, x])), a = h.MSTR, b = h.BMNR;
-  document.getElementById('map-title').textContent = 'Break-even map: Strategy at m ' + a.m.toFixed(3) + ', q ' + a.q.toFixed(3)
-    + '; BitMine at m ' + b.m.toFixed(3) + ', q ' + b.q.toFixed(3) + ' (week ending ' + a.week_end + ')';
+  document.getElementById('map-standfirst').textContent = 'Week ending ' + nice_date(a.week_end) + ': Strategy at m ' + a.m.toFixed(3) + ', q ' + a.q.toFixed(3)
+    + '; BitMine at m ' + b.m.toFixed(3) + ', q ' + b.q.toFixed(3) + '. Select a mark to open its filing.';
 }
 
 function mapLegend() {
@@ -488,16 +541,21 @@ function stack(w) {
   for (const k of Object.keys(CAT).slice(1)) out.push([k, CAT[k][0], CAT[k][1], v[k], false]);
   return out.filter(d => Math.abs(d[3]) >= 0.005);
 }
-let BARS = null;  // shared y domain across the three firms, in bp
+let BARS = null;  // shared y domain across the three firms, in bp, and the shared time axis
 function barDomain() {
   let lo = 0, hi = 0;
-  for (const w of DATA.weeks.filter(w => w.value)) {
+  const weeks = DATA.weeks.filter(w => w.value);
+  for (const w of weeks) {
     const st = stack(w), k = toBp(w);
     hi = Math.max(hi, st.reduce((a, d) => a + Math.max(d[3], 0), 0) * k);
     lo = Math.min(lo, st.reduce((a, d) => a + Math.min(d[3], 0), 0) * k);
   }
-  const ticks = nice(lo, hi, 4);
-  BARS = { lo: Math.min(lo, ticks[0]), hi: Math.max(hi, ticks[ticks.length - 1]), ticks };
+  // The data's range plus 5% on each side that has data, zero always inside (bars start at zero); ticks outside are dropped.
+  const pad = (hi - lo || 1) * 0.05, dlo = lo < 0 ? lo - pad : 0, dhi = hi > 0 ? hi + pad : 0;
+  const ticks = nice(dlo, dhi, 4).filter(t => t >= dlo - 1e-9 && t <= dhi + 1e-9);
+  // x: the same dates as the panels above (the ruler's span), widened only if a bar falls outside it.
+  const ts = weeks.map(w => Date.parse(w.week_end));
+  BARS = { lo: dlo, hi: dhi, ticks, t0: Math.min(RULER.t0, ...ts), t1: Math.max(RULER.t1, ...ts) };
 }
 
 function segPath(x, y0, y1, w) {
@@ -505,56 +563,86 @@ function segPath(x, y0, y1, w) {
   return 'M' + x + ',' + top + 'h' + w + 'v' + h + 'h' + (-w) + 'Z';
 }
 
-function weekTip(w, on) {
-  const k = toBp(w);
-  const rows = stack(w).map(d => '<div class="row' + (d[0] === on ? ' on' : '') + '"><span><i class="sw' + (d[0] === 'residual' ? ' resid' : d[4] ? ' est' : '') + '" style="background:var(' + d[2] + ')'
+// Rows under 0.05 bp round to zero, so the tooltip leaves them out; the table keeps every cause.
+const TINY_BP = 0.05;
+function weekRows(w, on) {
+  const k = toBp(w), big = v => Math.abs(v * k) >= TINY_BP;
+  const rows = stack(w).filter(d => big(d[3]) || d[0] === on).map(d => '<div class="row' + (d[0] === on ? ' on' : '') + '"><span><i class="sw'
+    + (d[0] === 'residual' ? ' resid' : d[4] ? ' est' : '') + '" style="background:var(' + d[2] + ')'
     + '"></i>' + d[1] + '</span><span>' + bps(d[3] * k, true) + ' · ' + usd(d[3], true) + '</span></div>').join('');
-  return '<b>' + FIRM[w.firm].name + '</b>, ' + (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end + rows
-    + '<div class="row"><span>Coin price (not stacked)</span><span>' + bps(w.price * k, true) + ' · ' + usd(w.price, true) + '</span></div>'
-    + '<div class="row"><span>In-the-money flips (not stacked)</span><span>' + bps(w.itm_flip * k, true) + ' · ' + usd(w.itm_flip, true) + '</span></div>'
+  return rows
+    + (big(w.price) ? '<div class="row"><span>Coin price (not stacked)</span><span>' + bps(w.price * k, true) + ' · ' + usd(w.price, true) + '</span></div>' : '')
+    + (big(w.itm_flip) ? '<div class="row"><span>In-the-money flips (not stacked)</span><span>' + bps(w.itm_flip * k, true) + ' · ' + usd(w.itm_flip, true) + '</span></div>' : '')
     + '<div class="row on"><span>Observed change</span><span>' + bps(w.observed * k, true) + ' · ' + usd(w.observed, true) + '</span></div>';
+}
+function weekTip(w, on) {
+  return '<b>' + FIRM[w.firm].name + '</b>, ' + whenLabel(w) + weekRows(w, on) + filingRow(w.filing_urls);
 }
 
 function drawBars(firm) {
   const el = document.getElementById('bars-' + firm);
   const weeks = DATA.weeks.filter(w => w.firm === firm && w.value);
   const W = el.clientWidth || 640, H = W < 500 ? 220 : 250, M = { l: 52, r: 8, t: 16, b: 28 };
-  const { lo, hi, ticks } = BARS;
+  const { lo, hi, ticks, t0, t1 } = BARS;
   const Y = v => M.t + (hi - v) / (hi - lo) * (H - M.t - M.b);
-  const bw = (W - M.l - M.r) / weeks.length, barW = Math.min(36, Math.max(4, bw * 0.62));
+  // Bars sit on the real time axis, shared by the three firms (M24): a full week is 62% of seven days wide; rows a few
+  // days apart (quarter ends, SharpLink's filed dates) become narrow neighbours that do not overlap.
+  const day = 864e5, plotW = W - M.l - M.r, full0 = 7 * 0.62 * plotW / ((t1 - t0) / day + 7);
+  const X = t => M.l + full0 / 2 + (t - t0) / (t1 - t0 || 1) * (plotW - full0);
+  const pxDay = (plotW - full0) / ((t1 - t0) / day || 1), full = Math.min(36, Math.max(3, 7 * 0.62 * pxDay));
+  const xs = weeks.map(w => X(Date.parse(w.week_end)));
+  const widths = xs.map((x, i) => {
+    const gap = Math.min(i ? x - xs[i - 1] : Infinity, i < xs.length - 1 ? xs[i + 1] - x : Infinity);
+    return Math.max(2, Math.min(full, gap * 0.8));
+  });
   const hatch = 'hatch-' + firm, resid = 'resid-' + firm;
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + FIRM[firm].name + ': weekly change in net coins per share by cause, basis points. Left and Right arrow keys move between weeks.">'
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="' + FIRM[firm].name
+    + ': weekly change in net coins per share by cause, basis points, by date. Left and Right arrow keys move between weeks; each opens its filing.">'
     + '<defs>' + hatchPattern(hatch, '--ink2', 45) + hatchPattern(resid, '--neutral', -45) + '</defs>';
   for (const t of ticks) {  // labels only; the zero line is the one rule
     s += '<text x="' + (M.l - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + (t > 0 ? '+' : t < 0 ? MINUS : '') + Math.abs(t) + (t ? '' : ' bp') + '</text>';
     if (t) s += '<line class="tick" x1="' + (M.l - 4) + '" x2="' + M.l + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/>';
   }
-  const every = Math.ceil(44 / bw);
+  // Time axis: a tick and a label at each month start inside the span.
+  const d0 = new Date(t0);
+  for (let mth = new Date(Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth() + (d0.getUTCDate() > 1 ? 1 : 0), 1)); +mth <= t1; mth.setUTCMonth(mth.getUTCMonth() + 1)) {
+    const x = X(+mth);
+    s += '<line class="tick" x1="' + x + '" x2="' + x + '" y1="' + (H - M.b + 2) + '" y2="' + (H - M.b + 6) + '"/>'
+      + '<text x="' + x + '" y="' + (H - M.b + 19) + '" text-anchor="middle">' + mth.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }) + '</text>';
+  }
   const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? weeks.length - 1, weeks.length - 1);
+  const mid = i => i < 0 ? M.l : i >= xs.length - 1 ? W - M.r : (xs[i] + xs[i + 1]) / 2;
   let big = null;
   weeks.forEach((w, i) => {
-    const x0 = M.l + i * bw, x = x0 + (bw - barW) / 2, st = stack(w), k = toBp(w);
-    s += '<rect class="col" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" x="' + x0 + '" y="' + M.t + '" width="' + bw + '" height="' + (H - M.t - M.b) + '" aria-label="'
-      + esc(FIRM[firm].name + (firm === 'SBET' ? ' filed date ' : ' week ending ') + w.week_end + ': observed ' + bps(w.observed * k, true) + ', ' + usd(w.observed, true)) + '"/>';
+    const bw = widths[i], x = xs[i] - bw / 2, st = stack(w), k = toBp(w);
+    const c0 = Math.min(mid(i - 1), x - 3), c1 = Math.max(mid(i), x + bw + 3);
+    // Each week is one link to its filing (M9): a transparent hit column with the week's segments inside it.
+    s += '<a class="col" href="' + esc(w.filing_urls[0]) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
+      + esc(FIRM[firm].name + ' ' + whenLabel(w) + ': observed ' + bps(w.observed * k, true) + ', ' + usd(w.observed, true) + '. Opens filing.') + '">'
+      + '<rect class="hit" x="' + c0 + '" y="' + M.t + '" width="' + (c1 - c0) + '" height="' + (H - M.t - M.b) + '"/>';
     let up = 0, dn = 0;
     st.forEach(d => {
       const v = d[3] * k, a = v > 0 ? up : dn, b = a + v;
       if (v > 0) up = b; else dn = b;
       const fill = d[0] === 'residual' ? RESID_FILL(resid) : d[4] ? 'url(#' + hatch + ')' : 'var(' + d[2] + ')';
-      s += '<path class="seg" data-tip="' + i + '" data-cat="' + d[0] + '" d="' + segPath(x, Y(a), Y(b), barW) + '" style="fill:' + fill + '"/>';
-      if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x, y: (Y(a) + Y(b)) / 2, week: w.week_end };
+      s += '<path class="seg' + (bw < 8 ? ' thin' : '') + '" data-cat="' + d[0] + '" d="' + segPath(x, Y(a), Y(b), bw) + '" style="fill:' + fill + '"/>';
+      if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x, w: bw, y: v < 0 ? Math.max(Y(a), Y(b)) - 4 : Math.min(Y(a), Y(b)) + 12, week: w.week_end };
     });
-    if (st.length) s += '<line class="net" x1="' + (x - 3) + '" x2="' + (x + barW + 3) + '" y1="' + Y(up + dn) + '" y2="' + Y(up + dn) + '"/>';
-    if (i % every === 0) s += '<text x="' + (x0 + bw / 2) + '" y="' + (H - M.b + 16) + '" text-anchor="middle">' + short_date(w.week_end) + '</text>';
+    if (st.length) s += '<line class="net" x1="' + (x - 3) + '" x2="' + (x + bw + 3) + '" y1="' + Y(up + dn) + '" y2="' + Y(up + dn) + '"/>';
+    s += '</a>';
   });
   s += '<line class="zero" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>';
-  if (big) {  // the one direct label: largest segment in this chart, beside its bar at the segment's middle (clear of the net tick)
-    const right = big.x < W * 0.6, x = W < 500 ? M.l + 4 : right ? big.x + barW + 6 : big.x - 6;
-    s += '<text class="label" x="' + x + '" y="' + (W < 500 ? M.t + 4 : big.y + 4) + '" text-anchor="' + (W < 500 || right ? 'start' : 'end') + '">'
-      + (W < 500 ? 'Largest: ' + short_date(big.week) + ' ' : '') + big.label + ' ' + bps(big.v, true) + '</text>';
+  if (big) {  // the one direct label: largest segment in this chart, beside its bar at the segment's far end (clear of shorter neighbours)
+    const narrow = W < 500, right = big.x < W * 0.6, x = narrow ? M.l + 4 : right ? big.x + big.w + 6 : big.x - 6;
+    const tail = big.label + ' ' + bps(big.v, true), long = 'Largest: ' + short_date(big.week) + ' ' + tail;
+    const mid2 = short_date(big.week) + ' ' + tail, fits = t => t.length * 7.2 <= W - x;
+    const text = narrow ? (fits(long) ? long : fits(mid2) ? mid2 : tail) : tail;
+    s += '<text class="label" x="' + x + '" y="' + (narrow ? M.t + 4 : big.y + 4) + '" text-anchor="' + (narrow || right ? 'start' : 'end') + '">' + esc(text) + '</text>';
   }
   el.innerHTML = s + '</svg>';
-  bindTips(el, t => weekTip(weeks[+t.dataset.tip], t.dataset.cat));
+  const w = t => weeks[+t.dataset.tip];
+  bindTips(el, (t, src) => weekTip(w(t), src && src.dataset ? src.dataset.cat : null));
+  touchSheet(el, t => FIRM[firm].name + ', ' + whenLabel(w(t)), t => weekRows(w(t)), t => w(t).filing_urls);
   colKeys(el);
 }
 
@@ -562,8 +650,7 @@ function barsLegend() {
   const items = Object.entries(GROUP).map(([k, [label, c]]) => k === 'residual'
     ? swatch(RESID_SWATCH) + 'Residual: change the filings leave unexplained'
     : swatch('<rect x="1" y="1" width="12" height="12" style="fill:var(' + c + ')"/>') + label);
-  items.splice(1, 0, swatch('<rect x="1" y="1" width="12" height="12" style="fill:var(--ink2);fill-opacity:0.2"/><path d="M1,9 L9,1 M5,13 L13,5" style="stroke:var(--ink2);stroke-width:2"/>')
-    + EST + ', part of common');
+  items.splice(1, 0, swatch(EST_SWATCH) + EST + ', part of common');
   items.push(swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--fg);stroke-width:2"/>') + 'Net of the stacked causes');
   document.getElementById('bars-legend').innerHTML = items.map(x => '<span>' + x + '</span>').join('');
 }
@@ -599,22 +686,28 @@ function totals() {
         + '<span class="strip-val">' + usd(v, true) + '</span></div>';
     }).join('');
     document.getElementById('bars-' + firm).closest('.firm-panel').insertAdjacentHTML('beforeend',
-      '<div class="strip"><p class="strip-title">Since ' + esc(x.since) + ', value to common by cause, USD</p>'
+      '<div class="strip"><p class="strip-title">Since ' + esc(x.since) + ', value to common by cause, USD; scale: this firm only</p>'
       + '<p class="strip-note">' + esc(residualSentence(firm, x)) + '</p>' + html + '</div>');
   }
 }
 
+// One unit per column: dollars in millions, one decimal; basis points in their own column.
+function usdM(x, signed) {
+  if (x == null || isNaN(x)) return '-';
+  const t = Math.abs(x / 1e6).toFixed(1);
+  return (t === '0.0' ? '' : x < 0 ? MINUS : signed ? '+' : '') + t;
+}
 function table() {
   const cols = DATA.categories;
-  let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved ($)</th>'
-    + cols.map(c => '<th>' + CAT[c][0].toLowerCase() + ' ($)</th>').join('')
-    + '<th>of which estimated issuance ($)</th><th>coin price ($)</th><th>in-the-money flips ($)</th><th>observed ($)</th><th>observed (bp of net value)</th><th>filing</th></tr></thead><tbody>';
+  let h = '<thead><tr><th>firm</th><th>week ending (SharpLink: filed date)</th><th>m</th><th>q</th><th>dollars moved ($M)</th>'
+    + cols.map(c => '<th>' + CAT[c][0].toLowerCase() + ' ($M)</th>').join('')
+    + '<th>of which estimated issuance ($M)</th><th>coin price ($M)</th><th>in-the-money flips ($M)</th><th>observed ($M)</th><th>observed (bp of net value)</th><th>filing</th></tr></thead><tbody>';
   for (const w of DATA.weeks) {
     const v = w.value || {};
-    h += '<tr><td>' + FIRM[w.firm].name + '</td><td>' + w.week_end + '</td><td>' + fix(w.m, 3) + '</td><td>' + fix(w.q, 4) + '</td><td>' + usd(w.dollars_moved) + '</td>'
-      + cols.map(c => '<td>' + (w.value ? usd(v[c], true) : '-') + '</td>').join('')
-      + '<td>' + (w.est_issuance ? usd(w.est_issuance, true) : '-') + '</td><td>' + usd(w.price, true) + '</td><td>' + usd(w.itm_flip, true) + '</td><td>'
-      + usd(w.observed, true) + '</td><td>' + (w.observed == null ? '-' : bps(w.observed * toBp(w), true)) + '</td><td>'
+    h += '<tr><td>' + FIRM[w.firm].name + '</td><td>' + w.week_end + '</td><td>' + fix(w.m, 3) + '</td><td>' + fix(w.q, 4) + '</td><td>' + usdM(w.dollars_moved) + '</td>'
+      + cols.map(c => '<td>' + (w.value ? usdM(v[c], true) : '-') + '</td>').join('')
+      + '<td>' + (w.est_issuance ? usdM(w.est_issuance, true) : '-') + '</td><td>' + usdM(w.price, true) + '</td><td>' + usdM(w.itm_flip, true) + '</td><td>'
+      + usdM(w.observed, true) + '</td><td>' + (w.observed == null ? '-' : bps(w.observed * toBp(w), true)) + '</td><td>'
       + w.filing_urls.map(u => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(fileName(u)) + '</a>').join(' ') + '</td></tr>';
   }
   document.getElementById('week-table').innerHTML = h + '</tbody>';
@@ -625,9 +718,12 @@ function method() {
   // Caveats grouped by kind, each group a short list (estimated figures first: they carry numbers a reader may reuse).
   const KIND = [['estimate', 'Estimated figures'], ['coverage', 'What is in, what is out, where data is missing'], ['convention', 'Conventions']];
   const li = n => '<li>' + esc(n.text) + (n.url ? ' <a href="' + esc(n.url) + '" target="_blank" rel="noopener">Release</a>.' : '') + '</li>';
+  // Estimated figures stay open; the other groups fold, each summary carrying its count (M21).
   document.getElementById('notes').innerHTML = KIND.map(([k, label]) => {
-    const ns = DATA.notes.filter(n => n.group === k);
-    return ns.length ? '<li class="note-group"><h4>' + label + ' (' + ns.length + ')</h4><ul>' + ns.map(li).join('') + '</ul></li>' : '';
+    const ns = DATA.notes.filter(n => n.group === k), list = '<ul>' + ns.map(li).join('') + '</ul>';
+    if (!ns.length) return '';
+    return '<li class="note-group">' + (k === 'estimate' ? '<h4>' + label + ' (' + ns.length + ')</h4>' + list
+      : '<details class="fold"><summary>' + label + ' (' + ns.length + ')</summary>' + list + '</details>') + '</li>';
   }).join('');
   const c = DATA.check && typeof DATA.check === 'object' ? DATA.check : { status: 'not yet run' }, when = c.run_at || c.generated_at;
   const count = Array.isArray(c.checks) ? c.checks.length : 0;
@@ -636,20 +732,26 @@ function method() {
     + (when ? ' · Run ' + esc(when) : '') + '</p></div></div>'
     + (Object.keys(c).length > 1 ? '<details class="fold check-detail"><summary>View full check record</summary><pre>' + esc(JSON.stringify(c, null, 1)) + '</pre></details>' : '');
   const through = DATA.headline.filter(h => h.break_even != null).map(h => h.week_end).sort()[0];
-  document.getElementById('footer').textContent = 'Data through the week ending ' + through + '. Page built ' + DATA.generated_at + ' from the CSVs below.';
+  document.getElementById('footer').innerHTML = 'Data through the week ending ' + esc(through) + '. Page built ' + esc(DATA.generated_at)
+    + ' from the CSVs in <a href="#downloads">Downloads</a>.';
 }
 
 // ---- the sheet: term definitions and map details ----
 // Phones: a bottom sheet (CSS). Desktop: a small card under its trigger, kept inside the viewport.
+// It is a dialog labelled by its h4 (#sheet-title); focus moves into it on open and back to the trigger on close
+// (Escape closes it: the popover's own light dismiss).
 let SHEET_FROM = null;
+const PHONE = '(max-width: 760px)';
 function openSheet(html, from) {
   const sh = document.getElementById('sheet');
-  sh.querySelector('.sheet-body').innerHTML = html;
   if (sh.matches(':popover-open')) sh.hidePopover();
+  sh.querySelector('.sheet-body').innerHTML = html;
   SHEET_FROM = from || null;
+  if (from && from.hasAttribute('aria-expanded')) from.setAttribute('aria-expanded', 'true');
   sh.style.left = sh.style.top = '';
   sh.showPopover();
-  if (from && !matchMedia('(max-width: 720px)').matches) {
+  sh.focus({ preventScroll: true });
+  if (from && !matchMedia(PHONE).matches) {
     const r = from.getBoundingClientRect(), w = sh.offsetWidth, h = sh.offsetHeight;
     sh.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left)) + 'px';
     sh.style.top = (r.bottom + h + 12 < innerHeight ? r.bottom + 8 : Math.max(12, r.top - h - 8)) + 'px';
@@ -657,16 +759,20 @@ function openSheet(html, from) {
 }
 function sheetUi() {
   const sh = document.getElementById('sheet');
-  sh.addEventListener('toggle', ev => { if (ev.newState === 'closed' && SHEET_FROM && document.contains(SHEET_FROM)) SHEET_FROM.focus({ preventScroll: true }); });
+  sh.addEventListener('toggle', ev => {
+    if (ev.newState !== 'closed' || !SHEET_FROM) return;
+    if (SHEET_FROM.hasAttribute('aria-expanded')) SHEET_FROM.setAttribute('aria-expanded', 'false');
+    if (document.contains(SHEET_FROM)) SHEET_FROM.focus({ preventScroll: true });
+  });
   document.addEventListener('click', ev => {
     const t = ev.target.closest('.term');
     if (!t) return;
     const [title, body] = TERMS[t.dataset.term];
-    openSheet('<h4>' + esc(title) + '</h4><p>' + esc(body) + '</p>', t);
+    openSheet('<h4 id="sheet-title">' + esc(title) + '</h4><p>' + esc(body) + '</p>', t);
   });
 }
 
-// ---- phones: one firm at a time on the shared scale; the selection survives redraws ----
+// ---- phones (760px and below): one firm at a time on the shared scale; the selection survives redraws ----
 function segControls() {
   document.querySelectorAll('.seg-control').forEach(ctl => {
     const box = document.getElementById(ctl.dataset.for), tabs = [...ctl.querySelectorAll('[role="tab"]')];
@@ -679,8 +785,9 @@ function segControls() {
     ctl.addEventListener('click', ev => { const b = ev.target.closest('[role="tab"]'); if (b) pick(b.dataset.firm); });
     ctl.addEventListener('keydown', ev => {
       const i = tabs.findIndex(b => b.getAttribute('aria-selected') === 'true'), d = { ArrowLeft: -1, ArrowRight: 1 }[ev.key];
-      if (d == null) return;
-      const j = (i + d + tabs.length) % tabs.length;
+      const j = ev.key === 'Home' ? 0 : ev.key === 'End' ? tabs.length - 1 : d == null ? -1 : (i + d + tabs.length) % tabs.length;
+      if (j < 0) return;
+      ev.preventDefault();
       pick(tabs[j].dataset.firm);
       tabs[j].focus();
     });
@@ -691,7 +798,7 @@ function segControls() {
 // ---- section links: the current section is marked in the top links and the phone tab bar ----
 function sectionNav() {
   const links = [...document.querySelectorAll('[data-sec]')], ids = [...new Set(links.map(a => a.dataset.sec))];
-  // The tab bar's "Detail" stands for everything from the map down.
+  // The tab bar's "Map" stands for everything from the map down.
   const group = id => ['bars-section', 'method', 'built', 'downloads'].includes(id) ? 'map-section' : id;
   const secs = [...document.querySelectorAll('main > section')];
   const mark = () => {

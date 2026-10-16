@@ -56,11 +56,11 @@ function panRest(side) {
 
 function labelPlate(side, letter) {
   const x = side * ARM;
-  const plan = { x: x - 9, y: 28, w: 18, d: 11, r: 1.2 };
+  const plan = { x: x - 11, y: 26, w: 22, d: 15, r: 1.4 };
   return [
     S(slab(plan, 0, 0.8, P, 3), { tone: "mid", crease: "faint" }),
     L(k.planOutline(k.insetPlan(plan, 1.6), 0.8, P, 3), { tone: "faint" }),
-    k.faceTextSvg(k.topMatrix([x - 2.2, 35.6], 0.8, P, "x"), letter, { size: 7, tone: "hi" }),
+    k.faceTextSvg(k.topMatrix([x, 36.2], 0.8, P, "x"), letter, { size: 11, tone: "hi", anchor: "middle" }),
   ].join("");
 }
 
