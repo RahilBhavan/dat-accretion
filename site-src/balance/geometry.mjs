@@ -353,5 +353,17 @@ export function dialPoint(name, share, radius) {
 }
 
 export const knobDepth = (name) => depthOf([KNOBS[name].at[0], KNOBS[name].at[1], 0], P);
-export const knobHit = (name) => ring(KNOBS[name].at[0], KNOBS[name].at[1], KNOBS[name].dial + 6, 0.8, P, 48);
-export const knobFocus = (name) => ring(KNOBS[name].at[0], KNOBS[name].at[1], KNOBS[name].dial + 2.5, 0.8, P, 64);
+// Pointer hit area: the dial's footprint plus the knob body, grown to at least minW x minH viewBox units.
+// The runtime passes 48 CSS px converted to viewBox units, so a thumb finds the knob at any width.
+export function knobHit(name, minW = 0, minH = 0) {
+  const { at, dial } = KNOBS[name];
+  const reach = dial + 6;
+  const mid = iso([at[0], at[1], 0.8], P);
+  const c = iso([at[0], at[1], KNOB_TOP / 2], P);
+  const ex = iso([at[0] + reach, at[1], 0.8], P);
+  const ey = iso([at[0], at[1] + reach, 0.8], P);
+  const rx = Math.max(Math.hypot(ex[0] - mid[0], ex[1] - mid[1]), minW / 2);
+  const ry = Math.max(Math.hypot(ey[0] - mid[0], ey[1] - mid[1]) + (mid[1] - c[1]), minH / 2);
+  const f = (v) => v.toFixed(2);
+  return `M${f(c[0] - rx)} ${f(c[1])}a${f(rx)} ${f(ry)} 0 1 0 ${f(2 * rx)} 0a${f(rx)} ${f(ry)} 0 1 0 ${f(-2 * rx)} 0z`;
+}
