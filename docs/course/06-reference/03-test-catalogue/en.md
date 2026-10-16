@@ -22,7 +22,7 @@ tests/test_check.py: 6
 tests/test_edgar.py: 3
 tests/test_engine.py: 17
 tests/test_figures.py: 2
-tests/test_memo.py: 5
+tests/test_memo.py: 10
 tests/test_parse_bmnr.py: 22
 tests/test_parse_mstr.py: 33
 tests/test_parse_sbet.py: 19
@@ -32,13 +32,14 @@ tests/test_snapshot_kpi.py: 5
 tests/test_social.py: 2
 ```
 
-That is 156 collected tests (counts include each parameter case). The full run:
+That is 161 collected tests (counts include each parameter case). The full run:
 
 ```
 .venv/bin/python -m pytest -q
-........................................................................ [ 50%]
-........................................................................ [100%]
-144 passed in 0.38s
+........................................................................ [ 44%]
+........................................................................ [ 89%]
+.................                                                        [100%]
+161 passed in 0.44s
 ```
 
 Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one test with `-k strc_anchor`. `.github/workflows/ci.yml` runs the same suite (`python -m pytest -q tests`) as the `tests` check that protects `main` (decision P4), and `refresh.yml` runs it again before each weekly merge. A **fixture** here is plain test input; a **parameterized** test runs once per listed case.
@@ -119,6 +120,11 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_each_week_uses_its_own_bias` | a week judged by the latest bias instead of its own |
 | `test_bias_that_flips_weeks_is_stated` | a bias that moves BitMine weeks across the line going unstated: the footnote must name every week where m × (1 − bias) is at or below q |
 | `test_memo_leads_with_break_even_table` | the memo losing its answer-first layout: the break-even table sits right under the title |
+| `test_bitmine_row_marked_when_its_week_flips_on_the_bias` | the table stating BitMine's side of the line without saying the S-estimate bias could flip that week |
+| `test_map_has_equal_units_and_a_45_degree_diagonal` | a map whose axes use different units, so m = q is not a 45° line, or labels that print under 7pt |
+| `test_memo_font_path_resolves_from_docs` | memo fonts that fail to load from `docs/` and fall back to a system font (decision M25) |
+| `test_causes_match_site_totals_and_sum_to_observed` | a by-cause table that drifts from the page's totals or whose parts do not sum to the observed change |
+| `test_memo_text_has_one_bias_wording_and_no_em_dash` | the S bias worded differently from the page notes, an em dash, or the rule restated after the counts |
 
 ## test_parse_bmnr.py
 
