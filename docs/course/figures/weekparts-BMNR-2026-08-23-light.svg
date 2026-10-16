@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 286" width="860" height="286" role="img" aria-label="BitMine week ending 2026-08-23: Coin price +64.1 bp; In-the-money flips -6.1 bp; Buy ETH $81.6M +0.0 bp; Carry: BMNP dividends -0.5 bp; Estimated issuance -14.5 bp; Residual (unexplained) +0.0 bp; observed +43.0 bp" font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif" font-size="13" fill="#15171b" style="font-variant-numeric: tabular-nums">
-<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#9aa3ae" stroke-width="2"/></pattern></defs>
+<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#707884" stroke-width="2"/></pattern></defs>
 <text x="0" y="16" font-weight="600">BitMine, week ending 2026-08-23: change in net ETH per share, by part</text>
 <text x="0" y="34" fill="#5d6470">Basis points of this week's n (1 bp = 0.01%), in the engine's order. Dollars are value to common, Δn × S × p.</text>
 <text x="250" y="66" text-anchor="end">Coin price</text>
-<rect x="262.0" y="55" width="318.0" height="14" fill="#9aa3ae"/>
+<rect x="262.0" y="55" width="318.0" height="14" fill="#707884"/>
 <text x="592" y="66">+64.1 bp<tspan fill="#5d6470" dx="8">+$94.0M</tspan></text>
 <text x="250" y="96" text-anchor="end">In-the-money flips</text>
-<rect x="549.7" y="85" width="30.3" height="14" fill="#9aa3ae"/>
+<rect x="549.7" y="85" width="30.3" height="14" fill="#707884"/>
 <text x="592" y="96">−6.1 bp<tspan fill="#5d6470" dx="8">−$9.0M</tspan></text>
 <text x="250" y="126" text-anchor="end">Buy ETH $81.6M</text>
-<rect x="549.7" y="115" width="1.0" height="14" fill="#9aa3ae"/>
+<rect x="549.7" y="115" width="1.0" height="14" fill="#707884"/>
 <text x="592" y="126">0 bp<tspan fill="#5d6470" dx="8">$0</tspan></text>
 <text x="250" y="156" text-anchor="end">Carry: BMNP dividends</text>
-<rect x="547.4" y="145" width="2.2" height="14" fill="#9aa3ae"/>
+<rect x="547.4" y="145" width="2.2" height="14" fill="#707884"/>
 <text x="592" y="156">−0.5 bp<tspan fill="#5d6470" dx="8">−$0.7M</tspan></text>
 <text x="250" y="186" text-anchor="end" font-weight="600">Estimated issuance</text>
 <rect x="475.5" y="175" width="72.0" height="14" fill="#1f6fd1"/>
@@ -20,7 +20,7 @@
 <text x="250" y="216" text-anchor="end">Residual (unexplained)</text>
 <rect x="475.5" y="205" width="1.0" height="14" fill="url(#hatch)"/>
 <text x="592" y="216">0 bp<tspan fill="#5d6470" dx="8">$0</tspan></text>
-<line x1="262" x2="740" y1="233" y2="233" stroke="#9aa1ab"/>
+<line x1="262" x2="740" y1="233" y2="233" stroke="#8a919c"/>
 <text x="250" y="253" text-anchor="end" font-weight="600">Observed change</text>
 <rect x="262.0" y="241" width="213.5" height="14" fill="#3b4250"/>
 <text x="592" y="253" font-weight="600">+43.0 bp<tspan fill="#5d6470" font-weight="400" dx="8">+$63.1M</tspan></text>

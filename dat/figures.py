@@ -8,10 +8,10 @@ import html, math, os, sys
 from dat.balances import read
 
 THEMES = {
-    'light': {'fg': '#15171b', 'muted': '#5d6470', 'axis': '#9aa1ab', 'accent': '#1f6fd1', 'ink2': '#3b4250',
-              'gray1': '#9aa3ae', 'gray2': '#cdd3da'},
+    'light': {'fg': '#15171b', 'muted': '#5d6470', 'axis': '#8a919c', 'accent': '#1f6fd1', 'ink2': '#3b4250',
+              'gray1': '#707884', 'gray2': '#8b919c'},
     'dark': {'fg': '#eef1f4', 'muted': '#a3acb8', 'axis': '#67717e', 'accent': '#5c9ef0', 'ink2': '#c9d0d9',
-             'gray1': '#7b8592', 'gray2': '#3f4855'},
+             'gray1': '#7b8592', 'gray2': '#5b6470'},
 }
 FONT = '-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif'
 MINUS = '−'
