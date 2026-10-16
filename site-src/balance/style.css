@@ -7,8 +7,8 @@
   --anatomy-halo:#8a8a80;--anatomy-halo-opacity:.26;--anatomy-dot:#3a3a3e;
   --b-text:#4a4d55;--b-strong:#16181c;--b-muted:#5f646d;--b-line:#cdd3da;color-scheme:light}
 .balance[data-theme="dark"]{
-  --anatomy-paper:#0f1216;--anatomy-face:#181c22;--anatomy-top:#1b1f26;
-  --anatomy-shade-0:#0c0f12;--anatomy-shade-1:#101318;--anatomy-shade-2:#13171c;--anatomy-shade-3:#171b21;
+  --anatomy-paper:#0f1216;--anatomy-face:#1a1e25;--anatomy-top:#20252c;
+  --anatomy-shade-0:#07090c;--anatomy-shade-1:#0d1015;--anatomy-shade-2:#13171d;--anatomy-shade-3:#1a1e25;
   --anatomy-hi:#d5d9df;--anatomy-mid:#6d757f;--anatomy-lo:#434a53;--anatomy-faint:#2c323a;--anatomy-lit:#5c9ef0;
   --anatomy-halo:#020304;--anatomy-halo-opacity:.85;--anatomy-dot:#e6e9ee;
   --b-text:#b3bac4;--b-strong:#e9ecf0;--b-muted:#98a0aa;--b-line:#3f4855;color-scheme:dark}
@@ -35,7 +35,7 @@
 .balance .iso-face-text{fill:var(--anatomy-mid);font-family:var(--b-mono);letter-spacing:.04em}
 .balance .iso-face-text[data-tone="hi"]{fill:var(--anatomy-hi)}
 .balance .balance-figure{margin:0}
-.balance .balance-card{position:relative;padding:0;font-family:var(--b-mono);font-size:12px;line-height:1.4;color:var(--b-text)}
+.balance .balance-card{position:relative;padding:14px 16px;border:1px solid var(--b-line);border-radius:4px;font-family:var(--b-mono);font-size:12px;line-height:1.4;color:var(--b-text)}
 .balance .balance-head,.balance .balance-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:4px 16px;letter-spacing:.02em}
 .balance .balance-fig{color:var(--b-strong)}
 .balance .balance-tag{margin-left:8px;color:var(--b-muted);text-transform:uppercase;letter-spacing:.1em}
@@ -47,19 +47,23 @@
 .balance .balance-knob{outline:none;cursor:grab}
 .balance .balance-knob:active{cursor:grabbing}
 .balance .balance-hit{fill:transparent;stroke:none;touch-action:none}
-.balance .balance-focus{fill:none;stroke:var(--anatomy-hi);stroke-width:1px;stroke-dasharray:2 3;opacity:0}
-.balance .balance-knob:focus-visible .balance-focus{opacity:1}
+.balance .balance-hint-narrow{display:none}
 .balance .balance-controls{display:grid;grid-template-columns:1fr 1fr;gap:2px 28px;margin-top:10px;font-family:var(--b-mono);font-size:12px;color:var(--b-text)}
 .balance .balance-control{display:flex;flex-direction:column;min-width:0}
 .balance .balance-control-row{display:flex;justify-content:space-between;gap:8px}
 .balance .balance-control output{color:var(--b-strong);font-variant-numeric:tabular-nums}
-.balance .balance-control input{width:100%;height:44px;margin:0;accent-color:var(--anatomy-hi);cursor:pointer;background:transparent}
+.balance .balance-control input{width:100%;height:44px;margin:0;accent-color:var(--anatomy-hi);cursor:pointer;background:transparent;border-radius:3px}
+.balance .balance-control input:focus{outline:none}
+.balance .balance-control input:focus-visible{outline:2px solid var(--anatomy-lit);outline-offset:-2px}
 .balance .balance-today{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:4px;font-family:var(--b-mono);font-size:12px;color:var(--b-text)}
 .balance .balance-today button{min-height:44px;padding:0 14px;font:inherit;color:var(--b-strong);background:transparent;border:1px solid var(--b-line);border-radius:3px;cursor:pointer}
 .balance .balance-today button:focus-visible{outline:2px solid var(--anatomy-lit);outline-offset:2px}
 .balance .balance-caption{margin-top:8px;font-size:13px;line-height:1.55;color:var(--b-text)}
 @container (max-width:500px){
   .balance .balance-card,.balance .balance-controls,.balance .balance-today{font-size:11px}
+  .balance .balance-card{padding:12px}
+  .balance .balance-hint-wide{display:none}
+  .balance .balance-hint-narrow{display:inline}
   .balance .balance-controls{grid-template-columns:1fr}
   .balance .balance-foot{flex-direction:column;align-items:stretch}
   .balance .balance-readout{text-align:left;margin-left:0}

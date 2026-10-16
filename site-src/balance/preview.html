@@ -39,7 +39,7 @@
   if (q.get("price")) opts.price = Number(q.get("price"));
   const fig = window.Balance.mount(el, opts);
   // ?still=1 stops the idle tour (a set() counts as an interaction) so a capture shows the requested values
-  if (q.get("still")) fig.set({ m: opts.m ?? 1.2, price: opts.price ?? 100 });
+  if (q.get("still")) fig.set({ m: opts.m ?? 1.2, price: opts.price ?? 90 });
   window.__fig = fig;
 </script>
 </body>
