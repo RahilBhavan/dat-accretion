@@ -317,7 +317,7 @@ function example() {
     + '<div class="rot-table"><p class="fig-tag">Illustration: the rotation at m = 1.2</p><div class="scroll-x"><table class="plain-num">'
     + '<thead><tr><th class="num">STRC price</th><th class="num">Notional retired</th><th class="num">Sale of common</th><th class="num">Retirement</th><th class="num">Rotation, to common</th><th></th></tr></thead><tbody>'
     + rows + '</tbody></table></div><p class="caption">Raise $120 by selling common, spend it retiring STRC. Dollars to existing common holders, first order; '
-    + 'the rotation is the sale plus the retirement. Illustration, not filed figures.</p></div>'
+    + 'the rotation is the sale plus the retirement. At $120, which is $100 × m, the rotation is zero: break-even. Illustration, not filed figures.</p></div>'
     + '<div class="prose"><p>Weigh m against q: the beam is level at a STRC price of $100 × m.</p></div>'
     + '<div class="balance-slot" id="balance"></div>'
     + '<p class="balance-read">Latest filed week, net mNAV ' + fig(be.m.toFixed(3)) + ': Strategy\'s rotation adds while STRC trades below ' + fig('$' + be.break_even.toFixed(2))

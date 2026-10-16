@@ -48,7 +48,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); font: var(--fs-body)/
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom)); }
 main, footer, .site-bar-inner { width: min(100% - 2 * var(--gutter), 1180px); margin-inline: auto; }
 main, footer, .site-bar-inner { padding-inline: env(safe-area-inset-left) env(safe-area-inset-right); }
-.skip-link { position: absolute; left: 12px; top: -100px; z-index: 30; background: var(--fg); color: var(--bg); padding: 8px 12px; font: var(--fs-label) var(--mono); }
+.skip-link { position: absolute; left: 12px; top: -100px; z-index: 30; background: var(--fg); color: var(--bg); padding: 14px 12px; font: var(--fs-label) var(--mono); }
 .skip-link:focus { top: 12px; }
 :focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
 button, a, summary, [role="tab"] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -77,7 +77,7 @@ b, strong { font-weight: 650; }
 .brand-mark .frame { fill: none; stroke: var(--bg); stroke-width: 2; }
 .brand-mark .diag { stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; }
 .top-nav { display: flex; gap: clamp(12px, 1.6vw, 24px); margin-left: auto; min-width: 0; }
-.top-nav a { color: var(--muted); text-decoration: none; font: 500 var(--fs-label) var(--mono); white-space: nowrap; padding: 6px 0; border-bottom: 1.5px solid transparent; }
+.top-nav a { color: var(--muted); text-decoration: none; font: 500 var(--fs-label) var(--mono); white-space: nowrap; padding: 15px 0 13px; border-bottom: 1.5px solid transparent; }
 .top-nav a:hover { color: var(--fg); }
 .top-nav a[aria-current="true"] { color: var(--fg); border-bottom-color: var(--fg); }
 .icon-btn { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--fg); cursor: pointer; }
@@ -113,7 +113,7 @@ section { border-top: 1px solid var(--rule); padding-block: clamp(44px, 5vw, 72p
 .meta { font: var(--fs-small)/1.6 var(--serif); color: var(--muted); max-width: 46em; margin: 0; }
 .meta a { color: inherit; }
 .stale { color: var(--fg); font-weight: 650; }
-.term { font: inherit; color: inherit; background: none; border: 0; padding: 8px 0; margin: -8px 0; cursor: help; text-decoration: underline dotted var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.term { font: inherit; color: inherit; background: none; border: 0; padding: 11px 0; margin: -11px 0; cursor: help; text-decoration: underline dotted var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .term::after { content: "?"; display: inline-block; margin-left: 2px; font: 600 .6em var(--mono); color: var(--accent); vertical-align: .55em; }
 .term:hover { text-decoration-style: solid; }
 
@@ -161,7 +161,7 @@ section { border-top: 1px solid var(--rule); padding-block: clamp(44px, 5vw, 72p
 table.plain-num { width: auto; font: var(--fs-small) var(--mono); }
 table.plain-num th, table.plain-num td { padding: 8px 18px 8px 0; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
 table.plain-num th:last-child, table.plain-num td:last-child { text-align: left; color: var(--muted); }
-table.plain-num thead th { font-size: var(--fs-label); color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--fg); white-space: normal; vertical-align: bottom; }
+table.plain-num thead th { font-size: var(--fs-label); color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--fg); white-space: normal; overflow-wrap: normal; vertical-align: bottom; }
 table.plain-num tr.hl td { border-bottom-color: var(--fg); color: var(--fg); font-weight: 600; }
 table.plain-num tr.hl td:first-child { box-shadow: inset 3px 0 0 var(--accent); padding-left: 8px; }
 .filed { border-top: 1.5px solid var(--fg); padding-top: 18px; margin-top: 8px; }
@@ -210,7 +210,7 @@ table.plain-num tr.hl td:first-child { box-shadow: inset 3px 0 0 var(--accent); 
 .tip .sw, .sheet .sw { display: inline-block; width: 8px; height: 8px; margin-right: 5px; }
 .source, .dl { color: var(--muted); font: var(--fs-label)/1.6 var(--mono); margin: 10px 0 0; }
 .dl { margin-top: 22px; }
-.dl a { padding-block: 8px; margin-block: -8px; }
+.dl a { display: inline-block; padding-block: 13px; margin-block: -13px; }
 .strip { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); max-width: 680px; font: var(--fs-label) var(--mono); font-variant-numeric: tabular-nums; }
 .strip-title { color: var(--muted); margin: 0 0 8px; }
 .strip-note { font: var(--fs-small)/1.55 var(--serif); color: var(--muted); margin: 0 0 12px; max-width: 760px; }
@@ -279,7 +279,7 @@ pre { padding: 12px 0; overflow-x: auto; font: var(--fs-label) var(--mono); }
 .tile-desc { margin: 0; font-size: var(--fs-small); color: var(--muted); line-height: 1.5; }
 #downloads ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; list-style: none; padding: 0; margin: 0; }
 #downloads li { border-top: 1px solid var(--rule); padding-top: 12px; color: var(--muted); font-size: var(--fs-small); }
-#downloads li a { display: block; font: 500 var(--fs-small) var(--mono); padding-block: 8px; margin-block: -8px -4px; min-height: 28px; }
+#downloads li a { display: block; font: 500 var(--fs-small) var(--mono); padding-block: 13px; margin-block: -13px -9px; min-height: 44px; }
 footer { border-top: 1px solid var(--rule); padding: 26px 0 44px; font: var(--fs-label)/1.6 var(--mono) !important; }
 
 /* ---- the sheet: term definitions and map details. A bottom sheet on phones, a small card by its trigger on desktop ---- */
@@ -349,9 +349,9 @@ footer { border-top: 1px solid var(--rule); padding: 26px 0 44px; font: var(--fs
   .built-grid { gap: 18px; }
   #downloads ul { grid-template-columns: 1fr; gap: 14px; }
   .strip-row { grid-template-columns: minmax(84px, 8.6em) minmax(0, 1fr) 5.4em; }
-  /* the rotation table: price, sale, retirement only, so it fits 335px */
-  .rot-table th:nth-child(2), .rot-table td:nth-child(2), .rot-table th:nth-child(5), .rot-table td:nth-child(5),
-  .rot-table th:nth-child(6), .rot-table td:nth-child(6) { display: none; }
+  /* the rotation table: price, sale, retirement and the total, so it fits 335px; the caption carries the break-even note */
+  .rot-table th:nth-child(2), .rot-table td:nth-child(2), .rot-table th:nth-child(6), .rot-table td:nth-child(6) { display: none; }
+  .rot-table table.plain-num th, .rot-table table.plain-num td { padding-right: 12px; }
 
   .sheet { left: 0; right: 0; bottom: 0; top: auto; width: 100%; max-width: none; border-radius: 16px 16px 0 0; border-width: 1px 0 0;
     padding: 10px 20px calc(18px + env(safe-area-inset-bottom)); max-height: 75vh; }

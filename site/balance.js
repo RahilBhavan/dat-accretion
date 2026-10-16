@@ -598,7 +598,7 @@ knobMarkup("m") + knobMarkup("price") +
 function controlMarkup(name, label) {
 const r = RANGES[name];
 return `<label class="balance-control"><span class="balance-control-row"><span>${label}</span><output data-out="${name}"></output></span>` +
-`<input type="range" data-range="${name}" min="${r.min}" max="${r.max}" step="${r.step}"></label>`;
+`<input type="range" aria-label="${label}" data-range="${name}" min="${r.min}" max="${r.max}" step="${r.step}"></label>`;
 }
 function todayText(today) {
 const label = today.label ? String(today.label) : "";
