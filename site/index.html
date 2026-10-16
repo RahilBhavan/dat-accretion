@@ -8,6 +8,7 @@
 <meta name="description" content="Every capital action by Strategy, BitMine and SharpLink since 2026-06-01, measured in net coins per share, and the preferred price where each rotation stops adding.">
 <link rel="preload" href="fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/ibm-plex-mono-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2315171b'/%3E%3Cpath d='M8 7v17h17' fill='none' stroke='%23fbfbf9' stroke-width='2'/%3E%3Cpath d='M8 24L24 8' stroke='%235c9ef0' stroke-width='2.4'/%3E%3C/svg%3E">
 </head>
@@ -32,18 +33,18 @@
 <main id="main">
 <section id="top" class="hero" aria-labelledby="title">
   <div class="hero-text">
-    <p class="eyebrow">Crypto treasury companies <span aria-hidden="true">·</span> rebuilt weekly from SEC filings</p>
+    <p class="eyebrow">Rebuilt weekly from SEC filings</p>
     <h1 id="title">The preferred stock price where each rotation stops adding coins per share</h1>
     <p class="dek" id="dek">Loading the latest filed week.</p>
     <p class="meta" id="asof"></p>
   </div>
-  <div class="hero-ledger" id="headline-text" aria-live="polite"></div>
+  <div class="hero-ledger" id="headline-text" aria-live="polite"><div class="ledger"><div class="ledger-head" aria-hidden="true"><span>&nbsp;</span></div><article class="lr ph" aria-hidden="true"><div class="lr-name"><h3 class="lr-firm">&nbsp;</h3><p class="lr-when">&nbsp;</p></div><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-cond"><span>&nbsp;</span><svg class="spark" width="156" height="32" aria-hidden="true"></svg></p></article><article class="lr ph" aria-hidden="true"><div class="lr-name"><h3 class="lr-firm">&nbsp;</h3><p class="lr-when">&nbsp;</p></div><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-cond"><span>&nbsp;</span><svg class="spark" width="156" height="32" aria-hidden="true"></svg></p></article><article class="lr ph" aria-hidden="true"><div class="lr-name"><h3 class="lr-firm">&nbsp;</h3><p class="lr-when">&nbsp;</p></div><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-fig"><span class="lbl">&nbsp;</span>&nbsp;</p><p class="lr-cond"><span>&nbsp;</span><svg class="spark" width="156" height="32" aria-hidden="true"></svg></p></article></div><p class="caption">&nbsp;<br>&nbsp;<br>&nbsp;</p></div>
 </section>
 
 <section id="why" aria-labelledby="why-title">
   <header class="section-heading">
-    <p class="kicker">1 · The mechanism</p>
-    <h2 id="why-title">Why retiring a cheap claim adds coins per share</h2>
+    <p class="kicker">1 · Why it adds</p>
+    <h2 id="why-title">Why retiring preferred below its $100 notional adds coins per share</h2>
     <p class="standfirst">The intuition first, with toy numbers labeled as an illustration; then Strategy's filed trade.</p>
   </header>
   <div id="example"></div>
@@ -51,18 +52,18 @@
 
 <section id="pref-section" aria-labelledby="pref-title">
   <header class="section-heading">
-    <p class="kicker">2 · Every week since June</p>
+    <p class="kicker">2 · By week</p>
     <h2 id="pref-title">Preferred close as a percent of break-even</h2>
     <p class="standfirst">Three firms on one scale: 100% is break-even for each.</p>
   </header>
   <p class="counts" id="counts"></p>
   <div class="seg-control" role="tablist" aria-label="Firm" data-for="multiples">
-    <button role="tab" type="button" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" data-firm="SBET" aria-selected="false">SharpLink</button>
+    <button role="tab" type="button" id="tab-pref-MSTR" aria-controls="panel-pref-MSTR" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" id="tab-pref-BMNR" aria-controls="panel-pref-BMNR" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" id="tab-pref-SBET" aria-controls="panel-pref-SBET" data-firm="SBET" aria-selected="false">SharpLink</button>
   </div>
   <div class="multiples" id="multiples">
-    <div class="chart-panel firm-panel" data-firm="MSTR"><h3 class="firm-heading">Strategy <span class="tk">STRC</span></h3><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
-    <div class="chart-panel firm-panel" data-firm="BMNR"><h3 class="firm-heading">BitMine <span class="tk">BMNP</span></h3><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
-    <div class="chart-panel firm-panel" data-firm="SBET"><h3 class="firm-heading">SharpLink <span class="tk">1 ÷ m</span> <span class="firm-note">filed dates only</span></h3><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="MSTR" id="panel-pref-MSTR" aria-labelledby="tab-pref-MSTR"><h3 class="firm-heading">Strategy <span class="tk">STRC</span></h3><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="BMNR" id="panel-pref-BMNR" aria-labelledby="tab-pref-BMNR"><h3 class="firm-heading">BitMine <span class="tk">BMNP</span></h3><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="SBET" id="panel-pref-SBET" aria-labelledby="tab-pref-SBET"><h3 class="firm-heading">SharpLink <span class="tk">1 ÷ m</span> <span class="firm-note">filed dates only</span></h3><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
   </div>
   <p class="explain after">Each panel divides the preferred close by break-even ($100 × net mNAV). The scale and dates are the same in all three panels. Strategy's rotation adds below the line; BitMine's adds above it; the shaded side is where each adds. SharpLink has no preferred, so its panel shows 1 ÷ m, and buying back adds above the line (m below 1). Dollar closes are in each point's details.</p>
   <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a> · <a href="data/balances.csv">balances.csv</a></p>
@@ -72,9 +73,9 @@
 
 <section id="map-section" aria-labelledby="map-title">
   <header class="section-heading">
-    <p class="kicker">3 · Break-even map</p>
-    <h2 id="map-title">Break-even map</h2>
-    <p class="standfirst">One mark per firm and reporting week. Select a mark to open its filing.</p>
+    <p class="kicker">3 · Map</p>
+    <h2 id="map-title">Net mNAV against preferred price, one mark per week</h2>
+    <p class="standfirst" id="map-standfirst">One mark per firm and reporting week. Select a mark to open its filing.</p>
   </header>
   <div class="map-grid">
     <div class="map-plot chart-panel"><div class="chart-wrap"><div id="map" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
@@ -95,16 +96,16 @@
   <p class="explain">Each bar splits a week's change in n by cause, as basis points of that week's n (1 bp = 0.01%), so firms of different size share one scale. The tick marks the net of the stacked causes. Coin price moves and in-the-money flips are left out of the bars and listed in the details, the strip under each chart and the table. Dollars ("value to common" = Δn × S × p) are in the details, the strips and the table.</p>
   <div class="legend" id="bars-legend"></div>
   <div class="seg-control" role="tablist" aria-label="Firm" data-for="bars">
-    <button role="tab" type="button" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" data-firm="SBET" aria-selected="false">SharpLink</button>
+    <button role="tab" type="button" id="tab-bars-MSTR" aria-controls="panel-bars-MSTR" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" id="tab-bars-BMNR" aria-controls="panel-bars-BMNR" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" id="tab-bars-SBET" aria-controls="panel-bars-SBET" data-firm="SBET" aria-selected="false">SharpLink</button>
   </div>
   <div id="bars">
-    <div class="chart-panel firm-panel" data-firm="MSTR"><h3 class="firm-heading">Strategy</h3><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
-    <div class="chart-panel firm-panel" data-firm="BMNR"><h3 class="firm-heading">BitMine</h3><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
-    <div class="chart-panel firm-panel" data-firm="SBET"><h3 class="firm-heading">SharpLink <span class="firm-note">filed holdings dates only</span></h3><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="MSTR" id="panel-bars-MSTR" aria-labelledby="tab-bars-MSTR"><h3 class="firm-heading">Strategy</h3><div class="chart-wrap"><div id="bars-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="BMNR" id="panel-bars-BMNR" aria-labelledby="tab-bars-BMNR"><h3 class="firm-heading">BitMine</h3><div class="chart-wrap"><div id="bars-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="SBET" id="panel-bars-SBET" aria-labelledby="tab-bars-SBET"><h3 class="firm-heading">SharpLink <span class="firm-note">filed holdings dates only</span></h3><div class="chart-wrap"><div id="bars-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div></div>
   </div>
   <details class="fold">
-    <summary>Table: every week, every cause, in dollars</summary>
-    <p class="muted">USD value to common per week (for SharpLink, per filed holdings date). Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
+    <summary>Table: every week, every cause, in millions of dollars</summary>
+    <p class="muted">Value to common per week in millions of dollars, $M (for SharpLink, per filed holdings date). Estimated issuance is part of issue common (BitMine). Observed = change in n × S × p.</p>
     <div class="scroll-x"><table id="week-table"></table></div>
   </details>
   <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a> · <a href="data/balances.csv">balances.csv</a></p>
@@ -135,7 +136,7 @@
   <details class="fold">
     <summary>The five formulas</summary>
   <p>Each action moves x dollars. With k = x / (p·S), the first-order change in n is:</p>
-  <div class="scroll-x"><table class="plain">
+  <div class="scroll-x"><table class="plain formulas">
     <thead><tr><th>#</th><th>action</th><th>Δn</th><th>adds when</th></tr></thead>
     <tbody>
       <tr><td>1</td><td>issue common</td><td>k·(1 − 1/m)</td><td>m &gt; 1</td></tr>
@@ -197,10 +198,10 @@
   <a href="#top" data-sec="top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M4 19V5M4 19L19 6"/></svg><span>Break-even</span></a>
   <a href="#why" data-sec="why"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M5 7h14M5 7l-2.5 6h5zM19 7l-2.5 6h5zM8 19h8"/></svg><span>Why</span></a>
   <a href="#pref-section" data-sec="pref-section"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M3 15l4-2 4 1 4-5 6 1"/></svg><span>By week</span></a>
-  <a href="#map-section" data-sec="map-section"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16M4 20L20 4"/><circle cx="9" cy="10" r="1.6"/><circle cx="15" cy="16" r="1.6"/></svg><span>Detail</span></a>
+  <a href="#map-section" data-sec="map-section"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16M4 20L20 4"/><circle cx="9" cy="10" r="1.6"/><circle cx="15" cy="16" r="1.6"/></svg><span>Map</span></a>
 </nav>
 
-<div id="sheet" class="sheet" popover>
+<div id="sheet" class="sheet" popover role="dialog" aria-labelledby="sheet-title" tabindex="-1">
   <div class="sheet-grip" aria-hidden="true"></div>
   <div class="sheet-body"></div>
   <button type="button" class="sheet-close" popovertarget="sheet" popovertargetaction="hide">Close</button>
