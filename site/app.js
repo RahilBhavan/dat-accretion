@@ -373,10 +373,10 @@ function drawPref(firm) {
   s += '<line class="ref" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>';
   // Labels on the left, on the side of the line where the program adds (the data sits clear of it there).
   const below = ADDS[firm][0] === 'below';
-  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) - 5 : Y(100) + 14) + '">break-even</text>';
+  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 15 : Y(100) - 5) + '">break-even</text>';
   // 12px monospace is about 7.2px a character; a narrow panel drops the parenthesis.
   const addsText = ADDS[firm][1].length * 7.2 > W - M.l - M.r - 8 ? ADDS[firm][1].replace(/ \(.*\)$/, '') : ADDS[firm][1];
-  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 15 : Y(100) - 5) + '" class="adds">' + addsText + '</text>';
+  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 30 : Y(100) - 20) + '" class="adds">' + addsText + '</text>';
   // Columns: each point owns the span halfway to its neighbours, and links to its filing (M9).
   const mid = i => i < 0 ? M.l : i >= pts.length - 1 ? W - M.r : (X(pts[i].t) + X(pts[i + 1].t)) / 2;
   const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? pts.length - 1, pts.length - 1);
@@ -393,7 +393,9 @@ function drawPref(firm) {
   const l = pts[pts.length - 1];
   s += '<circle class="last" cx="' + X(l.t) + '" cy="' + Y(l.r) + '" r="4"/>';
   const room = X(l.t) < W - M.r - 40;  // SharpLink's last filed date is mid-range: label to the right of the dot
-  s += '<text class="label" x="' + (X(l.t) + (room ? 8 : -7)) + '" y="' + (room ? Y(l.r) + 4 : Y(l.r) + (l.r > 100 ? -9 : 17)) + '" text-anchor="' + (room ? 'start' : 'end') + '">' + pct(l.r) + '</text>';
+  // The end label goes on the side the line does not come from, so the line never runs through it.
+  const prev = pts[pts.length - 2], over = prev ? prev.r <= l.r : l.r > 100;
+  s += '<text class="label" x="' + (X(l.t) + (room ? 8 : -7)) + '" y="' + (room ? Y(l.r) + 4 : Y(l.r) + (over ? -9 : 17)) + '" text-anchor="' + (room ? 'start' : 'end') + '">' + pct(l.r) + '</text>';
   el.innerHTML = s + '</svg>';
   const rows = t => {
     const p = pts[+t.dataset.tip], g = p.close - p.be;
@@ -442,8 +444,10 @@ function drawMap() {
   s += '<text x="' + (W - M.r) + '" y="' + (H - 4) + '" text-anchor="end">q = preferred close / $100 notional →</text>';
   s += '<text x="' + M.l + '" y="' + (M.t + 4) + '">↑ m = net mNAV</text>';
   s += '<line class="ref" x1="' + X(lo) + '" y1="' + Y(lo) + '" x2="' + X(hi) + '" y2="' + Y(hi) + '"/>';
-  s += 36 * 7.2 > W - M.l - M.r - 8  // a narrow plot (or 150% zoom on a phone) takes it on two lines
-    ? '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 22) + '">Strategy\'s rotation</text><text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 36) + '">adds here (m &gt; q)</text>'
+  // A narrow plot takes it on three short lines, right-aligned just left of the diagonal: the marks sit at low q, so that corner is empty.
+  const diagX = y => X(mhi - (y - Y(mhi)) / (Y(mlo) - Y(mhi)) * (mhi - mlo)), sx = Math.min(W - M.r, diagX(M.t + 50) - 10);
+  s += W < 500 || 36 * 7.2 > W - M.l - M.r - 8
+    ? ['Strategy\'s', 'rotation adds', 'here (m &gt; q)'].map((t, k) => '<text class="label" x="' + sx + '" y="' + (M.t + 22 + 14 * k) + '" text-anchor="end">' + t + '</text>').join('')
     : '<text class="label" x="' + (M.l + 8) + '" y="' + (M.t + 22) + '">Strategy\'s rotation adds here (m &gt; q)</text>';
   // BitMine's region label sits at the right edge, a third of the way up, clear of the marks near q = 1 (SharpLink's sit low there).
   const by = Y(lo + (hi - lo) * 0.3);
@@ -622,13 +626,13 @@ function drawBars(firm) {
       if (v > 0) up = b; else dn = b;
       const fill = d[0] === 'residual' ? RESID_FILL(resid) : d[4] ? 'url(#' + hatch + ')' : 'var(' + d[2] + ')';
       s += '<path class="seg' + (bw < 8 ? ' thin' : '') + '" data-cat="' + d[0] + '" d="' + segPath(x, Y(a), Y(b), bw) + '" style="fill:' + fill + '"/>';
-      if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x, w: bw, y: (Y(a) + Y(b)) / 2, week: w.week_end };
+      if (!big || Math.abs(v) > Math.abs(big.v)) big = { v, label: d[1], x, w: bw, y: v < 0 ? Math.max(Y(a), Y(b)) - 4 : Math.min(Y(a), Y(b)) + 12, week: w.week_end };
     });
     if (st.length) s += '<line class="net" x1="' + (x - 3) + '" x2="' + (x + bw + 3) + '" y1="' + Y(up + dn) + '" y2="' + Y(up + dn) + '"/>';
     s += '</a>';
   });
   s += '<line class="zero" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>';
-  if (big) {  // the one direct label: largest segment in this chart, beside its bar at the segment's middle (clear of the net tick)
+  if (big) {  // the one direct label: largest segment in this chart, beside its bar at the segment's far end (clear of shorter neighbours)
     const narrow = W < 500, right = big.x < W * 0.6, x = narrow ? M.l + 4 : right ? big.x + big.w + 6 : big.x - 6;
     const tail = big.label + ' ' + bps(big.v, true), long = 'Largest: ' + short_date(big.week) + ' ' + tail;
     const mid2 = short_date(big.week) + ' ' + tail, fits = t => t.length * 7.2 <= W - x;
