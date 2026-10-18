@@ -5,7 +5,7 @@ Per firm-week: m, q, n, p, s, S, dollars moved, filing links, and each attributi
 Observed value to common is recomputed through the engine's states, so the bars can be checked against it.
 """
 import datetime as dt, json, math, os, sys
-from dat.balances import read, bmnr_s_bias
+from dat.balances import read, bmnr_s_bias, bmnr_flows, BMNR_10Q, BMNR_A0, BMNR_A1, BMNR_RSU, BMNR_DILUTIVE
 from dat.engine import states, state_net, CHECK_FROM
 from dat.parse_bmnr import excluded_holdings
 from dat.filings import page_name
@@ -178,6 +178,76 @@ def close_sentence(h):
     return f"{h['pref']} closed at ${h['pref_close']:.2f} on {h['price_date']} (q = {h['q']:.4f})."
 
 
+# ---- BitMine gross ETH per 1,000 basic shares: weekly on the estimated count, the filed 10-Q counts as the check ----
+BMNR_EDGAR = 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=1829311&type=8-K'
+
+
+def bmnr_awards(close):
+    """Awards and warrants in BitMine S at a BMNR close (dat.balances in-the-money rule): S minus these is basic."""
+    return BMNR_RSU + sum(n for n, k in BMNR_DILUTIVE if close > k)
+
+
+def eth_per_share(data_dir='data'):
+    """BitMine's gross ETH held per 1,000 basic shares each stated week, on dat-accretion's estimated share count.
+    Basic = balances.csv S minus awards in the money. Filed checks: the 5/31 10-Q balance sheet count (same date as
+    the 5/31 holdings) and the 7/09 cover count, which falls between the 7/05 and 7/12 holdings (a range). Error: the
+    7/09 count rebuilt from 5/31 by the unscaled issuance estimate, against the filed count (method.md "BitMine S")."""
+    from dat.prices import load, close_on_or_before
+    path = lambda f: os.path.join(data_dir, f)
+    stated = sorted((r for r in read(path('stated.csv')) if r['firm'] == 'BMNR'), key=lambda r: r['week_end'])
+    actions = [r for r in read(path('actions.csv')) if r['firm'] == 'BMNR']
+    bal = {r['date']: r for r in read(path('balances.csv')) if r['firm'] == 'BMNR'}
+    wk = {r['week_end']: r for r in read(path('weekly.csv')) if r['firm'] == 'BMNR'}
+    weeks = [r['week_end'] for r in stated]
+    a1_week = min(w for w in weeks if w >= BMNR_A1[0])
+    rows = []
+    for st in stated:
+        w = st['week_end']
+        b = bal[w]
+        if int(b['coins']) != int(st['coins']):
+            raise ValueError(f'BMNR {w}: balances.csv coins {b["coins"]} differ from stated {st["coins"]}')
+        basic = int(b['shares_diluted']) - bmnr_awards(float(wk[w]['s']))
+        rows.append({'week_end': w, 'eth': int(st['coins']), 'basic': basic, 'per_1000': round(1000 * int(st['coins']) / basic, 4),
+                     'estimated': 'anchored' not in b['source'], 'filing_url': st['filing_url']})
+    by = {r['week_end']: r for r in rows}
+    # The 7/09 cover count sits between two stated weeks: the range spans ETH held on either side of it.
+    before = max(w for w in weeks if w <= BMNR_A1[0])
+    a0, lo, hi = by[BMNR_A0[0]], by[before], by[a1_week]
+    filed = [{'date': BMNR_A0[0], 'shares': BMNR_A0[1], 'what': '10-Q balance sheet', 'share_url': BMNR_10Q,
+              'eth_weeks': [a0['week_end']], 'eth_urls': [a0['filing_url']], 'per_1000': [round(1000 * a0['eth'] / BMNR_A0[1], 4)]},
+             {'date': BMNR_A1[0], 'shares': BMNR_A1[1], 'what': '10-Q cover', 'share_url': BMNR_10Q,
+              'eth_weeks': [before, a1_week], 'eth_urls': [lo['filing_url'], hi['filing_url']],
+              'per_1000': [round(1000 * lo['eth'] / BMNR_A1[1], 4), round(1000 * hi['eth'] / BMNR_A1[1], 4)]}]
+    # Out of sample: the same estimate, unscaled, from the 5/31 count to the week holding 7/09.
+    flows, prices = bmnr_flows(stated, actions), load(path('prices.csv'))
+    between = [w for w in weeks if BMNR_A0[0] < w <= a1_week]
+    issued = math.fsum(max(float(flows[w][2]), 0) / close_on_or_before(prices, 'BMNR', w)[1] for w in between)
+    bought = math.fsum(float(a['units']) for a in actions if a['action'] == 'buyback_common' and a['week_end'] in between)
+    unscaled = BMNR_A0[1] + issued - bought
+    err = unscaled - BMNR_A1[1]
+    bias, bias_week = bmnr_s_bias(data_dir)
+    check = {'from': BMNR_A0[0], 'to': BMNR_A1[0], 'estimate': round(unscaled), 'filed': BMNR_A1[1],
+             'error': round(err), 'error_pct': round(100 * err / BMNR_A1[1], 3),
+             'captured_pct': round(100 * (unscaled - BMNR_A0[1]) / (BMNR_A1[1] - BMNR_A0[1]), 1)}
+    return {'weeks': rows, 'filed': filed, 'edgar_url': BMNR_EDGAR, 'check': check,
+            'note': eth_note(check, s_bias_text(bias, bias_week)), 'bias_pct': round(100 * bias, 2), 'bias_week': bias_week}
+
+
+def eth_note(c, s_bias):
+    """The panel's printed caveat: how the share count is estimated, its error against a filed count, its bias."""
+    side = 'under' if c['error'] < 0 else 'over'
+    return (f"BitMine's weekly releases state ETH held but no share count, so the dashed line divides by an estimated "
+            f"basic share count: the 10-Q count for {c['from']}, plus the week's unexplained change in cash divided by "
+            f"the BMNR close, minus disclosed buybacks. Up to {c['to']} the estimate is scaled to land on the 10-Q cover "
+            f"count, so the line meets the filed figures there by construction. Check: unscaled, the estimate gives "
+            f"{c['estimate']:,} shares for {c['to']} against {c['filed']:,} filed, {abs(c['error']):,} "
+            f"({abs(c['error_pct']):.2f}%) {side}. No share count has been filed since {c['to']}; the next 10-K cover "
+            f"count is the next check. ETH counted as bought includes staking, which gives the estimate {s_bias}, so "
+            f"the line after {c['to']} reads low by up to about as much. Gross: ETH held only; the page's net coins per "
+            f"share (n) also counts cash and BMNP.")
+
+
+
 def load_check(path):
     """check.json, or {'status': 'not yet run'} when absent, empty or not a JSON object (warning on stderr)."""
     if not os.path.exists(path):
@@ -275,7 +345,8 @@ def build(data_dir='data', online=False, site_dir='site'):
     return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(headline),
             'counts': counts_sentence(counts(all_w)), 'example': example(all_act, all_a, all_bal),
             'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'totals': totals, 'notes': notes, 'check': check,
-            'pages': filing_pages({u for w in weeks for u in w['filing_urls']} | {r['filing_url'] for r in all_act}, site_dir)}
+            'pages': filing_pages({u for w in weeks for u in w['filing_urls']} | {r['filing_url'] for r in all_act}, site_dir),
+            'eth_per_share': eth_per_share(data_dir)}
 
 
 def main(data_dir='data', out='site/data.json'):

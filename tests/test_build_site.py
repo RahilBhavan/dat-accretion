@@ -127,3 +127,37 @@ def test_worked_example_traces_to_its_row(site):
 
 def test_every_note_has_a_group(site):
     assert {n['group'] for n in site['notes']} == {'estimate', 'coverage', 'convention'}
+
+
+# BitMine gross ETH per 1,000 basic shares (the ETH per share panel): weekly on the estimated count, filed counts as the check.
+def test_eth_per_share_weekly_line(site):
+    e = site['eth_per_share']
+    stated = [w['week_end'] for w in site['weeks'] if w['firm'] == 'BMNR']
+    assert [r['week_end'] for r in e['weeks']] == stated  # one point per stated BitMine week
+    for r in e['weeks']:
+        assert r['per_1000'] == round(1000 * r['eth'] / r['basic'], 4)
+        assert r['filing_url'].startswith('https://www.sec.gov/Archives/edgar/data/1829311/')
+    first = e['weeks'][0]
+    assert (first['week_end'], first['basic'], first['estimated']) == ('2026-05-31', 579_652_432, False)
+    assert e['weeks'][-1]['estimated']
+
+
+def test_eth_per_share_filed_checks(site):
+    e = site['eth_per_share']
+    a0, a1 = e['filed']
+    assert (a0['date'], a0['shares'], a0['per_1000']) == ('2026-05-31', 579_652_432, [9.3451])
+    assert (a1['date'], a1['shares'], a1['eth_weeks']) == ('2026-07-09', 603_226_394, ['2026-07-05', '2026-07-12'])
+    assert a1['per_1000'] == [9.5192, 9.5653]  # ETH held on 7/05 and 7/12 over the 7/09 cover count
+    by = {r['week_end']: r for r in e['weeks']}
+    assert by['2026-07-12']['basic'] == 603_226_394 and not by['2026-07-12']['estimated']  # anchored, so error 0 there
+    for f in e['filed']:
+        assert f['share_url'].endswith('bmnr-20260531.htm') and all(u.startswith('https://www.sec.gov/') for u in f['eth_urls'])
+
+
+def test_eth_per_share_error_and_note(site):
+    c, note = site['eth_per_share']['check'], site['eth_per_share']['note']
+    # The 7/09 count rebuilt from 5/31 with the unscaled estimate (dat.balances.bmnr_basic without its scale).
+    assert (c['estimate'], c['filed'], c['error'], c['error_pct']) == (601_675_391, 603_226_394, -1_551_003, -0.257)
+    assert f"{c['estimate']:,}" in note and '1,551,003 (0.26%) under' in note
+    assert f"{site['eth_per_share']['bias_pct']:.2f}% of S by {site['eth_per_share']['bias_week']}" in note
+    assert '—' not in note and 'estimated basic share count' in note

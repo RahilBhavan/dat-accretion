@@ -21,7 +21,7 @@
       <span>DAT <strong>Accretion</strong></span>
     </a>
     <nav class="top-nav" aria-label="Sections">
-      <a href="#top" data-sec="top">Break-even</a><a href="#why" data-sec="why">Why it adds</a><a href="#pref-section" data-sec="pref-section">By week</a><a href="#map-section" data-sec="map-section">Map</a><a href="#bars-section" data-sec="bars-section">Attribution</a><a href="#method" data-sec="method">Method</a>
+      <a href="#top" data-sec="top">Break-even</a><a href="#why" data-sec="why">Why it adds</a><a href="#pref-section" data-sec="pref-section">By week</a><a href="#map-section" data-sec="map-section">Map</a><a href="#bars-section" data-sec="bars-section">Attribution</a><a href="#eth-section" data-sec="eth-section">ETH per share</a><a href="#method" data-sec="method">Method</a>
     </nav>
     <button type="button" id="theme" class="icon-btn" aria-label="Switch to dark theme">
       <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
@@ -111,9 +111,25 @@
   <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a> · <a href="data/balances.csv">balances.csv</a></p>
 </section>
 
+<section id="eth-section" aria-labelledby="eth-title">
+  <header class="section-heading">
+    <p class="kicker">5 · BitMine ETH per share</p>
+    <h2 id="eth-title">BitMine's ETH held per 1,000 basic shares, by week</h2>
+    <p class="standfirst" id="eth-standfirst">Weekly on an estimated share count, with the filed 10-Q counts as the check.</p>
+  </header>
+  <div class="legend" id="eth-legend"></div>
+  <div class="chart-panel"><div class="chart-wrap"><div id="eth" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-eth"></p></div>
+  <p class="explain after" id="eth-note"></p>
+  <details class="fold">
+    <summary>Table: every week, ETH held and the share count behind it</summary>
+    <div class="scroll-x"><table id="eth-table"></table></div>
+  </details>
+  <p class="dl">Data: <a href="data/stated.csv">stated.csv</a> · <a href="data/balances.csv">balances.csv</a> · <a id="eth-edgar" href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&amp;CIK=1829311&amp;type=8-K" target="_blank" rel="noopener">BitMine 8-Ks on EDGAR</a></p>
+</section>
+
 <section id="method" aria-labelledby="method-title">
   <header class="section-heading">
-    <p class="kicker">5 · Method</p>
+    <p class="kicker">6 · Method</p>
     <h2 id="method-title">One definition for all three firms</h2>
     <p class="standfirst">Strategy's own net coins per share, applied to BitMine and SharpLink.</p>
   </header>
@@ -172,7 +188,7 @@
 
 <section id="built" aria-labelledby="built-title">
   <header class="section-heading">
-    <p class="kicker">6 · How this is built</p>
+    <p class="kicker">7 · How this is built</p>
     <h2 id="built-title">Python and plain JavaScript; no framework, no database</h2>
   </header>
   <div class="built-grid" id="built-grid"></div>
@@ -181,7 +197,7 @@
 
 <section id="downloads" aria-labelledby="dl-title">
   <header class="section-heading">
-    <p class="kicker">7 · Downloads</p>
+    <p class="kicker">8 · Downloads</p>
     <h2 id="dl-title">The CSVs behind every figure on this page</h2>
   </header>
   <ul>

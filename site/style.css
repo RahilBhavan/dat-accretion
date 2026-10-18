@@ -190,6 +190,12 @@ table.plain-num tr.hl td:first-child { box-shadow: inset 3px 0 0 var(--accent); 
 .chart .pt { fill: var(--fg); pointer-events: none; }
 .chart .last { fill: var(--accent); stroke: var(--bg); stroke-width: 1.5; pointer-events: none; }
 .chart .net { stroke: var(--fg); stroke-width: 2; pointer-events: none; }
+/* BitMine ETH per share: the estimate dashed in ink, the filed counts open in the accent (the check the caption names). */
+.chart .est { fill: none; stroke: var(--fg); stroke-width: 1.75; stroke-dasharray: 5 3; stroke-linejoin: round; pointer-events: none; }
+.chart .wk { fill: var(--ink2); pointer-events: none; }
+.chart .filed { fill: var(--bg); stroke: var(--accent); stroke-width: 2; pointer-events: none; }
+.chart path.filed { fill: none; }
+.chart text.filed-l { fill: var(--accent); font-weight: 600; }
 .chart .trail { fill: none; stroke-width: 1; stroke-opacity: 0.5; }
 .chart a:focus-visible { outline: none; }
 .chart a:focus-visible .mark, .chart .col:focus-visible .hit { stroke: var(--fg); stroke-width: 2; }

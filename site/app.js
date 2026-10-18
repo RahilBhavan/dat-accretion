@@ -712,6 +712,99 @@ function table() {
   document.getElementById('week-table').innerHTML = h + '</tbody>';
 }
 
+// ---- 4b. BitMine gross ETH per 1,000 basic shares: the weekly estimate dashed, the filed 10-Q counts as open marks ----
+// The releases state ETH held but no share count, so the line rests on dat-accretion's estimated count. The filed counts
+// (5/31 on the same date as a release; 7/09 between two releases, so a range) are the check, in the accent.
+const f4 = x => x.toFixed(2);
+function ethRows(r) {
+  const E = DATA.eth_per_share, f = E.filed.find(x => x.eth_weeks.includes(r.week_end));
+  return '<div class="row"><span>ETH held</span><span>' + r.eth.toLocaleString('en-US') + '</span></div>'
+    + '<div class="row"><span>Basic shares (' + (r.estimated ? 'estimated' : 'set to 10-Q') + ')</span><span>' + r.basic.toLocaleString('en-US') + '</span></div>'
+    + '<div class="row on"><span>ETH per 1,000 shares</span><span>' + r.per_1000.toFixed(4) + '</span></div>'
+    + (f ? '<div class="row"><span>Filed ' + esc(f.what) + ', ' + short_date(f.date) + '</span><span>' + f.shares.toLocaleString('en-US') + '</span></div>' : '');
+}
+function ethUrls(r) {
+  const f = DATA.eth_per_share.filed.find(x => x.eth_weeks.includes(r.week_end));
+  return [[r.filing_url, 'ETH held, week ending ' + r.week_end], ...(f ? [[f.share_url, 'the ' + f.date + ' share count']] : [])];
+}
+
+function drawEth() {
+  const el = document.getElementById('eth'), E = DATA.eth_per_share, pts = E.weeks.map(r => ({ r, t: Date.parse(r.week_end) }));
+  const W = el.clientWidth || 640, narrow = W < 500, H = narrow ? 240 : 280, M = { l: 44, r: narrow ? 40 : 56, t: 34, b: 28 };
+  const vals = pts.map(p => p.r.per_1000).concat(...E.filed.map(f => f.per_1000));
+  const lo = Math.floor((Math.min(...vals) - 0.02) * 10) / 10, hi = Math.ceil((Math.max(...vals) + 0.02) * 10) / 10;
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+  const X = t => M.l + (t - t0) / (t1 - t0 || 1) * (W - M.l - M.r), Y = v => M.t + (hi - v) / (hi - lo) * (H - M.t - M.b);
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="group" aria-label="BitMine: ETH held per 1,000 basic shares by week, on an estimated share count, '
+    + 'with filed 10-Q counts marked. Left and Right arrow keys move between weeks; each opens its filing.">';
+  // Range frame on y: the line spans the domain, labeled at every 0.1. The axis does not start at zero (no bars here).
+  s += '<line class="axis" x1="' + (M.l - 8) + '" x2="' + (M.l - 8) + '" y1="' + Y(hi) + '" y2="' + Y(lo) + '"/>';
+  for (let k = Math.round(lo * 10); k <= Math.round(hi * 10); k++) { const v = k / 10; s += '<text x="' + (M.l - 12) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v.toFixed(1) + '</text>'; }
+  s += '<text x="' + (M.l - 8) + '" y="' + (M.t - 16) + '">ETH per 1,000 basic shares (axis from ' + lo.toFixed(1) + ')</text>';
+  // Months on x, as in the bars.
+  const d0 = new Date(t0);
+  for (let mth = new Date(Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth() + (d0.getUTCDate() > 1 ? 1 : 0), 1)); +mth <= t1; mth.setUTCMonth(mth.getUTCMonth() + 1)) {
+    const x = X(+mth);
+    s += '<line class="tick" x1="' + x + '" x2="' + x + '" y1="' + (H - M.b + 2) + '" y2="' + (H - M.b + 6) + '"/>'
+      + '<text x="' + x + '" y="' + (H - M.b + 19) + '" text-anchor="middle">' + mth.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }) + '</text>';
+  }
+  // Hit columns, one per week, each a link to that week's release.
+  const mid = i => i < 0 ? M.l : i >= pts.length - 1 ? W - M.r : (X(pts[i].t) + X(pts[i + 1].t)) / 2;
+  const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? pts.length - 1, pts.length - 1);
+  pts.forEach((p, i) => {
+    const x0 = Math.min(mid(i - 1), X(p.t) - 6), x1 = Math.max(mid(i), X(p.t) + 6);
+    s += '<a class="col" href="' + esc(p.r.filing_url) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
+      + esc('BitMine week ending ' + p.r.week_end + ': ' + p.r.per_1000.toFixed(2) + ' ETH per 1,000 basic shares, ' + (p.r.estimated ? 'estimated' : 'filed') + ' share count. Opens filing.') + '">'
+      + '<rect class="hit" x="' + x0 + '" y="' + M.t + '" width="' + Math.max(1, x1 - x0) + '" height="' + (H - M.t - M.b) + '"/></a>';
+  });
+  // No filed count after the last one: say so in the empty span, under the line.
+  const last = E.filed[E.filed.length - 1], xl = X(Date.parse(last.date));
+  s += '<line class="tick" x1="' + xl + '" x2="' + xl + '" y1="' + (H - M.b - 6) + '" y2="' + (H - M.b) + '"/>';
+  s += '<text x="' + (xl + 6) + '" y="' + (H - M.b - 8) + '">No filed ' + (narrow ? '' : 'share ') + 'count after ' + short_date(last.date) + '</text>';
+  s += '<path class="est" d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r.per_1000).toFixed(1)).join('') + '"/>';
+  s += pts.map(p => '<circle class="wk" cx="' + X(p.t).toFixed(1) + '" cy="' + Y(p.r.per_1000).toFixed(1) + '" r="1.8"/>').join('');
+  // Filed counts: an open dot where a release and a 10-Q share a date, an open range where the count falls between two releases.
+  for (const f of E.filed) {
+    const x = X(Date.parse(f.date)), ys = f.per_1000.map(Y);
+    if (ys.length === 1) s += '<circle class="filed" cx="' + x + '" cy="' + ys[0] + '" r="5"/>';
+    else s += '<path class="filed" d="M' + (x - 4) + ',' + ys[0] + 'h8M' + x + ',' + ys[0] + 'V' + ys[1] + 'M' + (x - 4) + ',' + ys[1] + 'h8"/>';
+    // The line rises left to right through both marks, so the space below and to the right of each is clear.
+    const txt = f.per_1000.map(f4).join(' to ') + (narrow ? '' : ', ' + f.what), one = ys.length === 1;
+    s += '<text class="filed-l" x="' + (x + (one ? 9 : 7)) + '" y="' + (one ? ys[0] + 4 : Math.max(...ys) + 16) + '">' + esc(txt) + '</text>';
+  }
+  const l = pts[pts.length - 1];
+  s += '<circle class="pt" cx="' + X(l.t) + '" cy="' + Y(l.r.per_1000) + '" r="3"/>';
+  s += '<text class="label" x="' + (X(l.t) + 7) + '" y="' + (Y(l.r.per_1000) + 4) + '">' + f4(l.r.per_1000) + '</text>';
+  el.innerHTML = s + '</svg>';
+  const r = t => pts[+t.dataset.tip].r;
+  bindTips(el, t => '<b>BitMine</b>, week ending ' + r(t).week_end + ethRows(r(t)) + filingRow(ethUrls(r(t)).map(u => u[0])));
+  touchSheet(el, t => 'BitMine, week ending ' + r(t).week_end, t => ethRows(r(t)), t => ethUrls(r(t)));
+  colKeys(el);
+}
+
+function ethText() {
+  const E = DATA.eth_per_share, a = E.weeks[0], z = E.weeks[E.weeks.length - 1], c = E.check;
+  document.getElementById('eth-standfirst').textContent = f4(a.per_1000) + ' on ' + nice_date(a.week_end) + ' and ' + f4(z.per_1000) + ' in the week ending '
+    + nice_date(z.week_end) + ', on an estimated share count; the filed 10-Q counts are the check.';
+  document.getElementById('eth-legend').innerHTML =
+    '<span>' + swatch('<line x1="1" y1="7" x2="13" y2="7" style="stroke:var(--fg);stroke-width:1.75;stroke-dasharray:4 2"/>') + 'Weekly, on the estimated share count</span>'
+    + '<span>' + swatch('<circle cx="7" cy="7" r="4.5" style="fill:var(--bg);stroke:var(--accent);stroke-width:1.75"/>') + 'Filed 10-Q count, same date as a release</span>'
+    + '<span>' + swatch('<path d="M4,2h6M7,2V12M4,12h6" style="fill:none;stroke:var(--accent);stroke-width:1.75"/>') + 'Filed count between two releases</span>';
+  const tenq = E.filed[0].share_url, n = E.weeks.length;
+  document.getElementById('src-eth').innerHTML = 'Last: ' + z.per_1000.toFixed(4) + ' (' + z.eth.toLocaleString('en-US') + ' ETH ÷ '
+    + z.basic.toLocaleString('en-US') + ' estimated basic shares). ' + n + ' BitMine releases; share counts from the '
+    + '<a href="' + esc(tenq) + '" target="_blank" rel="noopener">10-Q for the quarter ended May 31</a>. Unscaled error at '
+    + short_date(c.to) + ': ' + (c.error < 0 ? MINUS : '+') + Math.abs(c.error_pct).toFixed(2) + '%.';
+  document.getElementById('eth-note').textContent = E.note;
+  document.getElementById('eth-edgar').href = E.edgar_url;
+  const filedOn = w => E.filed.find(f => f.eth_weeks.includes(w));
+  document.getElementById('eth-table').innerHTML = '<thead><tr><th>week ending</th><th>ETH held</th><th>basic shares</th><th>count</th><th>ETH per 1,000</th><th>filed check</th><th>filing</th></tr></thead><tbody>'
+    + E.weeks.map(r => { const f = filedOn(r.week_end);
+      return '<tr><td>' + r.week_end + '</td><td>' + r.eth.toLocaleString('en-US') + '</td><td>' + r.basic.toLocaleString('en-US') + '</td><td>' + (r.estimated ? 'estimated' : 'set to 10-Q')
+        + '</td><td>' + r.per_1000.toFixed(4) + '</td><td>' + (f ? esc(f.what) + ' ' + f.date + ': ' + f.shares.toLocaleString('en-US') : '') + '</td><td><a href="' + esc(r.filing_url)
+        + '" target="_blank" rel="noopener">' + esc(fileName(r.filing_url)) + '</a></td></tr>'; }).join('') + '</tbody>';
+}
+
 // ---- 5. method: notes and check ----
 function method() {
   // Caveats grouped by kind, each group a short list (estimated figures first: they carry numbers a reader may reuse).
@@ -798,7 +891,7 @@ function segControls() {
 function sectionNav() {
   const links = [...document.querySelectorAll('[data-sec]')], ids = [...new Set(links.map(a => a.dataset.sec))];
   // The tab bar's "Map" stands for everything from the map down.
-  const group = id => ['bars-section', 'method', 'built', 'downloads'].includes(id) ? 'map-section' : id;
+  const group = id => ['bars-section', 'eth-section', 'method', 'built', 'downloads'].includes(id) ? 'map-section' : id;
   const secs = [...document.querySelectorAll('main > section')];
   const mark = () => {
     const y = (document.querySelector('.site-bar').offsetHeight || 56) + innerHeight * 0.25;
@@ -821,6 +914,7 @@ function draw() {
   for (const f of Object.keys(FIRM)) if (shown('pref-' + f)) drawPref(f);
   drawMap();
   for (const f of Object.keys(FIRM)) if (shown('bars-' + f)) drawBars(f);
+  drawEth();
 }
 
 function theme() {
@@ -852,6 +946,7 @@ fetch('data.json').then(r => r.json()).then(d => {
   barsLegend();
   totals();
   table();
+  ethText();
   method();
   built();
   sheetUi();
