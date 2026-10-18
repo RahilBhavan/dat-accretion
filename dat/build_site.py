@@ -8,6 +8,7 @@ import datetime as dt, json, math, os, sys
 from dat.balances import read, bmnr_s_bias
 from dat.engine import states, state_net, CHECK_FROM
 from dat.parse_bmnr import excluded_holdings
+from dat.filings import page_name
 
 CATEGORIES = ['issue_common', 'buyback_common', 'issue_pref', 'retire_pref', 'coins', 'carry', 'residual']
 GROUP = {'est_issuance': 'issue_common', 'buy_coin': 'coins', 'sell_coin': 'coins'}  # attribution action -> bar
@@ -192,7 +193,13 @@ def load_check(path):
     return {'status': 'not yet run'}
 
 
-def build(data_dir='data', online=False):
+def filing_pages(urls, site_dir='site'):
+    """{SEC URL: relative path of its restyled copy}, for the copies dat.filings has written (the rest link to sec.gov)."""
+    return {u: 'filings/' + page_name(u) for u in sorted(urls)
+            if u and os.path.exists(os.path.join(site_dir, 'filings', page_name(u)))}
+
+
+def build(data_dir='data', online=False, site_dir='site'):
     path = lambda f: os.path.join(data_dir, f)
     all_w, all_a, all_act, all_bal, all_st = (read(path(f)) for f in
                                               ('weekly.csv', 'attribution.csv', 'actions.csv', 'balances.csv', 'stated.csv'))
@@ -267,7 +274,8 @@ def build(data_dir='data', online=False):
     check = load_check(path('check.json'))
     return {'generated_at': now.strftime('%Y-%m-%dT%H:%M:%SZ'), 'title': title(headline),
             'counts': counts_sentence(counts(all_w)), 'example': example(all_act, all_a, all_bal),
-            'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'totals': totals, 'notes': notes, 'check': check}
+            'categories': CATEGORIES, 'headline': headline, 'weeks': weeks, 'totals': totals, 'notes': notes, 'check': check,
+            'pages': filing_pages({u for w in weeks for u in w['filing_urls']} | {r['filing_url'] for r in all_act}, site_dir)}
 
 
 def main(data_dir='data', out='site/data.json'):

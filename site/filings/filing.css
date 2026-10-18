@@ -1,0 +1,117 @@
+/* Restyled filings (dat/filings.py). Tokens, fonts and the site bar come from ../style.css; this file sets the
+   reading column. Rules only, no boxes: figures in mono with tabular numerals, the filing's words in the serif. */
+.filing { max-width: 1040px; padding: 40px 0 64px; }
+/* Prose keeps a reading measure; tables may use the full width. */
+.filing .doc-head, .feeds > h2, .feeds > p, .doc > :not(.tbl):not(details), .doc details > :not(.tbl) { max-width: 720px; }
+/* Undo the page's figure-table defaults (right-aligned, unwrapped) for filing text. */
+.filing th, .filing td { text-align: left; white-space: normal; background: none; border-bottom: 0; }
+.filing .doc-head { margin-bottom: 36px; }
+.filing .doc-head h1 { font-size: var(--fs-h2); margin: 0 0 14px; }
+.filing .meta a { color: var(--link); }
+
+.feeds { margin: 0 0 44px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.feeds h2, .doc details.cover summary, .filing-list .k {
+  font: 500 var(--fs-label)/1.4 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.feeds h2 { margin: 0 0 8px; }
+.feeds .muted { max-width: 46em; }
+.feeds table { font: var(--fs-label)/1.5 var(--mono); }
+.feeds td:not(.note), .feeds th { white-space: nowrap; }
+.filing table { overflow-wrap: normal; }
+.feeds td.note { font-family: var(--serif); font-size: var(--fs-small); color: var(--muted); min-width: 14em; }
+
+mark { background: var(--band); color: inherit; padding: 0 2px; border-radius: 2px; }
+
+.doc { border-top: 1px solid var(--rule); padding-top: 8px; }
+.doc h2 { font-size: var(--fs-h3); margin: 40px 0 14px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.doc h2.headline { font-size: clamp(22px, 2.4vw, 28px); line-height: 1.2; border-top: 0; padding-top: 0; margin-top: 28px; }
+.doc h3 { font-size: var(--fs-body); margin: 30px 0 8px; }
+.doc p.deck { font-style: italic; color: var(--ink2); margin: 0 0 6px; padding-left: 14px; border-left: 2px solid var(--rule); }
+.doc p.deck strong, .doc p.deck em { font-weight: 400; }
+.doc p.c { text-align: center; }
+.doc p.exh { font: 500 var(--fs-label)/1.4 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 20px 0 0; }
+.doc p.exh strong { font-weight: 500; }
+.doc p.fn { font-size: var(--fs-small); color: var(--muted); margin-bottom: 6px; }
+.doc p.img { font-size: var(--fs-small); color: var(--muted); font-style: italic; }
+.doc ul { list-style: none; padding-left: 0; margin: 0 0 14px; }
+.doc li { padding-left: 1.4em; text-indent: -1.4em; margin-bottom: 6px; }
+.doc sup { font-size: .68em; line-height: 0; }
+.doc a { overflow-wrap: anywhere; }
+
+.doc details.cover { margin: 18px 0 8px; }
+.doc details.cover summary { cursor: pointer; padding: 10px 0; }
+.doc details.cover[open] { color: var(--ink2); font-size: var(--fs-small); }
+.doc details.cover p { margin-bottom: 8px; }
+
+/* Tables: the wrapper scrolls on narrow screens so the page never does. */
+.tbl { overflow-x: auto; margin: 14px 0 22px; -webkit-overflow-scrolling: touch; }
+.tbl table { border-collapse: collapse; width: 100%; }
+table.data { font: var(--fs-small)/1.45 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+table.data th { font: 500 var(--fs-label)/1.35 var(--mono); color: var(--muted); text-align: left; vertical-align: bottom;
+  padding: 6px 10px 6px 0; border-bottom: 1px solid var(--axis); }
+table.data td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--grid); vertical-align: top; }
+table.data .n { text-align: right; white-space: nowrap; }
+table.data th.n { text-align: right; }
+table.data tr.sub td { font: italic var(--fs-label)/1.4 var(--serif); color: var(--muted); padding-top: 0; }
+table.data tr:has(+ tr.sub) td { border-bottom: 0; padding-bottom: 2px; }
+table.layout { font-size: var(--fs-small); }
+table.layout td { padding: 3px 12px 3px 0; vertical-align: top; }
+
+/* Index of filings */
+.filing-list { list-style: none; padding: 0; margin: 0 0 36px; border-top: 1px solid var(--rule); }
+.filing-list li { border-bottom: 1px solid var(--grid); }
+.filing-list a { display: grid; grid-template-columns: 7.5em 7em 1fr; gap: 4px 16px; padding: 11px 0; color: var(--fg); text-decoration: none; }
+.filing-list a:hover .t { text-decoration: underline; text-underline-offset: 3px; }
+.filing-list .d { font-size: var(--fs-small); color: var(--muted); }
+.filing-list .k { align-self: center; }
+.filing-list .t { font-size: var(--fs-small); line-height: 1.45; }
+#doc > section > h2 { font-size: var(--fs-h3); margin: 28px 0 10px; }
+@media (max-width: 640px) {
+  .filing { padding-top: 24px; }
+  .filing-list a { grid-template-columns: auto 1fr; }
+  .filing-list .t { grid-column: 1 / -1; }
+}
+.filing-page footer { color: var(--muted); }
+.filing-page footer a { color: inherit; }
+#doc > section:first-child > h2 { margin-top: 0; }
+
+/* Sidenotes (Tufte): each marked figure is numbered, and its CSV row and effect sit in the right margin beside the
+   block it appears in. Phones and narrow windows show the note under the block instead. */
+.doc sup.snr { font: 500 10px/0 var(--mono); color: var(--accent); margin-left: 1px; vertical-align: super; }
+.doc aside.sn { font: var(--fs-small)/1.5 var(--serif); color: var(--muted); margin: 0 0 16px; padding-left: 12px; border-left: 1px solid var(--rule); }
+.doc aside.sn p { margin: 0 0 8px; max-width: none; }
+.doc aside.sn b { color: var(--fg); font-weight: 600; }
+.doc aside.sn .num-m { color: var(--fg); }
+.doc aside.sn .snn { font: 500 var(--fs-label) var(--mono); color: var(--accent); margin-right: 6px; }
+mark:target { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (min-width: 1100px) {
+  .doc { display: grid; grid-template-columns: minmax(0, 720px) minmax(0, 1fr); column-gap: 40px; align-items: start; }
+  .doc > * { grid-column: 1; }
+  .doc > .tbl, .doc > details { grid-column: 1 / -1; }
+  .doc > aside.sn { grid-column: 2; border-left: 0; padding-left: 0; margin-top: 4px; }
+}
+
+/* Rows the filing reports as all dashes carry no activity: gray, so the eye lands on rows that moved. Text unchanged. */
+table.data tr.nil td { color: var(--gray2); }
+
+/* The share price split (dat/filings.py ruler): one scale, the share price in the accent, its three factors in
+   grays, labels at the line ends, a range frame instead of an axis. */
+.ruler { margin: 0 0 44px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.ruler h2 { font: 500 var(--fs-label)/1.4 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.ruler-fig { width: 100%; max-width: 720px; height: auto; display: block; overflow: visible; }
+.ruler-fig path { fill: none; stroke-width: 1.5; stroke-linejoin: round; }
+.ruler-fig .acc { stroke: var(--accent); stroke-width: 2.2; fill: var(--accent); }
+.ruler-fig .ink { stroke: var(--ink2); fill: var(--ink2); }
+.ruler-fig .g { stroke: var(--gray2); fill: var(--gray2); }
+.ruler-fig path.acc, .ruler-fig path.ink, .ruler-fig path.g { fill: none; }
+.ruler-fig .zero { stroke: var(--axis); stroke-width: 1; }
+.ruler-fig .frame { stroke: var(--axis); stroke-width: 1; }
+.ruler-fig text { font: 11px var(--mono); fill: var(--muted); }
+.ruler-fig text.lbl { font-size: 12px; fill: var(--ink2); }
+.ruler-fig text.lbl.g { fill: var(--muted); }
+.ruler-fig text.lbl.acc { fill: var(--accent); font-weight: 500; }
+.ruler-fig text.lbl.acc, .ruler-fig text.lbl.ink, .ruler-fig text.lbl.g { stroke: none; }
+.ruler-fig text .v { font-variant-numeric: tabular-nums; }
+.ruler .caption { max-width: 720px; }
+/* Phones get their own narrow drawing, so labels stay at 11px instead of shrinking with the viewBox. */
+.ruler-fig.narrow { display: none; }
+@media (max-width: 640px) { .ruler-fig.wide { display: none; } .ruler-fig.narrow { display: block; } }

@@ -11,7 +11,7 @@ from dat.balances import read, PREF_ANCHOR_DATE, BMNR_A0, SBET_BASIC
 
 # One line per step; a new firm's parser goes in before dat.balances.
 STEPS = ['dat.parse_mstr', 'dat.prices', 'dat.parse_bmnr', 'dat.parse_sbet', 'dat.balances', 'dat.engine', 'dat.memo',
-         'dat.build_site']
+         'dat.filings', 'dat.build_site']
 # (firm, CIK, period of the 10-Q the anchors come from: Strategy Q2 10-Q; BitMine 5/31 10-Q, whose cover gives BMNR_A1;
 # SharpLink Q2 10-Q, whose balance sheet and cover give SBET_BASIC)
 ANCHORS = [('MSTR', 1050446, PREF_ANCHOR_DATE), ('BMNR', 1829311, BMNR_A0[0]), ('SBET', 1981535, SBET_BASIC[0][0])]
