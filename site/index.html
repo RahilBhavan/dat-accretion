@@ -9,7 +9,7 @@
 <link rel="preload" href="fonts/source-serif-4.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/ibm-plex-mono-500.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261016b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2315171b'/%3E%3Cpath d='M8 7v17h17' fill='none' stroke='%23fbfbf9' stroke-width='2'/%3E%3Cpath d='M8 24L24 8' stroke='%235c9ef0' stroke-width='2.4'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -53,17 +53,17 @@
 <section id="pref-section" aria-labelledby="pref-title">
   <header class="section-heading">
     <p class="kicker">2 · By week</p>
-    <h2 id="pref-title">Preferred close as a percent of break-even</h2>
-    <p class="standfirst">Three firms on one scale: 100% is break-even for each.</p>
+    <h2 id="pref-title">How has the distance to break-even changed?</h2>
+    <p class="standfirst">One shared percentage scale. For the preferred stocks, 100% means the close equals break-even. SharpLink shows 1 ÷ net mNAV because it has no preferred.</p>
   </header>
   <p class="counts" id="counts"></p>
   <div class="seg-control" role="tablist" aria-label="Firm" data-for="multiples">
     <button role="tab" type="button" id="tab-pref-MSTR" aria-controls="panel-pref-MSTR" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" id="tab-pref-BMNR" aria-controls="panel-pref-BMNR" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" id="tab-pref-SBET" aria-controls="panel-pref-SBET" data-firm="SBET" aria-selected="false">SharpLink</button>
   </div>
   <div class="multiples" id="multiples">
-    <div class="chart-panel firm-panel" role="tabpanel" data-firm="MSTR" id="panel-pref-MSTR" aria-labelledby="tab-pref-MSTR"><h3 class="firm-heading">Strategy <span class="tk">STRC</span></h3><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
-    <div class="chart-panel firm-panel" role="tabpanel" data-firm="BMNR" id="panel-pref-BMNR" aria-labelledby="tab-pref-BMNR"><h3 class="firm-heading">BitMine <span class="tk">BMNP</span></h3><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
-    <div class="chart-panel firm-panel" role="tabpanel" data-firm="SBET" id="panel-pref-SBET" aria-labelledby="tab-pref-SBET"><h3 class="firm-heading">SharpLink <span class="tk">1 ÷ m</span> <span class="firm-note">filed dates only</span></h3><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="MSTR" id="panel-pref-MSTR" aria-labelledby="tab-pref-MSTR"><h3 class="firm-heading">Strategy <span class="tk">STRC</span></h3><p class="chart-reading" id="reading-MSTR"></p><div class="chart-wrap"><div id="pref-MSTR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-MSTR"></p></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="BMNR" id="panel-pref-BMNR" aria-labelledby="tab-pref-BMNR"><h3 class="firm-heading">BitMine <span class="tk">BMNP</span></h3><p class="chart-reading" id="reading-BMNR"></p><div class="chart-wrap"><div id="pref-BMNR" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-BMNR"></p></div>
+    <div class="chart-panel firm-panel" role="tabpanel" data-firm="SBET" id="panel-pref-SBET" aria-labelledby="tab-pref-SBET"><h3 class="firm-heading">SharpLink <span class="tk">1 ÷ m</span> <span class="firm-note">filed dates only</span></h3><p class="chart-reading" id="reading-SBET"></p><div class="chart-wrap"><div id="pref-SBET" class="chart"></div><div class="tip" role="status" hidden></div></div><p class="source" id="src-SBET"></p></div>
   </div>
   <p class="explain after">Each panel divides the preferred close by break-even ($100 × net mNAV). The scale and dates are the same in all three panels. Strategy's rotation adds below the line; BitMine's adds above it; the shaded side is where each adds. SharpLink has no preferred, so its panel shows 1 ÷ m, and buying back adds above the line (m below 1). Dollar closes are in each point's details.</p>
   <p class="dl">Data: <a href="data/attribution.csv">attribution.csv</a> · <a href="data/actions.csv">actions.csv</a> · <a href="data/balances.csv">balances.csv</a></p>
@@ -74,7 +74,7 @@
 <section id="map-section" aria-labelledby="map-title">
   <header class="section-heading">
     <p class="kicker">3 · Map</p>
-    <h2 id="map-title">Net mNAV against preferred price, one mark per week</h2>
+    <h2 id="map-title">Where do the filed observations sit against break-even?</h2>
     <p class="standfirst" id="map-standfirst">One mark per firm and reporting week. Select a mark to open its filing.</p>
   </header>
   <div class="map-grid">
@@ -90,10 +90,10 @@
 <section id="bars-section" aria-labelledby="bars-title">
   <header class="section-heading">
     <p class="kicker">4 · Attribution</p>
-    <h2 id="bars-title">Weekly change in net coins per share, by cause</h2>
+    <h2 id="bars-title">What caused the change in net coins per share?</h2>
     <p class="standfirst">Three firms on one scale, in basis points of that week's net coins per share.</p>
   </header>
-  <p class="explain">Each bar splits a week's change in n by cause, as basis points of that week's n (1 bp = 0.01%), so firms of different size share one scale. The tick marks the net of the stacked causes. Coin price moves and in-the-money flips are left out of the bars and listed in the details, the strip under each chart and the table. Dollars ("value to common" = Δn × S × p) are in the details, the strips and the table.</p>
+  <p class="explain">Each bar splits a week's change in n by cause, as basis points of that week's n (1 bp = 0.01%), so firms of different size share one scale. Bars above zero add to the metric; bars below zero subtract. The black tick marks the net of the stacked causes. A residual is the amount the filings leave unexplained, not a separate trade. Coin price moves and in-the-money flips are left out of the bars and listed in the details, the strip under each chart and the table. Dollars ("value to common" = Δn × S × p) are in the details, the strips and the table.</p>
   <div class="legend" id="bars-legend"></div>
   <div class="seg-control" role="tablist" aria-label="Firm" data-for="bars">
     <button role="tab" type="button" id="tab-bars-MSTR" aria-controls="panel-bars-MSTR" data-firm="MSTR" aria-selected="true">Strategy</button><button role="tab" type="button" id="tab-bars-BMNR" aria-controls="panel-bars-BMNR" data-firm="BMNR" aria-selected="false">BitMine</button><button role="tab" type="button" id="tab-bars-SBET" aria-controls="panel-bars-SBET" data-firm="SBET" aria-selected="false">SharpLink</button>
@@ -208,6 +208,6 @@
 </div>
 
 <script src="balance.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=20261016b"></script>
 </body>
 </html>

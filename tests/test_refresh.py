@@ -7,7 +7,7 @@ def test_steps_order():
     # prices before parse_bmnr and parse_sbet (they need ETH and SBET closes); all parsers before balances; memo
     # reads the engine's output
     assert refresh.STEPS == ['dat.parse_mstr', 'dat.prices', 'dat.parse_bmnr', 'dat.parse_sbet', 'dat.balances',
-                             'dat.engine', 'dat.memo', 'dat.build_site']
+                             'dat.engine', 'dat.memo', 'dat.filings', 'dat.build_site']
 
 
 def test_reanchor_watches_sharplink_after_its_q2_anchor():

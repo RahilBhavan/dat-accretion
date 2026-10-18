@@ -117,12 +117,14 @@ function touchSheet(el, head, rows, urls, pick) {
     hideTip(el.parentElement);
     // urls(a): plain URLs, or [url, what it covers] pairs; each filing is listed once.
     const seen = new Set(), list = urls(a).map(u => Array.isArray(u) ? u : [u, '']).filter(([u]) => !seen.has(u) && seen.add(u));
-    const links = list.map(([u, what]) => '<a href="' + esc(u) + '" target="_blank" rel="noopener">View filing' + (what ? ' for ' + esc(what) : '')
+    const links = list.map(([u, what]) => '<a href="' + esc(doc(u)) + '" target="_blank" rel="noopener">View filing' + (what ? ' for ' + esc(what) : '')
       + ' (' + esc(fileName(u)) + ')</a>').join('<br>');
     openSheet('<h4 id="sheet-title">' + head(a) + '</h4><div class="data-rows">' + rows(a) + links + '</div>', a);
   };
 }
 const whenLabel = w => (w.firm === 'SBET' ? 'filed date ' : 'week ending ') + w.week_end;
+// doc(u): the restyled copy of a filing (site/filings/, dat/filings.py) when built, else the SEC URL itself.
+const doc = u => (DATA && DATA.pages && DATA.pages[u]) || u;
 const filingRow = urls => '<div>Filing: ' + urls.map(u => esc(fileName(u))).join(', ') + '</div>';
 
 function markSvg(firm, cx, cy, r, cls, style) {
@@ -176,7 +178,7 @@ function spark(firm) {
     + '<rect class="band" x="' + P + '" y="' + y0.toFixed(1) + '" width="' + (W - R - P) + '" height="' + (y1 - y0).toFixed(1) + '"/>'
     + '<line class="ref" x1="' + P + '" x2="' + (W - R) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>'
     + '<text x="' + (W - R + 4) + '" y="' + (Y(100) + 3.5) + '">100%</text>'
-    + '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>'
+    + (firm === 'SBET' ? pts.slice(0, -1).map(p => '<circle cx="' + X(p.t) + '" cy="' + Y(p.r) + '" r="2"/>').join('') : '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>')
     + '<circle cx="' + X(l.t).toFixed(1) + '" cy="' + Y(l.r).toFixed(1) + '" r="2.6"/></svg>';
 }
 
@@ -188,7 +190,7 @@ function asof() {
   const weekly = DATA.headline.filter(h => h.break_even != null);
   const through = weekly.map(h => h.week_end).sort()[0], age = daysAgo(through);
   let s = 'Data through <span class="num-m">' + nice_date(through) + '</span> (<span class="num-m">' + age + '</span> days ago) · '
-    + 'Every figure links to its SEC filing · <a href="#built">How this is built</a>';
+    + 'Every figure links to its SEC filing (<a href="filings/index.html">all filings, restyled</a>) · <a href="#built">How this is built</a>';
   if (age > 9) s += ' <strong class="stale">Behind: filings after <span class="num-m">' + esc(through) + '</span> are not yet included.</strong>';
   document.getElementById('asof').innerHTML = s;
 }
@@ -202,13 +204,10 @@ const TERMS = {
 };
 const term = (k, text) => '<button type="button" class="term" data-term="' + k + '" aria-controls="sheet" aria-expanded="false">' + text + '</button>';
 function dek() {
-  const h = Object.fromEntries(DATA.headline.map(x => [x.firm, x])), a = h.MSTR, b = h.BMNR;
   document.getElementById('dek').innerHTML =
-    'Strategy\'s ' + term('rotation', 'rotation') + ' adds bitcoin per share while STRC trades below <strong>$'
-    + a.break_even.toFixed(2) + '</strong>; it closed at <span class="fig">$' + a.pref_close.toFixed(2) + '</span>. '
-    + 'BitMine\'s adds ether per share while BMNP trades above <strong>$'
-    + b.break_even.toFixed(2) + '</strong>; it closed at <span class="fig">$' + b.pref_close.toFixed(2) + '</span>. '
-    + 'Each ' + term('breakeven', 'break-even') + ' is <span class="nw">$100 × ' + term('mnav', 'net mNAV') + '</span>.';
+    'These companies pair stock issuance with repurchases. A ' + term('rotation', 'rotation')
+    + ' adds net coins per common share only on one side of its ' + term('breakeven', 'break-even')
+    + ' price. The trade directions below explain why that side differs.';
 }
 
 // Break-even table: nine numbers, so a table (Tufte: tables beat graphics for small data), with a sparkline per row on
@@ -228,18 +227,19 @@ function headline() {
       : 'close ' + short_date(h.price_date) + ' · m ' + h.m.toFixed(3);
     // The condition names the line the percent is read against, so 84% (below) or 124% (above) needs no legend.
     const cond = '<span>' + (sbet ? 'Buyback adds while m is <span class="side">below 1</span>, so while 1 ÷ m is above 100%'
-      : 'Adds while ' + esc(h.pref) + ' is <span class="side">' + ADDS[h.firm][0] + '</span> break-even (100%)') + '</span>';
+      : esc(h.name) + (h.firm === 'MSTR' ? '\'s rotation adds bitcoin per share while ' : '\'s rotation adds ether per share while ') + esc(h.pref) + ' is <span class="side">' + ADDS[h.firm][0] + '</span> break-even (100%)') + '</span>';
     return '<article class="lr" aria-label="' + esc(h.name) + '"><div class="lr-name"><h3 class="lr-firm">' + esc(h.name) + (sbet ? '' : '<span class="tk">' + esc(h.pref) + '</span>') + '</h3>'
       + '<p class="lr-when">' + when + '</p></div>'
       // SharpLink has no preferred: one cell across the price columns instead of placeholder figures.
       + (sbet ? '<p class="lr-span">No preferred · m ' + h.m.toFixed(3) + ' · 1 ÷ m = ' + pct(r) + '</p>'
         : fig('Close', '$' + h.pref_close.toFixed(2)) + fig('Break-even', '$' + h.break_even.toFixed(2), 'be') + fig('Of break-even', pct(r), 'pct-col'))
+      + '<p class="lr-trade">' + (sbet ? 'Common-share buyback; no preferred stock' : h.firm === 'MSTR' ? 'Sell common → retire preferred' : 'Issue preferred → buy back common') + '</p>'
       + '<p class="lr-cond">' + cond + spark(h.firm) + '</p></article>';
   }).join('');
   document.getElementById('headline-text').innerHTML = '<div class="ledger"><div class="ledger-head" aria-hidden="true"><span>Latest filed week</span>'
     + '<span style="text-align:right">Pref. close</span><span style="text-align:right">Break-even</span><span style="text-align:right">Of break-even</span></div>' + rows + '</div>'
-    + '<p class="caption">Break-even = $100 × net mNAV. Lines: close ÷ break-even each week since June, on one shared scale; the shaded side is where each rotation adds. '
-    + 'SharpLink has no preferred, so its row shows 1 ÷ m.</p>';
+    + '<p class="caption">Break-even = $100 × net mNAV. History: close ÷ break-even each week since June, on one shared scale; the shaded side is where each rotation adds. '
+    + 'SharpLink has no preferred, so its dots show 1 ÷ m on filed dates only. BitMine uses estimated share counts between filings; see <a href="#method">estimated figures</a>.</p>';
   document.getElementById('counts').textContent = DATA.counts;
   example();
 }
@@ -331,7 +331,7 @@ function example() {
     + ' sats across ' + x.shares.toLocaleString('en-US') + ' fully diluted shares (exact recompute).'
     + (net ? ' That is ' + (x.adds_usd / net * 100).toFixed(3) + '% of Strategy\'s net coin value that week (' + usd(net) + '), below one pixel at true scale, '
       + 'which is why the figures above use toy numbers.' : '')
-    + ' Source: <a href="' + esc(x.filing_url) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p>'
+    + ' Source: <a href="' + esc(doc(x.filing_url)) + '" target="_blank" rel="noopener">Strategy 8-K for the week ending ' + esc(x.week_end) + '</a>. Every bar and mark below is built the same way.</p>'
     + '<p>BitMine runs the rotation the other way (sell BMNP, buy back common). In the latest filed week, net mNAV ' + bm.m.toFixed(3) + ', BitMine\'s rotation adds while BMNP trades above $'
     + bm.break_even.toFixed(2) + '; it closed at $' + bm.pref_close.toFixed(2) + '.</p></div></div>';
   // The balance (site/balance.js, built by site-src/balance/build.mjs) starts at the toy trade: m = 1.2, STRC $90 (q = 0.90).
@@ -371,24 +371,23 @@ function drawPref(firm) {
   const below0 = ADDS[firm][0] === 'below', b0 = below0 ? Y(100) : Y(RULER.hi), b1 = below0 ? Y(RULER.lo) : Y(100);
   s += '<rect class="band" x="' + M.l + '" y="' + b0 + '" width="' + (W - M.l - M.r) + '" height="' + (b1 - b0) + '"/>';
   s += '<line class="ref" x1="' + M.l + '" x2="' + (W - M.r) + '" y1="' + Y(100) + '" y2="' + Y(100) + '"/>';
-  // Labels on the left, on the side of the line where the program adds (the data sits clear of it there).
-  const below = ADDS[firm][0] === 'below';
-  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 15 : Y(100) - 5) + '">break-even</text>';
-  // 12px monospace is about 7.2px a character; a narrow panel drops the parenthesis.
-  const addsText = ADDS[firm][1].length * 7.2 > W - M.l - M.r - 8 ? ADDS[firm][1].replace(/ \(.*\)$/, '') : ADDS[firm][1];
-  s += '<text x="' + (M.l + 4) + '" y="' + (below ? Y(100) + 30 : Y(100) - 20) + '" class="adds">' + addsText + '</text>';
+  // Keep the direction in HTML above the plot, outside the observations' drawing area.
+  s += '<text x="' + (M.l + 4) + '" y="' + (Y(100) - 6) + '">break-even</text>';
+  document.getElementById('reading-' + firm).textContent =
+    (sbet ? '1 ÷ net mNAV, as a percent. Filed dates only; no values between points. ' : 'Preferred close ÷ break-even, as a percent. ')
+    + ADDS[firm][1] + '. Shading marks that side.';
   // Columns: each point owns the span halfway to its neighbours, and links to its filing (M9).
   const mid = i => i < 0 ? M.l : i >= pts.length - 1 ? W - M.r : (X(pts[i].t) + X(pts[i + 1].t)) / 2;
   const active = ACTIVE[el.id] = Math.min(ACTIVE[el.id] ?? pts.length - 1, pts.length - 1);
   pts.forEach((p, i) => {
     const x0 = Math.min(mid(i - 1), X(p.t) - 6), x1 = Math.max(mid(i), X(p.t) + 6);
-    s += '<a class="col" href="' + esc(p.w.filing_urls[0]) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
+    s += '<a class="col" href="' + esc(doc(p.w.filing_urls[0])) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
       + esc(FIRM[firm].name + ' ' + whenLabel(p.w) + ': ' + label + ' ' + p.r.toFixed(1) + '%. Opens filing.') + '">'
       + '<rect class="hit" x="' + x0 + '" y="' + M.t + '" width="' + Math.max(1, x1 - x0) + '" height="' + (H - M.t - M.b) + '"/></a>';
   });
   s += '<text x="' + M.l + '" y="' + (H - 6) + '">' + short_date(new Date(RULER.t0).toISOString().slice(0, 10)) + '</text>';
   s += '<text x="' + (W - M.r) + '" y="' + (H - 6) + '" text-anchor="end">' + short_date(new Date(RULER.t1).toISOString().slice(0, 10)) + '</text>';
-  s += '<path class="data" d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>';
+  if (!sbet) s += '<path class="data" d="' + pts.map((p, i) => (i ? 'L' : 'M') + X(p.t).toFixed(1) + ',' + Y(p.r).toFixed(1)).join('') + '"/>';
   if (sbet) s += pts.slice(0, -1).map(p => '<circle class="pt" cx="' + X(p.t) + '" cy="' + Y(p.r) + '" r="2.5"/>').join('');
   const l = pts[pts.length - 1];
   s += '<circle class="last" cx="' + X(l.t) + '" cy="' + Y(l.r) + '" r="4"/>';
@@ -411,7 +410,7 @@ function drawPref(firm) {
   colKeys(el);
   const n = new Set(pts.flatMap(p => p.w.filing_urls)).size;
   document.getElementById('src-' + firm).innerHTML = (sbet ? 'Last: m ' + l.close.toFixed(3) : 'Last: ' + esc(h.pref) + ' $' + l.close.toFixed(2) + ', break-even $' + l.be.toFixed(2))
-    + '. ' + n + ' SEC filings; closes from Yahoo Finance.';
+    + '. ' + n + (sbet ? ' SEC filings; no observations between filed dates.' : ' SEC filings; closes from Yahoo Finance.');
 }
 
 // ---- 3. break-even map ----
@@ -466,7 +465,7 @@ function drawMap() {
     const last = latest[w.firm] === i;
     const label = FIRM[w.firm].name + (w.firm === 'SBET' ? ', filed date ' : ', week ending ') + w.week_end + ': m ' + fix(w.m, 3)
       + (w.q == null ? ', no preferred (plotted at q = 1)' : ', q ' + fix(w.q, 3)) + '. Opens filing.';
-    s += '<a href="' + esc(w.filing_urls[0]) + '" target="_blank" rel="noopener" data-tip="' + i + '" aria-label="' + esc(label) + '">'
+    s += '<a href="' + esc(doc(w.filing_urls[0])) + '" target="_blank" rel="noopener" data-tip="' + i + '" aria-label="' + esc(label) + '">'
       + markSvg(w.firm, cx, cy, Math.max(r, 12), 'hit', 'fill:transparent')
       + markSvg(w.firm, cx, cy, last ? r + 1.5 : r, 'mark', 'fill:' + (last ? c : 'var(--bg)') + ';stroke:' + c + ';stroke-width:1.25') + '</a>';
   }
@@ -617,7 +616,7 @@ function drawBars(firm) {
     const bw = widths[i], x = xs[i] - bw / 2, st = stack(w), k = toBp(w);
     const c0 = Math.min(mid(i - 1), x - 3), c1 = Math.max(mid(i), x + bw + 3);
     // Each week is one link to its filing (M9): a transparent hit column with the week's segments inside it.
-    s += '<a class="col" href="' + esc(w.filing_urls[0]) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
+    s += '<a class="col" href="' + esc(doc(w.filing_urls[0])) + '" target="_blank" rel="noopener" tabindex="' + (i === active ? 0 : -1) + '" data-tip="' + i + '" aria-label="'
       + esc(FIRM[firm].name + ' ' + whenLabel(w) + ': observed ' + bps(w.observed * k, true) + ', ' + usd(w.observed, true) + '. Opens filing.') + '">'
       + '<rect class="hit" x="' + c0 + '" y="' + M.t + '" width="' + (c1 - c0) + '" height="' + (H - M.t - M.b) + '"/>';
     let up = 0, dn = 0;
@@ -708,7 +707,7 @@ function table() {
       + cols.map(c => '<td>' + (w.value ? usdM(v[c], true) : '-') + '</td>').join('')
       + '<td>' + (w.est_issuance ? usdM(w.est_issuance, true) : '-') + '</td><td>' + usdM(w.price, true) + '</td><td>' + usdM(w.itm_flip, true) + '</td><td>'
       + usdM(w.observed, true) + '</td><td>' + (w.observed == null ? '-' : bps(w.observed * toBp(w), true)) + '</td><td>'
-      + w.filing_urls.map(u => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(fileName(u)) + '</a>').join(' ') + '</td></tr>';
+      + w.filing_urls.map(u => '<a href="' + esc(doc(u)) + '" target="_blank" rel="noopener">' + esc(fileName(u)) + '</a>').join(' ') + '</td></tr>';
   }
   document.getElementById('week-table').innerHTML = h + '</tbody>';
 }
