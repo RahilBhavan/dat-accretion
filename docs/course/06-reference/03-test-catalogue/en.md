@@ -17,7 +17,7 @@ The suite runs offline. Tests that read `data/*.csv` use the committed files; `t
 
 ```
 tests/test_balances.py: 14
-tests/test_build_site.py: 17
+tests/test_build_site.py: 20
 tests/test_check.py: 6
 tests/test_edgar.py: 3
 tests/test_engine.py: 17
@@ -79,6 +79,9 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 | `test_every_note_has_a_group` | a page caveat without one of the three groups (estimate, coverage, convention) |
 | `test_title_states_break_even_figures` | a title that drops the break-even prices or net mNAV, or picks up counts or an em dash (framing.md) |
 | `test_worked_example_traces_to_its_row` | the worked example drifting from its filed 7/26 row: $25.0M paid, $3.893M to common as filed |
+| `test_eth_per_share_weekly_line` | BitMine's ETH per share panel missing a stated week, a point that is not 1,000 × ETH held ÷ basic shares, or a point without its release link (decision M38) |
+| `test_eth_per_share_filed_checks` | the filed checks drifting from the 10-Q: 9.3451 at 5/31, 9.5192 to 9.5653 at the 7/09 cover count, and the 7/12 week not set to that count |
+| `test_eth_per_share_error_and_note` | the printed error drifting from the unscaled rebuild of the 7/09 count (601,675,391 vs 603,226,394 filed, −0.257%), or a note that drops it, the staking bias, or picks up an em dash |
 
 ## test_check.py
 
