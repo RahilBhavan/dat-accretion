@@ -104,6 +104,6 @@ Every number traces to a filing through `filing_url`. The CSVs in `data/` are co
 
 ## License
 
-No license file yet. Third-party filings and price data belong to their owners. `site-src/anatomy-kit/` carries its own MIT license.
+[MIT](LICENSE) for this project's code and analysis. Third-party filings and price data belong to their owners. `site-src/anatomy-kit/` carries its own MIT license.
 
 Part of [Rahil Bhavan's projects](https://github.com/RahilBhavan).
