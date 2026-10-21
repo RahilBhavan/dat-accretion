@@ -1,6 +1,6 @@
 # How it was made
 
-The project went from an empty repo to a self-refreshing page in two days, 2026-09-25 and 2026-09-26, in
+The project went from an empty repo to a published page with a refresh workflow in two days, 2026-09-25 and 2026-09-26, in
 11 pull requests after one scaffold commit. This page tells that story in order: the plan, the working method, each step and what it
 found, and how the result differs from the plan. The reasons behind each choice are in
 [`decisions.md`](decisions.md); the problems hit along the way are in [`build-notes.md`](build-notes.md).
@@ -140,7 +140,9 @@ the build if removing that bias would move any week across the line.
 
 - **Refresh (#9)**: without it the page would freeze at the last hand-run week. `refresh.yml` runs the
   pipeline every Tuesday, opens a PR with the check output, and merges it only when everything passes. It
-  stops for a person when a new 10-Q or 10-K means the anchors need updating.
+  stops for a person when a new 10-Q or 10-K means the anchors need updating. As of 2026-10-21, none of the four
+  scheduled runs (9/29, 10/06, 10/13, 10/20) has merged a refresh; refreshes landed through runs started by hand
+  (9/26, 10/08, 10/14) and through ordinary PRs.
 - **SharpLink (#10)**: the spec's planned v1.1. SharpLink files irregularly, so, by the user's choice, it
   has rows only on the four dates its filings state ETH holdings. MSTR and BMNR rows came out byte-identical.
 - **Retry (#12)**: the first refresh run, started by hand, failed on one HTTP 503 from EDGAR. The client now retries
@@ -217,7 +219,7 @@ reader-tested yet.
 | residual under 5% every week | under 5% or within R rounding, Strategy from 8/02 | a quiet week with rounded filings fails with nothing wrong |
 | one chart library from jsDelivr | no external scripts | hand-drawn SVG was enough |
 | hypothesis: both rotations add | Strategy 18 of 18 weeks, BitMine 0 of 15 | stated as counts, with the bias sensitivity |
-| hand-run build | weekly automatic refresh | added after v1 |
+| hand-run build | weekly refresh workflow; scheduled runs have not yet merged a refresh unattended | added after v1 |
 
 ## Verified
 
