@@ -3,7 +3,7 @@
 > Every test in `tests/`, one line each: what it guards against.
 
 **Type:** Reference
-**Files:** `tests/test_*.py` (13 files), `.claude/rules/method.md` (Test anchors)
+**Files:** `tests/test_*.py` (15 files), `.claude/rules/method.md` (Test anchors)
 **Prerequisites:** None
 **Time:** ~20 minutes
 
@@ -22,6 +22,7 @@ tests/test_check.py: 6
 tests/test_edgar.py: 3
 tests/test_engine.py: 17
 tests/test_figures.py: 2
+tests/test_filings.py: 6
 tests/test_memo.py: 10
 tests/test_parse_bmnr.py: 22
 tests/test_parse_mstr.py: 33
@@ -32,14 +33,14 @@ tests/test_snapshot_kpi.py: 5
 tests/test_social.py: 2
 ```
 
-That is 161 collected tests (counts include each parameter case). The full run:
+That is 170 collected tests (counts include each parameter case). The full run:
 
 ```
 .venv/bin/python -m pytest -q
-........................................................................ [ 44%]
-........................................................................ [ 89%]
-.................                                                        [100%]
-161 passed in 0.44s
+........................................................................ [ 42%]
+........................................................................ [ 84%]
+..........................                                               [100%]
+170 passed in 0.68s
 ```
 
 Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one test with `-k strc_anchor`. `.github/workflows/ci.yml` runs the same suite (`python -m pytest -q tests`) as the `tests` check that protects `main` (decision P4), and `refresh.yml` runs it again before each weekly merge. A **fixture** here is plain test input; a **parameterized** test runs once per listed case.
@@ -230,6 +231,17 @@ Run one file with `.venv/bin/python -m pytest -q tests/test_engine.py`, or one t
 |---|---|
 | `test_figures_build_in_both_themes` | a course figure missing in light or dark, missing its alt text, carrying an em dash, or a week's parts that no longer sum to the observed change |
 | `test_ruler_matches_engine_n` | the ruler figure computing a different n from the engine's weekly.csv |
+
+## test_filings.py
+
+| test | guards against |
+|---|---|
+| `test_tidy_drops_spacer_columns_and_folds_dollar_signs` | a restyled filing table keeping empty spacer cells or splitting `$` from its figure |
+| `test_page_keeps_every_word_and_marks_filed_figures` | a restyled filing page dropping the filing's text, list bullets or images, or a filed figure without its mark and side note |
+| `test_word_guard_raises_when_text_is_lost` | a restyled page that loses the filing's words being written without an error |
+| `test_page_name_is_accession_and_document` | a restyled page file name that is not the accession number plus the document name |
+| `test_rows_of_dashes_are_dimmed_not_dropped` | a table row of dashes (nothing sold) being dropped instead of dimmed |
+| `test_share_price_split_multiplies_back_exactly` | a share-price split into coin price, coins per share and mNAV whose parts do not multiply back to the share move |
 
 ## Exercises
 

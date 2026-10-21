@@ -144,7 +144,7 @@ instead of taking anyone's view of it.
 ## How the pipeline works
 
 Each step is one module, run as `python -m dat.<module>`. `dat/refresh.py` runs them in this order,
-stopping at the first failure: parse_mstr, prices, parse_bmnr, parse_sbet, balances, engine, memo,
+stopping at the first failure: parse_mstr, prices, parse_bmnr, parse_sbet, balances, engine, memo, filings,
 build_site. `dat.social` is not part of the refresh; a person runs it by hand.
 
 ```
@@ -188,7 +188,9 @@ CSVs ──> dat/build_site.py ──> site/data.json ──> site/ (static HTML
 
 A failure in the scheduled jobs opens one GitHub issue per failure streak. When a firm files a new 10-Q or
 10-K, the refresh exits 2 and leaves its PR open: a person updates the anchor share counts and balances by
-hand.
+hand. As of 2026-10-21 the daily snapshot runs succeed, but none of the four scheduled refresh runs has
+merged a refresh (PR #41, from the 10/20 run, is open); refreshes so far were started by hand or merged as
+ordinary PRs.
 
 If the latest done check on the `data` branch is missing or not `pass`, the Pages run fails and the live
 page keeps its last passing build (#17).
@@ -207,4 +209,4 @@ page keeps its last passing build (#17).
   SharpLink), a read-only agent matched every changed row of `actions.csv` and `stated.csv` to its filing
   before merge. Weekly refresh PRs merge on the automated checks alone.
 
-`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 152 offline tests as of 2026-10-08.
+`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 170 offline tests as of 2026-10-21.
