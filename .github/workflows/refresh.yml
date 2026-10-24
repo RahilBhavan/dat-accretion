@@ -11,6 +11,7 @@ permissions:
   pull-requests: write
   issues: write
   actions: write
+  statuses: write
 concurrency: refresh
 jobs:
   refresh:
@@ -122,6 +123,12 @@ jobs:
           done
           [ -n "$id" ] || { echo "CI run for $sha on $branch did not start within 150 s"; exit 1; }
           gh run watch "$id" --exit-status --interval 15
+          # The required status `tests` (main protection, strict) is the check run of that dispatched CI run. Also
+          # report it as a commit status of the same name on the PR head, so the gate holds whichever of the two
+          # GitHub reads for a PR opened by GITHUB_TOKEN (whose own pull_request CI run waits at action_required).
+          gh api "repos/${{ github.repository }}/statuses/$sha" -f state=success -f context=tests \
+            -f description="tests passed in CI run $id (dispatched by refresh.yml)" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/$id"
       - name: squash-merge (only when pytest, check.py and CI passed and no reanchor is needed), then deploy Pages
         id: merge
         if: >-
@@ -131,7 +138,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr merge "${{ steps.pr.outputs.branch }}" --squash --delete-branch
+          branch="${{ steps.pr.outputs.branch }}"
+          # Branch protection is evaluated lazily after a status lands: wait up to 2 min for CLEAN, and print the
+          # state and checks if it never gets there, so a blocked merge is diagnosable from this log.
+          for i in $(seq 24); do
+            state=$(gh pr view "$branch" --json mergeStateStatus -q .mergeStateStatus)
+            echo "mergeStateStatus=$state"
+            [ "$state" = CLEAN ] && break
+            sleep 5
+          done
+          [ "$state" = CLEAN ] || gh pr view "$branch" --json mergeStateStatus,statusCheckRollup
+          gh pr merge "$branch" --squash --delete-branch
           gh workflow run pages.yml   # pushes by GITHUB_TOKEN don't trigger pages.yml
       - name: fail the job if a check failed or a reanchor is needed (the alert step below then fires)
         if: >-
