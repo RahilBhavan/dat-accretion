@@ -124,16 +124,17 @@ The order matters: `dat.prices` runs before the BitMine and SharpLink parsers be
           steps.check.outcome == 'success' && steps.refresh.outputs.code == '0'
 ```
 
-Two GitHub details shape the rest. A PR opened with `GITHUB_TOKEN` triggers no workflows, so the job runs `gh workflow run ci.yml --ref "$branch"` and waits for the run whose head SHA matches its own commit. A push by `GITHUB_TOKEN` does not trigger `pages.yml` either, so the merge step dispatches it. Opening and merging PRs from Actions needs the repo setting "Allow GitHub Actions to create and approve pull requests", turned on 2026-09-26.
+Two GitHub details shape the rest. A PR opened with `GITHUB_TOKEN` gets a `pull_request` CI run that waits for a person to approve it, and nobody does. So the job runs `gh workflow run ci.yml --ref "$branch"`, waits for the run whose head SHA matches its own commit, and posts a `tests` status on that commit. After the merge it deletes the waiting run, which GitHub otherwise marks as failed with zero jobs (decision O11). A push by `GITHUB_TOKEN` does not trigger `pages.yml` either, so the job dispatches it, waits for it, and checks that the live CSVs match the merge commit (O12). Opening and merging PRs from Actions needs the repo setting "Allow GitHub Actions to create and approve pull requests", turned on 2026-09-26.
 
 ### Step 4: One issue per failure streak
 
-Both scheduled workflows end with the same alert pattern. It comments on an open issue with the same title if there is one, else opens a new issue:
+Both scheduled workflows end with the same alert pattern. It comments on an open issue with the same title if there is one, else opens a new issue. The refresh version lives in `.github/scripts/alert_issue.sh` and matches the exact title from a plain listing, because search matches substrings and its index lags (O13):
 
-```yaml
-          n=$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')
-          if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $url $detail"
-          else gh issue create --title "$title" --body "Run: $url $detail"; fi
+```bash
+n=$(gh issue list --state open --limit 200 --json number,title \
+      --jq "map(select(.title == \"$title\")) | sort_by(.number) | .[0].number // empty")
+if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $body"
+else gh issue create --title "$title" --body "Run: $body"; fi
 ```
 
 The refresh titles the issue "Reanchor needed" only when the exit code is 2 and nothing else failed; otherwise "Weekly refresh failed".

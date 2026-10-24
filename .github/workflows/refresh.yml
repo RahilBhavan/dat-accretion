@@ -100,9 +100,12 @@ jobs:
             grep -v 'fetched [0-9]*/' "$RUNNER_TEMP/check.log" || true
             echo '```'
           } > "$RUNNER_TEMP/body.md"
-          gh pr create --base main --head "$branch" --title "Weekly refresh $(date -u +%F)" --body-file "$RUNNER_TEMP/body.md"
-      # PRs and pushes by GITHUB_TOKEN trigger no workflows, so CI is dispatched on the branch; its job `tests`
-      # is the required status check on main.
+          url=$(gh pr create --base main --head "$branch" --title "Weekly refresh $(date -u +%F)" --body-file "$RUNNER_TEMP/body.md")
+          echo "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      # A push by GITHUB_TOKEN triggers no workflow, and the PR's own pull_request CI run waits for a human to approve
+      # it (bot-created PRs, GitHub changelog 2026-06-11). So CI is dispatched on the branch; its job `tests` is the
+      # required status check on main.
       - name: run CI on the branch and wait for it
         id: ci
         if: steps.pr.outcome == 'success'
@@ -148,15 +151,61 @@ jobs:
             sleep 5
           done
           case "$state" in CLEAN|UNSTABLE) ;; *) gh pr view "$branch" --json mergeStateStatus,statusCheckRollup;; esac
+          head=$(git rev-parse HEAD)   # read before merging: `--delete-branch` switches this checkout to main
           gh pr merge "$branch" --squash --delete-branch
-          gh workflow run pages.yml   # pushes by GITHUB_TOKEN don't trigger pages.yml
+          merged=$(gh pr view "${{ steps.pr.outputs.url }}" --json mergeCommit -q .mergeCommit.oid)
+          echo "merged ${{ steps.pr.outputs.url }} as $merged"
+          echo "sha=$merged" >> "$GITHUB_OUTPUT"
+          # The PR's unapproved pull_request CI run is concluded `failure` with zero jobs once the PR closes. It
+          # tested nothing (the dispatched run above did), so delete it rather than leave a red X on main's history.
+          .github/scripts/drop_unapproved_pr_runs.sh "${{ github.repository }}" "$branch" "$head"
+      # Pushes by GITHUB_TOKEN don't trigger pages.yml, so dispatch it, wait for it, then confirm the live CSVs are
+      # the merged ones. A failure here fails the job and the alert step below fires.
+      - name: deploy Pages and confirm the live site serves the merged data
+        id: publish
+        if: steps.merge.outcome == 'success'
+        timeout-minutes: 12
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha="${{ steps.merge.outputs.sha }}"
+          gh workflow run pages.yml --ref main
+          id=
+          for _ in $(seq 30); do
+            id=$(gh run list --workflow pages.yml --event workflow_dispatch --json databaseId,headSha \
+                 -q ".[] | select(.headSha == \"$sha\") | .databaseId" | head -n 1)
+            [ -n "$id" ] && break
+            sleep 5
+          done
+          [ -n "$id" ] || { echo "pages run for $sha did not start within 150 s"; exit 1; }
+          echo "run=$id" >> "$GITHUB_OUTPUT"
+          gh run watch "$id" --exit-status --interval 15
+          git fetch origin main
+          .github/scripts/verify_published.sh "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" "$sha"
       - name: fail the job if a check failed or a reanchor is needed (the alert step below then fires)
         if: >-
           always() && (steps.tests.outcome == 'failure' || steps.check.outcome == 'failure' ||
           steps.ci.outcome == 'failure' || steps.refresh.outputs.code == '2')
         run: exit 1
+      # Always prints one `refresh result:` line, and the same line goes to the run's summary page.
+      - name: result
+        if: always()
+        run: |
+          url="${{ steps.pr.outputs.url }}"
+          if [ "${{ steps.publish.outcome }}" = success ]; then
+            line="merged $url as ${{ steps.merge.outputs.sha }}; Pages run ${{ steps.publish.outputs.run }} deployed it and the live CSVs match"
+          elif [ "${{ steps.diff.outputs.changed }}" = false ] && [ "${{ job.status }}" = success ]; then
+            line="no change in data, docs or site; nothing to merge"
+          elif [ -n "$url" ] && [ "${{ steps.merge.outcome }}" != success ]; then
+            line="NOT merged: $url left open (refresh=${{ steps.refresh.outputs.code }} tests=${{ steps.tests.outcome }} check=${{ steps.check.outcome }} ci=${{ steps.ci.outcome }} merge=${{ steps.merge.outcome }})"
+          else
+            line="FAILED before or after the merge (refresh=${{ steps.refresh.outputs.code }} pr=${{ steps.pr.outcome }} merge=${{ steps.merge.outcome }} publish=${{ steps.publish.outcome }})"
+          fi
+          echo "refresh result: $line"
+          echo "refresh result: $line" >> "$GITHUB_STEP_SUMMARY"
+      # cancelled() too: a job that hits its 60-minute limit is cancelled, and that must alert as well.
       - name: alert (one open issue per failure streak; comment on it if already open)
-        if: failure()
+        if: failure() || cancelled()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -169,6 +218,4 @@ jobs:
           fi
           url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           detail=$(grep '^reanchor needed' "$RUNNER_TEMP/refresh.log" 2>/dev/null || true)
-          n=$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')
-          if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $url $detail"
-          else gh issue create --title "$title" --body "Run: $url $detail"; fi
+          .github/scripts/alert_issue.sh "$title" "$url $detail"

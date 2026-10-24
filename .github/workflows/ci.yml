@@ -3,7 +3,10 @@ on:
   pull_request:
   push:
     branches: [main]
-  workflow_dispatch:   # refresh.yml runs it on refresh/<date>: PRs opened by GITHUB_TOKEN trigger no pull_request run
+  # refresh.yml dispatches this on refresh/<date>. The bot PR's own pull_request run waits for a human approval that
+  # never comes; refresh.yml deletes that zero-job run after the merge. A job-level `if` cannot skip it: the approval
+  # gate holds the whole run before any job condition is read, and `branches` filters match the base, not the head.
+  workflow_dispatch:
 jobs:
   tests:
     runs-on: ubuntu-latest
