@@ -47,7 +47,7 @@ Write the state that applies before the sale. Use the 8-K for C and R, and use t
 | S | fully diluted shares | | ________ |
 | p | BTC close on the price date | `data/prices.csv` (CoinGecko close) | ________ |
 | s | MSTR close on the price date | `data/prices.csv` (Yahoo close) | ________ |
-| Price date | the Friday close the repo uses for this week | `data/weekly.csv`, `price_date` column only | ________ |
+| Price date | the latest date on or before the week end (2026-10-18) that has an MSTR close | `data/prices.csv`, the `MSTR` rows (the dates the price source lists) | ________ |
 
 Question: did any convertible note cross its conversion price between the previous week's close and this week's?
 If one did, D and S change before the sale is applied. Which way does each move? ________

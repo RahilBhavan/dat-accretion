@@ -66,6 +66,4 @@ jobs:
         run: |
           title="KPI snapshot failed"
           url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          n=$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')
-          if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $url"
-          else gh issue create --title "$title" --body "Run: $url"; fi
+          .github/scripts/alert_issue.sh "$title" "$url"

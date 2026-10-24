@@ -16,7 +16,9 @@ concurrency: refresh
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Step timeouts add up to 87 min on purpose (a hung step must end its own step so the alert still runs); the job
+    # limit sits above that sum, so the job limit is a backstop and never cuts a step short.
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
@@ -152,19 +154,18 @@ jobs:
           done
           case "$state" in CLEAN|UNSTABLE) ;; *) gh pr view "$branch" --json mergeStateStatus,statusCheckRollup;; esac
           head=$(git rev-parse HEAD)   # read before merging: `--delete-branch` switches this checkout to main
+          echo "head=$head" >> "$GITHUB_OUTPUT"
           gh pr merge "$branch" --squash --delete-branch
           merged=$(gh pr view "${{ steps.pr.outputs.url }}" --json mergeCommit -q .mergeCommit.oid)
           echo "merged ${{ steps.pr.outputs.url }} as $merged"
           echo "sha=$merged" >> "$GITHUB_OUTPUT"
-          # The PR's unapproved pull_request CI run is concluded `failure` with zero jobs once the PR closes. It
-          # tested nothing (the dispatched run above did), so delete it rather than leave a red X on main's history.
-          .github/scripts/drop_unapproved_pr_runs.sh "${{ github.repository }}" "$branch" "$head"
       # Pushes by GITHUB_TOKEN don't trigger pages.yml, so dispatch it, wait for it, then confirm the live CSVs are
       # the merged ones. A failure here fails the job and the alert step below fires.
       - name: deploy Pages and confirm the live site serves the merged data
         id: publish
         if: steps.merge.outcome == 'success'
-        timeout-minutes: 12
+        # Pages run (up to 10 min, normally 1-2) + verify_published.sh (about 12 min for the CDN's 10-minute cache).
+        timeout-minutes: 30
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -181,7 +182,22 @@ jobs:
           echo "run=$id" >> "$GITHUB_OUTPUT"
           gh run watch "$id" --exit-status --interval 15
           git fetch origin main
-          .github/scripts/verify_published.sh "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" "$sha"
+          # Built from github.repository, which every event carries; the event payload of a `schedule` run has no repository.
+          site=$(.github/scripts/pages_url.sh "${{ github.repository }}")
+          echo "checking $site"
+          .github/scripts/verify_published.sh "$site" "$sha"
+      # Stopgap tidy-up (decision O11), after the publish so that a failure here cannot fail the merge or skip Pages.
+      # A PR opened with GITHUB_TOKEN gets a pull_request CI run that waits for approval nobody gives; GitHub concludes
+      # it as `failure` with zero jobs when the PR closes. With a squash merge that run is on the PR head commit, not
+      # on main's history, so deleting it only tidies the Actions list and the closed PR. The script keeps runs that
+      # ran any job, `startup_failure` runs and runs that concluded before the PR closed.
+      - name: delete the closed PR's zero-job pull_request CI run
+        if: always() && steps.merge.outcome == 'success'
+        timeout-minutes: 3
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/drop_unapproved_pr_runs.sh "${{ github.repository }}" "${{ steps.pr.outputs.branch }}" "${{ steps.merge.outputs.head }}" "${{ steps.pr.outputs.url }}"
       - name: fail the job if a check failed or a reanchor is needed (the alert step below then fires)
         if: >-
           always() && (steps.tests.outcome == 'failure' || steps.check.outcome == 'failure' ||

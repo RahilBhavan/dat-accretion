@@ -124,15 +124,15 @@ The order matters: `dat.prices` runs before the BitMine and SharpLink parsers be
           steps.check.outcome == 'success' && steps.refresh.outputs.code == '0'
 ```
 
-Two GitHub details shape the rest. A PR opened with `GITHUB_TOKEN` gets a `pull_request` CI run that waits for a person to approve it, and nobody does. So the job runs `gh workflow run ci.yml --ref "$branch"`, waits for the run whose head SHA matches its own commit, and posts a `tests` status on that commit. After the merge it deletes the waiting run, which GitHub otherwise marks as failed with zero jobs (decision O11). A push by `GITHUB_TOKEN` does not trigger `pages.yml` either, so the job dispatches it, waits for it, and checks that the live CSVs match the merge commit (O12). Opening and merging PRs from Actions needs the repo setting "Allow GitHub Actions to create and approve pull requests", turned on 2026-09-26.
+Two GitHub details shape the rest. A PR opened with `GITHUB_TOKEN` gets a `pull_request` CI run that waits for a person to approve it, and nobody does. So the job runs `gh workflow run ci.yml --ref "$branch"`, waits for the run whose head SHA matches its own commit, and posts a `tests` status on that commit. After the publish step, a separate best-effort step deletes the waiting run, which GitHub otherwise marks as failed with zero jobs. That is a tidy-up of the Actions list, not of main's history, and a stopgap until a GitHub App token opens the PR (decision O11). A push by `GITHUB_TOKEN` does not trigger `pages.yml` either, so the job dispatches it, waits for it, and checks that the live CSVs match the merge commit (O12). Opening and merging PRs from Actions needs the repo setting "Allow GitHub Actions to create and approve pull requests", turned on 2026-09-26.
 
 ### Step 4: One issue per failure streak
 
-Both scheduled workflows end with the same alert pattern. It comments on an open issue with the same title if there is one, else opens a new issue. The refresh version lives in `.github/scripts/alert_issue.sh` and matches the exact title from a plain listing, because search matches substrings and its index lags (O13):
+Both scheduled workflows end with the same alert pattern. It comments on an open issue with the same title if there is one, else opens a new issue. The refresh version lives in `.github/scripts/alert_issue.sh` and matches the exact title by paging through every open issue, because search matches substrings and its index lags (O13). `snapshot.yml` calls the same script:
 
 ```bash
-n=$(gh issue list --state open --limit 200 --json number,title \
-      --jq "map(select(.title == \"$title\")) | sort_by(.number) | .[0].number // empty")
+n=$(gh api --paginate "repos/$repo/issues?state=open&per_page=100" \
+      | jq -rs --arg t "$title" 'add // [] | map(select((.pull_request | not) and .title == $t)) | sort_by(.number) | .[0].number // empty')
 if [ -n "$n" ]; then gh issue comment "$n" --body "Failed again: $body"
 else gh issue create --title "$title" --body "Run: $body"; fi
 ```
