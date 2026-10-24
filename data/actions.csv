@@ -42,6 +42,8 @@ BMNR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1829311/00014
 BMNR,2026-10-04,2026-08-14,https://www.sec.gov/Archives/edgar/data/1829311/000149315226038012/ex99-1.htm,carry,DIV,-646450,0,,
 BMNR,2026-10-11,2026-10-13,https://www.sec.gov/Archives/edgar/data/1829311/000149315226046744/ex99-1.htm,buy_coin,ETH,31150853.917602,12532,2485.704909,usd estimated: units × ETH close
 BMNR,2026-10-11,2026-08-14,https://www.sec.gov/Archives/edgar/data/1829311/000149315226038012/ex99-1.htm,carry,DIV,-646450,0,,
+BMNR,2026-10-18,2026-10-19,https://www.sec.gov/Archives/edgar/data/1829311/000149315226047517/ex99-1.htm,buy_coin,ETH,30341717.168182,12535,2420.559806,usd estimated: units × ETH close
+BMNR,2026-10-18,2026-08-14,https://www.sec.gov/Archives/edgar/data/1829311/000149315226038012/ex99-1.htm,carry,DIV,-646450,0,,
 MSTR,2026-05-31,2026-06-01,https://www.sec.gov/Archives/edgar/data/1050446/000119312526249768/mstr-20260530.htm,issue_common,MSTR,128300000,801994,159.976259,
 MSTR,2026-05-31,2026-06-01,https://www.sec.gov/Archives/edgar/data/1050446/000119312526249768/mstr-20260530.htm,sell_coin,BTC,2500000,32,77135,
 MSTR,2026-06-07,2026-06-08,https://www.sec.gov/Archives/edgar/data/1050446/000119312526260709/mstr-20260504.htm,buy_coin,BTC,101300000,1550,65332,
@@ -91,6 +93,10 @@ MSTR,2026-10-04,2026-10-05,https://www.sec.gov/Archives/edgar/data/1050446/00011
 MSTR,2026-10-11,2026-10-13,https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-ex99_1.htm,buy_coin,BTC,21500000,250,86194,
 MSTR,2026-10-11,2026-10-13,https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-ex99_1.htm,issue_common,MSTR,21000000,125183,167.754408,
 MSTR,2026-10-11,2026-10-13,https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-ex99_1.htm,retire_pref,STRC,192400000,193214500,99.578448,
+MSTR,2026-10-18,2026-10-19,https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm,buy_coin,BTC,22100000,267,82900,
+MSTR,2026-10-18,2026-10-19,https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm,carry,DIV_INT,-45500000,0,,
+MSTR,2026-10-18,2026-10-19,https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm,issue_common,MSTR,22000000,140872,156.17014,
+MSTR,2026-10-18,2026-10-19,https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm,retire_pref,STRC,193100000,193878000,99.598717,
 SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,buy_coin,ETH,16110400,10000,1611.04,
 SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,buyback_common,SBET,10022000,2132773,4.69,"usd: treasury stock cost, 10-Q equity statement (https://www.sec.gov/Archives/edgar/data/1981535/000149315226036620/form10-q.htm)"
 SBET,2026-06-28,2026-06-30,https://www.sec.gov/Archives/edgar/data/1981535/000149315226031202/form8-k.htm,carry,STAKE,0,949,,inferred staking/LST accrual: stated ETH change less stated purchases
