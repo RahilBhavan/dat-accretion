@@ -139,15 +139,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           branch="${{ steps.pr.outputs.branch }}"
-          # Branch protection is evaluated lazily after a status lands: wait up to 2 min for CLEAN, and print the
-          # state and checks if it never gets there, so a blocked merge is diagnosable from this log.
+          # Wait up to 2 min for the gate to open. The `tests` status makes the PR UNSTABLE (mergeable): the PR's own
+          # pull_request CI run stays at action_required and never turns CLEAN. BLOCKED/BEHIND: print the checks.
           for i in $(seq 24); do
             state=$(gh pr view "$branch" --json mergeStateStatus -q .mergeStateStatus)
             echo "mergeStateStatus=$state"
-            [ "$state" = CLEAN ] && break
+            case "$state" in CLEAN|UNSTABLE) break;; esac
             sleep 5
           done
-          [ "$state" = CLEAN ] || gh pr view "$branch" --json mergeStateStatus,statusCheckRollup
+          case "$state" in CLEAN|UNSTABLE) ;; *) gh pr view "$branch" --json mergeStateStatus,statusCheckRollup;; esac
           gh pr merge "$branch" --squash --delete-branch
           gh workflow run pages.yml   # pushes by GITHUB_TOKEN don't trigger pages.yml
       - name: fail the job if a check failed or a reanchor is needed (the alert step below then fires)
