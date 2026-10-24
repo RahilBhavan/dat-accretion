@@ -1,25 +1,25 @@
 {
  "status": "pass",
- "run_at": "2026-10-23T23:53:57Z",
+ "run_at": "2026-10-24T23:26:13Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 155,897.8374 vs API 155,656.1825: +0.155% (tolerance 0.5%); state from 8-K for week 2026-10-11 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-ex99_1.htm; the API may reflect a newer 8-K), BTC $81,066.00 (API latestPrice), MSTR $146.01 (Yahoo); repo at week 2026-10-11; newer 8-K filed 2026-10-19 not yet parsed",
+   "compared": "rebuilt 155,454.3628 vs API 155,345.6464: +0.070% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,489.00 (API latestPrice), MSTR $146.01 (Yahoo)",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2781 vs API 1.2787: -0.046% (tolerance 0.5%); state from 8-K for week 2026-10-11 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526419726/mstr-ex99_1.htm; the API may reflect a newer 8-K), BTC $81,066.00 (API latestPrice), MSTR $146.01 (Yahoo); repo at week 2026-10-11; newer 8-K filed 2026-10-19 not yet parsed",
+   "compared": "rebuilt 1.2817 vs API 1.2812: +0.042% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,489.00 (API latestPrice), MSTR $146.01 (Yahoo)",
    "ok": true
   },
   {
    "name": "BitMine ETH vs strategicethreserve.xyz",
-   "compared": "strategicethreserve.xyz BMNR 5847611 (snapshotDate 2026-08-23) vs rolled 5847577 (week 2026-08-23): -0.0006% OK (tolerance 0.1%); snapshot 49 days before last week 2026-10-11 STALE, weeks after 2026-08-23 are not independently checked (max 42)",
+   "compared": "strategicethreserve.xyz BMNR 5847611 (snapshotDate 2026-08-23) vs rolled 5847577 (week 2026-08-23): -0.0006% OK (tolerance 0.1%); snapshot 56 days before last week 2026-10-18 STALE, weeks after 2026-08-23 are not independently checked (max 42)",
    "ok": true
   },
   {
    "name": "SharpLink ETH vs strategicethreserve.xyz",
-   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 81 days before today)",
+   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 82 days before today)",
    "ok": true
   },
   {
@@ -78,6 +78,11 @@
    "ok": true
   },
   {
+   "name": "residual MSTR 2026-10-18",
+   "compared": "|residual| $4.5M vs 5% of |observed| $340.5M = $17.0M or R rounding \u00b1$10.1M: <5%",
+   "ok": true
+  },
+  {
    "name": "residual SBET 2026-06-28 (report only)",
    "compared": "residual $+0.0M on observed $+13.5M since 2026-06-16; not tested",
    "ok": true
@@ -94,7 +99,7 @@
   },
   {
    "name": "actions.csv filing_url fetch",
-   "compared": "46 of 46 unique URLs returned 200",
+   "compared": "48 of 48 unique URLs returned 200",
    "ok": true
   }
  ]
