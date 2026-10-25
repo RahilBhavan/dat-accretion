@@ -1,26 +1,26 @@
 {
- "status": "pass",
- "run_at": "2026-10-24T23:26:13Z",
+ "status": "fail",
+ "run_at": "2026-10-25T23:22:13Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 155,454.3628 vs API 155,345.6464: +0.070% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,489.00 (API latestPrice), MSTR $146.01 (Yahoo)",
+   "compared": "rebuilt 155,308.5953 vs API 155,199.8104: +0.070% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,222.00 (API latestPrice), MSTR $146.01 (Yahoo)",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2817 vs API 1.2812: +0.042% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,489.00 (API latestPrice), MSTR $146.01 (Yahoo)",
+   "compared": "rebuilt 1.2829 vs API 1.2824: +0.042% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,222.00 (API latestPrice), MSTR $146.01 (Yahoo)",
    "ok": true
   },
   {
-   "name": "BitMine ETH vs strategicethreserve.xyz",
-   "compared": "strategicethreserve.xyz BMNR 5847611 (snapshotDate 2026-08-23) vs rolled 5847577 (week 2026-08-23): -0.0006% OK (tolerance 0.1%); snapshot 56 days before last week 2026-10-18 STALE, weeks after 2026-08-23 are not independently checked (max 42)",
-   "ok": true
+   "name": "bmnr_eth",
+   "compared": "error: LookupError: https://www.strategicethreserve.xyz/: no BMNR currentReserve/snapshotDate in page data",
+   "ok": false
   },
   {
-   "name": "SharpLink ETH vs strategicethreserve.xyz",
-   "compared": "strategicethreserve.xyz SBET 888938 (snapshotDate 2026-08-03) vs stated 888938 (filed date 2026-08-03): +0.0000% OK (tolerance 0.1%); snapshot 0 days before SBET's last filed date 2026-08-03 OK (max 42; measured against SharpLink's own last filing, which is 82 days before today)",
-   "ok": true
+   "name": "sbet_eth",
+   "compared": "error: LookupError: https://www.strategicethreserve.xyz/: no SBET currentReserve/snapshotDate in page data",
+   "ok": false
   },
   {
    "name": "residual MSTR 2026-08-02",
