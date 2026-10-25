@@ -53,12 +53,12 @@
       "question": "Why does refresh.yml dispatch ci.yml itself instead of waiting for the pull_request trigger?",
       "options": [
         "ci.yml has no pull_request trigger",
-        "A PR opened with GITHUB_TOKEN triggers no workflows, so CI would never run on it",
+        "A PR opened with GITHUB_TOKEN gets a CI run that waits for a person to approve it, and nobody does",
         "Dispatching is faster than a pull_request run",
         "The tests job only runs on main"
       ],
       "correct": 1,
-      "explanation": "GitHub does not start workflows for events created by GITHUB_TOKEN. The job dispatches CI on the branch and waits for the run on its own head SHA, since tests is the required check on main."
+      "explanation": "GitHub does start a pull_request run for a PR that GITHUB_TOKEN opened, but holds it at action_required until a person approves it, and nobody approves the bot's PRs. (A push by GITHUB_TOKEN does not start workflows, which is why pages.yml is dispatched too.) The job dispatches CI on the branch and waits for the run on its own head SHA, since tests is the required check on main."
     }
   ]
 }
