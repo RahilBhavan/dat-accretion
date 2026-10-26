@@ -11,7 +11,9 @@ S") and the ETH close p (weekly.csv). Then, with D = 0 (method.md):
 The CSV carries every input, so each number recomputes by hand; the result is checked against weekly.csv's n.
 
 Card (needs the rahil-design bundle, Firefox and `uv run --with playwright==1.63.0 --with fonttools`): drawn 360px
-wide at 3x so the PNG is exactly 1080x1080 and the 20px labels hold the 326px phone-feed floor. Colours and fonts
+wide at 3x so the PNG is exactly 1080x1080. The week's 8-K figures and the basis for "within error" are fine print at
+15px, which misses the bundle's 18px phone-feed label floor (and the 41px title misses its 40px point floor); the
+brief records the measured sizes. Colours and fonts
 come from the bundle's tokens, never typed here. Writes card.html, card.png, brief.json and alt.txt. The card is a
 draft: it carries no design-review pass until a named reviewer records one for its bytes.
 """
@@ -20,7 +22,7 @@ from dat.balances import read
 
 CARD_WEEKS = 5      # the last five weeks: the most dated labels 20px type holds in a 300px plot
 BUNDLE = os.environ.get('RAHIL_DESIGN', os.path.expanduser('~/.t3/projects/main/.agents/skills/rahil-design'))
-SIZE, SCALE = 360, 3
+SIZE, SCALE, FINE = 360, 3, 15  # FINE: px of the fine print (the 20px feed floor leaves no room for the week's figures)
 FIELDS = ['week_end', 'filed', 'filing_url', 'eth_held', 'cash_securities_usd', 'bmnp_notional_usd', 'eth_close_usd',
           'net_eth', 'shares_diluted_est', 'net_eth_per_1000_shares', 'change_pct', 'eth_added', 'eth_staked',
           'buyback_shares', 'buyback_avg_usd', 's_bias_pct_of_s', 'on_card']
@@ -97,6 +99,14 @@ def alt_text(card):
             + FOOT + '.')
 
 
+def facts(card):
+    """Fine print under the plot: the week's 8-K figures and the basis for 'within error'."""
+    r = card[-1]
+    return (f'Net ETH per 1,000 shares. {int(r["eth_held"]):,} ETH held, {int(r["eth_staked"]):,} staked, '
+            f'+{int(r["eth_added"]):,} ETH; {int(r["buyback_shares"]) / 1e6:.2f}M shares at ${r["buyback_avg_usd"]}. '
+            f'Shares are estimated; staking biases them {float(r["s_bias_pct_of_s"]):.2f}% a week, above the {pct2(r)} change.')
+
+
 def card_html(card, T, fonts):
     """The card markup. T: bundle colour tokens; fonts: {file name: base64}."""
     ink, canvas, surf, fink, fsec = T['ink'], T['canvas'], T['figure-surface'], T['figure-ink'], T['figure-secondary']
@@ -104,17 +114,19 @@ def card_html(card, T, fonts):
     W, X0, DX = 300, 28, 61       # plot width; first point x; spacing between weeks (a 56px label fits in 61px)
     vals = [float(r['net_eth_per_1000_shares']) for r in card]
     lo, hi_v = min(vals), max(vals)
-    top, bot = 34, 56             # plot rows (px in the svg): highest and lowest value
+    top, bot = 33, 45             # plot rows (px in the svg): highest and lowest value
     xs = [X0 + DX * i for i in range(len(card))]
     ys = [bot - (v - lo) / (hi_v - lo) * (bot - top) for v in vals]
     line = ' '.join(f'{x},{y:.1f}' for x, y in zip(xs, ys))
     dots = ''.join(f'<circle cx="{x}" cy="{y:.1f}" r="3.5" fill="{T["chart-series-1"]}"/>' for x, y in zip(xs[:-1], ys[:-1]))
     last = f'<circle cx="{xs[-1]}" cy="{ys[-1]:.1f}" r="6" fill="{hi}" stroke="{T["chart-series-1"]}" stroke-width="2"/>'
-    labels = ''.join(f'<text x="{x}" y="84" text-anchor="middle" class="tick">{md(r["week_end"])}</text>'
+    labels = ''.join(f'<text x="{x}" y="64" text-anchor="middle" class="tick">{md(r["week_end"])}</text>'
                      for x, r in zip(xs, card))
     value = lambda x, y, r, anchor, cls: (f'<text x="{x}" y="{y}" text-anchor="{anchor}" class="{cls}">'
                                           f'{r["net_eth_per_1000_shares"]}</text>')
-    values = value(228, 20, card[-2], 'end', 'val prior') + value(W, 20, card[-1], 'end', 'val b')
+    chip = (f'<rect x="1" y="1" width="82" height="24" fill="{hi}" stroke="{T["chart-series-1"]}" stroke-width="2"/>'
+            f'<text x="42" y="20" text-anchor="middle" class="val b">{pct2(card[-1])}</text>')
+    values = chip + value(228, 19, card[-2], 'end', 'val prior') + value(W, 19, card[-1], 'end', 'val b')
     font = lambda n: base64.b64encode(open(os.path.join(BUNDLE, 'assets/fonts', n), 'rb').read()).decode()
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{html.escape(TITLE)}</title><style>
 @font-face{{font-family:'Rahil Display';src:url(data:font/ttf;base64,{fonts['Anton-Regular.ttf']})}}
@@ -122,21 +134,20 @@ def card_html(card, T, fonts):
 @font-face{{font-family:'Rahil Plex';font-weight:600;src:url(data:font/ttf;base64,{fonts['IBMPlexSans-SemiBold.ttf']})}}
 *{{box-sizing:border-box}}html,body{{margin:0}}
 body{{width:{SIZE}px;height:{SIZE}px;background:{canvas};color:{ink};font-family:'Rahil Plex',sans-serif}}
-article{{width:{SIZE}px;height:{SIZE}px;padding:20px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:6px}}
-h1{{font:41px/0.94 'Rahil Display',sans-serif;margin:0;text-transform:uppercase}}
+article{{width:{SIZE}px;height:{SIZE}px;padding:20px;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:4px}}
+h1{{font:41px/0.9 'Rahil Display',sans-serif;margin:0;text-transform:uppercase}}
 .figure{{background:{surf};color:{fink};border-radius:12px;padding:6px 10px 0;font-size:20px;line-height:1.15;
 font-variant-numeric:tabular-nums}}
-.head{{display:flex;justify-content:space-between;align-items:center;color:{fsec}}}
-.chip{{background:{hi};border:2px solid {T['chart-series-1']};color:{fink};font-weight:600;padding:0 5px;line-height:1.05}}
-svg{{display:block;width:{W}px;height:90px}}
+svg{{display:block;width:{W}px;height:69px}}
 .tick{{font:20px 'Rahil Plex',sans-serif;fill:currentColor;color:{fsec}}}
 .val{{font:20px 'Rahil Plex',sans-serif;fill:currentColor;color:{fink}}}.prior{{color:{fsec}}}.b{{font-weight:600}}
-.source{{font-size:20px;line-height:1.15;color:{secondary};margin:0}}
+.fine{{font-size:{FINE}px;line-height:1.12;color:{ink};margin:0}}
+.source{{font-size:{FINE}px;line-height:1.12;color:{secondary};margin:0}}
 </style></head><body><article><h1>{html.escape(TITLE)}</h1>
-<div class="figure"><div class="head"><span>Net ETH / 1,000 shares</span><span class="chip">{pct2(card[-1])}</span></div>
-<svg viewBox="0 0 {W} 90" role="img" aria-label="{html.escape(alt_text(card))}"><polyline points="{line}" fill="none"
+<div class="figure">
+<svg viewBox="0 0 {W} 69" role="img" aria-label="{html.escape(alt_text(card))}"><polyline points="{line}" fill="none"
 stroke="{T['chart-series-1']}" stroke-width="2.5" stroke-linejoin="round"/>{dots}{last}{values}{labels}</svg></div>
-<p class="source">{html.escape(FOOT)}</p></article></body></html>"""
+<p class="fine">{html.escape(facts(card))}</p><p class="source">{html.escape(FOOT)}</p></article></body></html>"""
 
 
 def build_card(rows, out):
