@@ -1,26 +1,26 @@
 {
- "status": "fail",
- "run_at": "2026-10-25T23:22:13Z",
+ "status": "pass",
+ "run_at": "2026-10-26T01:43:56Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 155,308.5953 vs API 155,199.8104: +0.070% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,222.00 (API latestPrice), MSTR $146.01 (Yahoo)",
+   "compared": "rebuilt 154,936.8322 vs API 154,829.0745: +0.070% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $79,549.00 (API latestPrice), MSTR $146.01 (Yahoo)",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2829 vs API 1.2824: +0.042% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,222.00 (API latestPrice), MSTR $146.01 (Yahoo)",
+   "compared": "rebuilt 1.2860 vs API 1.2855: +0.040% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $79,549.00 (API latestPrice), MSTR $146.01 (Yahoo)",
    "ok": true
   },
   {
-   "name": "bmnr_eth",
-   "compared": "error: LookupError: https://www.strategicethreserve.xyz/: no BMNR currentReserve/snapshotDate in page data",
-   "ok": false
+   "name": "BitMine ETH vs strategicethreserve.xyz",
+   "compared": "strategicethreserve.xyz RETIRED, no independent ETH check: https://www.strategicethreserve.xyz/ says it is winding down and lists no BMNR holdings or snapshotDate; rolled ETH after the last site snapshot is not independently checked (stated holdings in the 8-Ks remain the source)",
+   "ok": true
   },
   {
-   "name": "sbet_eth",
-   "compared": "error: LookupError: https://www.strategicethreserve.xyz/: no SBET currentReserve/snapshotDate in page data",
-   "ok": false
+   "name": "SharpLink ETH vs strategicethreserve.xyz",
+   "compared": "strategicethreserve.xyz RETIRED, no independent ETH check: https://www.strategicethreserve.xyz/ says it is winding down and lists no SBET holdings or snapshotDate; stated SharpLink ETH is not independently checked (stated holdings in the 8-Ks remain the source)",
+   "ok": true
   },
   {
    "name": "residual MSTR 2026-08-02",
