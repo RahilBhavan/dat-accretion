@@ -1,0 +1,124 @@
+[
+  {
+    "count": 10,
+    "min_label_px": 22,
+    "max_px": 48,
+    "point_px": 48,
+    "contrast_min": 6.916424911441444,
+    "smallest": [
+      "Q3 2026 \u00b7 net BTC/share, sats",
+      "STRC retired",
+      "+179"
+    ],
+    "issues": [],
+    "id": "tue27-am-q3",
+    "extra": {
+      "issues": [],
+      "cells": [
+        {
+          "label": "STRC retired",
+          "value": "+179",
+          "gap": 135.30001831054688
+        },
+        {
+          "label": "Bitcoin trades",
+          "value": "\u221243",
+          "gap": 145.43333435058594
+        },
+        {
+          "label": "All causes",
+          "value": "+21,631",
+          "gap": 136.83331298828125
+        }
+      ],
+      "header_gap": 18,
+      "source_gap": 18.000015258789062,
+      "figure": {
+        "x": 20,
+        "y": 137.8333282470703,
+        "right": 370,
+        "bottom": 326.6999969482422,
+        "w": 350,
+        "h": 188.86666870117188
+      },
+      "font_loaded": true
+    },
+    "feeds": [
+      {
+        "viewport": 360,
+        "image_content_width": 326,
+        "min_label_px": 18.39,
+        "point_px": 40.12,
+        "overflow": false
+      },
+      {
+        "viewport": 390,
+        "image_content_width": 356,
+        "min_label_px": 20.08,
+        "point_px": 43.82,
+        "overflow": false
+      }
+    ]
+  },
+  {
+    "count": 11,
+    "min_label_px": 22,
+    "max_px": 48,
+    "point_px": 48,
+    "contrast_min": 6.916424911441444,
+    "smallest": [
+      "Illustration \u00b7 before \u2192 after",
+      "Coins",
+      "100 \u2192 110"
+    ],
+    "issues": [],
+    "id": "tue27-pm-per-share",
+    "extra": {
+      "issues": [],
+      "cells": [
+        {
+          "label": "Coins",
+          "value": "100 \u2192 110",
+          "gap": 159.6666717529297
+        },
+        {
+          "label": "Shares",
+          "value": "100 \u2192 125",
+          "gap": 146.56666564941406
+        },
+        {
+          "label": "Per share",
+          "value": "1.00 \u2192 0.88",
+          "gap": 173.1500244140625
+        }
+      ],
+      "header_gap": 18,
+      "source_gap": 18.000015258789062,
+      "figure": {
+        "x": 20,
+        "y": 137.8333282470703,
+        "right": 370,
+        "bottom": 326.6999969482422,
+        "w": 350,
+        "h": 188.86666870117188
+      },
+      "font_loaded": true
+    },
+    "feeds": [
+      {
+        "viewport": 360,
+        "image_content_width": 326,
+        "min_label_px": 18.39,
+        "point_px": 40.12,
+        "overflow": false
+      },
+      {
+        "viewport": 390,
+        "image_content_width": 356,
+        "min_label_px": 20.08,
+        "point_px": 43.82,
+        "overflow": false
+      }
+    ]
+  }
+]

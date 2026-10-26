@@ -1,0 +1,60 @@
+[
+  {
+    "id": "tue27-am-q3",
+    "slot": "2026-10-27 09:30 ET, Sats per Share, build",
+    "copy": "Strategy's net BTC per share rose 21,631 sats in Q3 2026 in the weekly model. Retiring STRC added 179 of those sats; bitcoin trades took 43. Revaluing at Bitcoin's price added 22,411.",
+    "replies": [
+      "Q3 2026 rows: $1,379.1M of STRC retired; 7,218 BTC bought for $588.1M; 5,553 BTC sold for $348.5M. Each row links its 8-K in data/actions.csv.",
+      "The rest of the 21,631: price revaluation +22,411, in-the-money flips +361, common issuance +332, dividends and interest −801, residual −808. The model sums weekly effects, so the parts add to the observed change.",
+      "Limits: Q3 is the weeks ending Jul 5 to Sep 30, 2026. Strategy's Q3 10-Q is not filed yet, so nothing is reconciled to its reported quarter. Data and every 8-K link: https://github.com/RahilBhavan/dat-accretion"
+    ],
+    "visual_headline": "STRC retirement: +179 sats/share.",
+    "sources": [
+      {
+        "label": "dat-accretion weekly attribution, Strategy rows, weeks ending 2026-07-05 to 2026-09-30",
+        "local": "data/attribution.csv",
+        "sha256_prefix": "674e8df2",
+        "url": "https://github.com/RahilBhavan/dat-accretion"
+      },
+      {
+        "label": "Strategy actions with 8-K links",
+        "local": "data/actions.csv",
+        "url": "https://github.com/RahilBhavan/dat-accretion"
+      }
+    ],
+    "limits": [
+      "Total +21,631 is the observed change in n between the 2026-06-30 and 2026-09-30 weekly rows (sum of dn_exact, 21,630.84 sats); the old +21,633 is not used.",
+      "STRC retired +179.10, buy_coin −39.46 and sell_coin −3.61 (bitcoin trades −43.07) are exact recomputes from data/attribution.csv.",
+      "10-Q for the quarter ended 2026-09-30 not filed as of 2026-10-26; no reconciliation to Strategy's reported quarter."
+    ]
+  },
+  {
+    "id": "tue27-pm-per-share",
+    "slot": "2026-10-27 18:00 ET, Sats per Share, illustration",
+    "copy": "Holdings can rise while coins per share fall. This illustration adds 10% more coins and 25% more shares. Each share ends up with 12% less. The numbers are made up.",
+    "replies": [
+      "This example uses gross coins. Strategy's Net Bitcoin Per Share instead nets USD assets and debt/preferred claims before dividing by fully diluted shares. Definition: https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm",
+      "dat-accretion applies Strategy's definition to BitMine. BitMine's weekly shares are estimated, not filed counts. Coins per share is one measure; it leaves out price and risk. Method and limits: https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md"
+    ],
+    "visual_headline": "Coins +10%. Per share −12%.",
+    "sources": [
+      {
+        "label": "Strategy FWP glossary, Net Bitcoin Per Share (2026-08-24)",
+        "url": "https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm"
+      },
+      {
+        "label": "dat-accretion methodology",
+        "local": "docs/methodology.md",
+        "url": "https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md"
+      },
+      {
+        "label": "Card illustration 100/100 to 110/125 coins/shares",
+        "local": "social/2026-10-26/cards.json"
+      }
+    ],
+    "limits": [
+      "Made-up arithmetic: 110/125 = 0.88, so −12%; 110/100 = +10%. Not a filing.",
+      "Illustration uses gross coins; Strategy's measure nets USD assets, out-of-the-money debt-like notes and perpetual preferred."
+    ]
+  }
+]

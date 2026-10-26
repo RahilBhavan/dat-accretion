@@ -1,0 +1,47 @@
+[
+  {
+    "id": "tue27-am-q3",
+    "title": "STRC retirement:\n+179 sats/share.",
+    "context": "Q3 2026 · net BTC/share, sats",
+    "rows": [
+      {
+        "label": "STRC retired",
+        "value": "+179",
+        "highlight": "+179"
+      },
+      {
+        "label": "Bitcoin trades",
+        "value": "−43"
+      },
+      {
+        "label": "All causes",
+        "value": "+21,631"
+      }
+    ],
+    "source": "8-Ks, dat-accretion, Oct 26",
+    "alt": "Table titled STRC retirement: +179 sats/share. Q3 2026 net bitcoin per share effects in sats: STRC retired +179, bitcoin trades −43, all causes +21,631. Source: 8-Ks and the dat-accretion model, October 26, 2026. The first two are selected weekly effects; the total includes bitcoin price moves and other effects."
+  },
+  {
+    "id": "tue27-pm-per-share",
+    "title": "Coins +10%.\nPer share −12%.",
+    "context": "Illustration · before → after",
+    "label_width": 43,
+    "rows": [
+      {
+        "label": "Coins",
+        "value": "100 → 110"
+      },
+      {
+        "label": "Shares",
+        "value": "100 → 125"
+      },
+      {
+        "label": "Per share",
+        "value": "1.00 → 0.88",
+        "highlight": "0.88"
+      }
+    ],
+    "source": "Made-up numbers · Oct 27, 2026",
+    "alt": "Table titled Coins +10%. Per share −12%. An illustration of before and after: coins 100 to 110, shares 100 to 125, per share 1.00 to 0.88. Made-up numbers, not a filing, dated October 27, 2026."
+  }
+]

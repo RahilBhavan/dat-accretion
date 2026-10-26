@@ -1,0 +1,17 @@
+{
+  "strc_retired": 179,
+  "bitcoin_trades": -43,
+  "total": 21631,
+  "price_revaluation": 22411,
+  "itm_flip": 361,
+  "common_issuance": 332,
+  "carry_dividends_interest": -801,
+  "residual": -808,
+  "observed_dn_sats": 21630.84,
+  "sum_of_parts_sats": 21630.84,
+  "strc_retired_usd_m": 1379.1,
+  "btc_bought": 7218.0,
+  "btc_bought_usd_m": 588.1,
+  "btc_sold": 5553.0,
+  "btc_sold_usd_m": 348.5
+}

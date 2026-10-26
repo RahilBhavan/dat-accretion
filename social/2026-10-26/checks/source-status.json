@@ -1,0 +1,51 @@
+{
+  "checked_utc": "2026-10-26T12:04:54+00:00",
+  "data_last_week": {
+    "MSTR": "2026-10-18",
+    "BMNR": "2026-10-18"
+  },
+  "slots": [
+    {
+      "slot": "2026-10-26 09:30 Sats per Share",
+      "firm": "MSTR",
+      "looking_for": "weekly 8-K for the week ended Oct 25",
+      "status": "HELD",
+      "filings": []
+    },
+    {
+      "slot": "2026-10-26 18:00 ETH per Share",
+      "firm": "BMNR",
+      "looking_for": "weekly release as of Oct 25",
+      "status": "HELD",
+      "filings": []
+    },
+    {
+      "slot": "2026-10-27 09:30 Q3 card",
+      "firm": "MSTR",
+      "looking_for": "Q3 10-Q, quarter ended 2026-09-30",
+      "status": "HELD",
+      "filings": []
+    },
+    {
+      "slot": "2026-10-30 09:30 Strategy Q3 results",
+      "firm": "MSTR",
+      "looking_for": "Q3 10-Q / results",
+      "status": "HELD",
+      "filings": []
+    },
+    {
+      "slot": "2026-10-31 17:00 ETH poll",
+      "firm": "BMNR",
+      "looking_for": "Oct 25 release (poll answer)",
+      "status": "HELD",
+      "filings": []
+    },
+    {
+      "slot": "2026-11-02 09:30 BitMine 8-K",
+      "firm": "BMNR",
+      "looking_for": "weekly release as of Nov 1",
+      "status": "HELD",
+      "filings": []
+    }
+  ]
+}
