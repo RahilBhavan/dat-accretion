@@ -159,11 +159,30 @@ jobs:
           merged=$(gh pr view "${{ steps.pr.outputs.url }}" --json mergeCommit -q .mergeCommit.oid)
           echo "merged ${{ steps.pr.outputs.url }} as $merged"
           echo "sha=$merged" >> "$GITHUB_OUTPUT"
+      # pages.yml builds only from a passing data/check.json on the data branch and refuses otherwise. That file is
+      # written by the daily snapshot at 21:30 UTC, so one failed daily check (a source outage) would block the
+      # Tuesday publish even though this run's own check.py passed on the merged data. This run runs the same check
+      # on the same data, so it records its passing result there too: an append-only commit, as snapshot.yml makes.
+      - name: record this run's passing done check on the data branch
+        id: record
+        if: steps.merge.outcome == 'success'
+        timeout-minutes: 3
+        run: |
+          test -s data/check.json && grep -q '"status": "pass"' data/check.json
+          git fetch origin data
+          git worktree add -B data _data origin/data
+          cd _data
+          git config user.name dat-bot
+          git config user.email dat-bot@users.noreply.github.com
+          cp ../data/check.json data/check.json
+          git add data/check.json
+          git commit -m "data: done check from refresh run ${{ github.run_id }} $(date -u +%F)"
+          git push origin data || { git pull --rebase origin data && git push origin data; }
       # Pushes by GITHUB_TOKEN don't trigger pages.yml, so dispatch it, wait for it, then confirm the live CSVs are
       # the merged ones. A failure here fails the job and the alert step below fires.
       - name: deploy Pages and confirm the live site serves the merged data
         id: publish
-        if: steps.merge.outcome == 'success'
+        if: steps.record.outcome == 'success'
         # Pages run (up to 10 min, normally 1-2) + verify_published.sh (about 12 min for the CDN's 10-minute cache).
         timeout-minutes: 30
         env:

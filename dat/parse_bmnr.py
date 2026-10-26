@@ -244,6 +244,10 @@ def build(releases, divs, prices):
 SER_URL = 'https://www.strategicethreserve.xyz/'
 
 
+class SourceRetired(LookupError):
+    """The page says the site is winding down and no longer lists holdings (seen 2026-10-25)."""
+
+
 def ser_bmnr(html=None):
     return ser('BMNR', html)
 
@@ -256,6 +260,9 @@ def ser(ticker, html=None):
             html = r.read().decode('utf-8', errors='replace')
     t = html.replace('\\"', '"')
     m = re.search(rf'"ticker":"{ticker}","currentReserve":(\d+(?:\.\d+)?)[^{{}}]*?"snapshotDate":"\$D(\d{{4}}-\d\d-\d\d)', t)
+    if not m and 'winding down' in t:
+        # A positively identified retirement notice, not just a parse miss: any other change of the page still fails.
+        raise SourceRetired(f'{SER_URL} says it is winding down and lists no {ticker} holdings or snapshotDate')
     if not m:
         raise LookupError(f'{SER_URL}: no {ticker} currentReserve/snapshotDate in page data')
     return Decimal(m.group(1)), m.group(2)
@@ -324,7 +331,12 @@ def check(parsed, stake, site=None):
         out[w] = rolled
         print(f"{w} dstated={d} acquired={acq} residual={d - acq} staking_est={stake.get(w, 0):.1f} (diagnostic) "
               f"rolled={rolled} stated={r['coins']} rolled-stated={rolled - r['coins']:+}")
-    site, snap = site or ser_bmnr()
+    try:
+        site, snap = site or ser_bmnr()
+    except SourceRetired as e:
+        print(f'strategicethreserve.xyz RETIRED, no independent ETH check: {e}; rolled ETH after the last site snapshot '
+              f'is not independently checked (stated holdings in the 8-Ks remain the source)')
+        return 0
     last = parsed[-1]['week_end']
     at = max((w for w in out if w <= snap), default=None)
     if at is None:

@@ -10,10 +10,10 @@ This project measures every capital action by Strategy (BTC), BitMine (ETH) and 
 
 ## Results
 
-Figures are for the data in the repository at this commit: filings dated 2026-06-01 to 2026-10-13 and weeks ending through 2026-10-11.
+Figures are for the data in the repository at this commit: filings dated 2026-06-01 to 2026-10-19 and weeks ending through 2026-10-18.
 
-- **98 actions** parsed from SEC filings, each with an sec.gov `filing_url`: Strategy 49, BitMine 43, SharpLink 6. By type: 37 share issuances, preferred retirements and buybacks; 34 coin purchases and sales; 27 carry rows (preferred dividends, convertible interest and inferred SharpLink staking). Source: `data/actions.csv`.
-- **Break-even, week ending 2026-10-11.** At net mNAV 1.191, Strategy's STRC rotation adds net sats per share while STRC trades below $119.07; STRC closed at $99.65. At net mNAV 0.998, BitMine's BMNP rotation adds net ETH per share while BMNP trades above $99.79; BMNP closed at $99.53. Source: `docs/memo.md`.
+- **104 filing-linked actions** (issuance, retirements, buybacks, coin purchases and carry), each with an sec.gov `filing_url`: Strategy 53, BitMine 45, SharpLink 6. By type: 39 share issuances, preferred retirements and buybacks; 36 coin purchases and sales; 29 carry rows (preferred dividends, convertible interest and inferred SharpLink staking). Source: `data/actions.csv`.
+- **Break-even, week ending 2026-10-18.** At net mNAV 1.076, Strategy's STRC rotation adds net sats per share while STRC trades below $107.58; STRC closed at $97.72. At net mNAV 0.923, BitMine's BMNP rotation adds net ETH per share while BMNP trades above $92.33; BMNP closed at $96.66. Source: `docs/memo.md`.
 - **Weekly counts.** STRC closed below its break-even in 22 of 22 filed weeks, and BMNP closed below its break-even in 18 of 18. SharpLink's m was below 1 on 4 of 4 filed dates. Source: `docs/memo.md`.
 - **SharpLink coverage.** SharpLink is measured only on the four dates its filings state ETH holdings (2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03). Nothing is carried forward between them.
 - **Checks.** 170 pytest cases pass offline. On 2026-10-21 the live done check, `check.py`, passed 19 of 19 checks. One of them fetched the 46 unique filing URLs in `data/actions.csv`, and all 46 returned HTTP 200.
@@ -86,10 +86,10 @@ GitHub Actions runs four workflows. `ci` runs pytest on each PR and push to `mai
 
 ## Sources
 
-- SEC EDGAR: Strategy 8-Ks and Q2 10-Q (CIK 1050446), BitMine 8-K releases and 10-Q (CIK 1829311), SharpLink 8-Ks and Q2 10-Q (CIK 1981535). Filings dated 2026-06-01 to 2026-10-13. Requests send an identifying User-Agent and stay under EDGAR's rate limit.
+- SEC EDGAR: Strategy 8-Ks and Q2 10-Q (CIK 1050446), BitMine 8-K releases and 10-Q (CIK 1829311), SharpLink 8-Ks and Q2 10-Q (CIK 1981535). Filings dated 2026-06-01 to 2026-10-19. Requests send an identifying User-Agent and stay under EDGAR's rate limit.
 - Strategy's KPI API (`api.strategy.com/btc/bitcoinKpis`): current value only, saved daily to the `data` branch.
 - Yahoo Finance daily closes for MSTR, STRC, STRK, STRF, STRD, BMNR, BMNP and SBET, 2026-05-25 to 2026-10-13. CoinGecko BTC and ETH daily closes.
-- strategicethreserve.xyz: an independent check of BitMine's and SharpLink's ETH holdings.
+- strategicethreserve.xyz: was the independent check of BitMine's and SharpLink's ETH holdings. Its page said on 2026-10-25 that it is winding down and no longer lists holdings, so `check.py` labels the check RETIRED and passes; the 8-Ks are the only source for ETH holdings after its last snapshot (2026-08-23).
 
 Every number traces to a filing through `filing_url`. The CSVs in `data/` are committed. Raw filings are cached in `data/raw/` (gitignored) and can be fetched again from EDGAR.
 

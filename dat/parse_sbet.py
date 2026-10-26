@@ -10,7 +10,7 @@ row (inferred staking/LST accrual), unlike BitMine, whose "acquired" already inc
 import csv, os, re, sys, datetime as dt
 from decimal import Decimal
 from dat.parse_mstr import blocks, iso, fmt, num as cell, ACTION_FIELDS, STATED_FIELDS, DATE
-from dat.parse_bmnr import paragraphs, sentences, one, num, merge_write, NUMBER
+from dat.parse_bmnr import paragraphs, sentences, one, num, merge_write, NUMBER, SourceRetired
 
 CIK = 1981535
 START = '2026-06-01'
@@ -366,7 +366,12 @@ def check(parsed, acts, docs=(), site=None):
               f"rolled={rolled} stated={r['coins']} rolled-stated={rolled - r['coins']:+}")
     for d, ps in sorted({(d, ps) for r in docs for d, ps in r['parts'].items()}):
         print(f'{d} parts native+LsETH+weETH = {sum(ps)} = stated total (parse raises otherwise)')
-    site, snap = site or ser_sbet()
+    try:
+        site, snap = site or ser_sbet()
+    except SourceRetired as e:
+        print(f'strategicethreserve.xyz RETIRED, no independent ETH check: {e}; stated SharpLink ETH is '
+              f'not independently checked (stated holdings in the 8-Ks remain the source)')
+        return 0
     last = parsed[-1]['week_end']
     by = {r['week_end']: r['coins'] for r in parsed}
     at = max((w for w in by if w <= snap), default=None)

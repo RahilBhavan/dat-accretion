@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 from dat.parse_mstr import blocks
-from dat.parse_bmnr import parse, build, check, dividends, ser_bmnr, Skip
+from dat.parse_bmnr import parse, build, check, dividends, ser_bmnr, Skip, SourceRetired
 
 # Snippets reproduce BitMine's weekly EX-99.1 prose (8-K 0001493152-26-043486 and earlier releases).
 F = {'accession': '0000000000-26-000001', 'filed': '2026-09-21'}
@@ -118,6 +118,25 @@ def test_build_rows():
 def test_ser_bmnr_reads_escaped_page_data():
     html = r'x{\"ticker\":\"BMNR\",\"currentReserve\":5847611,\"logo\":\"a\",\"snapshotDate\":\"$D2026-08-23T00:00:00.000Z\"}'
     assert ser_bmnr(html) == (5_847_611, '2026-08-23')
+
+
+WOUND_DOWN = '<p>The Strategic ETH Reserve is winding down soon.</p><span>6,041,481</span>'  # page as fetched 2026-10-25
+
+
+def test_ser_names_a_retired_site_and_still_fails_on_other_changes():
+    with pytest.raises(SourceRetired):
+        ser_bmnr(WOUND_DOWN)
+    with pytest.raises(LookupError) as e:
+        ser_bmnr('<p>a redesigned page with no holdings data</p>')
+    assert not isinstance(e.value, SourceRetired)
+
+
+def test_check_labels_a_retired_site_and_passes(monkeypatch, capsys):
+    import dat.parse_bmnr as m
+    monkeypatch.setattr(m, 'ser_bmnr', lambda: ser_bmnr(WOUND_DOWN))
+    parsed = [rel('2026-08-16', 1000, 0), rel('2026-08-23', 1010, 10)]
+    assert check(parsed, {}) == 0
+    assert 'RETIRED' in capsys.readouterr().out.strip().splitlines()[-1]
 
 
 def test_site_check_at_snapshot_week_and_age():

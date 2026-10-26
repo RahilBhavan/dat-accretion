@@ -139,6 +139,16 @@ def test_site_check_staleness_is_against_own_last_filing():
     assert check(parsed, [], site=(Decimal(900_000), '2026-08-03')) == 1  # 1.2% off
 
 
+def test_check_labels_a_retired_site_and_passes(monkeypatch, capsys):
+    import dat.parse_sbet as m
+    from dat.parse_bmnr import ser
+    page = '<p>The Strategic ETH Reserve is winding down soon.</p>'  # page as fetched 2026-10-25
+    monkeypatch.setattr(m, 'ser_sbet', lambda: ser('SBET', page))
+    parsed = [{'week_end': '2026-08-03', 'coins': Decimal(888_938)}]
+    assert check(parsed, []) == 0
+    assert 'RETIRED' in capsys.readouterr().out.strip().splitlines()[-1]
+
+
 Q2_EQ = {'issue': [('2026-06-23', Decimal(10_013_351), Decimal(73_331_000))],
          'treasury': (Decimal(2_132_773), Decimal(10_022_000))}
 
