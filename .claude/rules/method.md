@@ -111,6 +111,7 @@ Bitcoin Magazine figure $3.895M uses $24.998M and is the unit-test anchor below.
 | stated.csv | firm, week_end, filed, filing_url, coins, usd_reserve, usd_cash, reserve_in, reserve_out, usd_reserve_prec, usd_cash_prec |
 | weekly.csv | firm, week_end, price_date, p, s, q, m, n |
 | staking.csv | week_end, eth_est (BitMine staking estimate; sizes the S bias, never booked) |
+| eth_per_share.csv | week_end, filed, filing_url, eth_held, cash_securities_usd, bmnp_notional_usd, eth_close_usd, net_eth, shares_diluted_est, net_eth_per_1000_shares, change_pct, eth_added, eth_staked, buyback_shares, buyback_avg_usd, s_bias_pct_of_s, on_card (BitMine's n per 1,000 shares with every input; `python -m dat.eth_card`; net_eth = eth_held + (cash_securities_usd − bmnp_notional_usd)/eth_close_usd, D = 0) |
 
 stated.csv holds each 8-K's own aggregates, the targets for Step 1 (coins) and Step 2 (reserve).
 `reserve_in`: sum of amounts the 8-K says were "used to increase the USD Reserve"; `reserve_out`:

@@ -27,8 +27,13 @@ BUYBACK_AVG = r'\bat an average price of \$([\d,]+\.\d+)'
 PREF_CLOSED = (r'\bOn ([A-Z][a-z]+ \d{1,2}), Bitmine closed its offering\b.*? of ([\d,]+) shares of 9\.50% Series A '
                r'Perpetual Preferred Stock\b.*? at a public offering price of \$([\d.]+) per share')
 PREF_NET = r'\breceived net proceeds from the offering of approximately \$([\d.]+) million'
+# Year-to-date repurchase sentences (10/26 release): cumulative totals and their own average price, never the week's.
+YTD = (r'\bIn \d{4}, Bitmine has repurchased [\d.]+ million common shares, at an average price of \$[\d,]+\.\d+ or an '
+       r'aggregate amount of \$[\d.]+ million')
 # Phrases whose numbers are known and not flows of the week (cumulative totals, program size, pricing release).
-KNOWN = [ACQUIRED, BUYBACK, BUYBACK_AVG, PREF_CLOSED, PREF_NET,
+KNOWN = [ACQUIRED, BUYBACK, BUYBACK_AVG, PREF_CLOSED, PREF_NET, YTD,
+         r'\bbuybacks in the past week, acquiring [\d.]+ million shares',  # restates the headline's weekly count
+         r'\brepurchased a cumulative [\d.]+ million shares so far in \d{4}',
          r'\$[\d.]+ billion share repurchase program',
          r'\brepurchased (?:over )?[\d.]+ million shares (?:of common stock )?(?:cumulatively|under)',
          r'\bover [\d.]+ million shares of common stock repurchased',
@@ -163,6 +168,7 @@ def parse(html, filing, url, prev_week=None):
     if prev_week and as_of <= prev_week:
         raise ValueError(f'{where}: as-of {as_of} not after prior release week {prev_week}')
     text = ' '.join(paras)
+    weekly = re.sub(YTD, '', text)  # its average price is the year's, not this week's
     staked = one([(iso(m.group(1)), num(m.group(2))) for m in re.finditer(STAKED, text)], 'staked ETH', where)
     buy = one([num(m.group(1)) * 10 ** 6 for m in re.finditer(BUYBACK, text)], 'weekly repurchase', where)
     pref = []
@@ -176,7 +182,7 @@ def parse(html, filing, url, prev_week=None):
             'acquired': one([num(m.group(1)) for m in re.finditer(ACQUIRED, text)], 'acquired ETH', where),
             'staked': staked and staked[1], 'staked_date': staked and staked[0],
             'yield': one([num(a or b) for a, b in re.findall(YIELD, text)], '7-day yield', where),
-            'buyback': buy and (buy, one([num(m.group(1)) for m in re.finditer(BUYBACK_AVG, text)], 'buyback avg', where)),
+            'buyback': buy and (buy, one([num(m.group(1)) for m in re.finditer(BUYBACK_AVG, weekly)], 'buyback avg', where)),
             'pref': list(dict.fromkeys(pref))}
 
 

@@ -38,6 +38,17 @@ def test_weekly_release():
     assert r['pref'] == []
 
 
+def test_year_to_date_buyback_sentences_are_not_the_weeks():
+    ytd = ('Bitmine has repurchased a cumulative 22.9 million shares so far in 2026, the largest ever crypto treasury company '
+           'equity buyback executed')
+    week = ('“Bitmine executed equity buybacks in the past week, acquiring 2.04 million shares, repurchased at an average '
+            'price of $22.48. Optimizing shareholder value remains our top objective,” continued Lee.')
+    total = ('In 2026, Bitmine has repurchased 22.9 million common shares, at an average price of $17.48 or an aggregate '
+             'amount of $399.6 million.')
+    r = parse(p('Bitmine repurchased 2.04 million shares in the past week', ytd, HOLD, week, total, ACQ, STAKE, YIELD), F, URL)
+    assert r['buyback'] == (2_040_000, Decimal('22.48'))
+
+
 def test_early_cash_wording_and_pref_closing():
     hold = HOLD.replace('September 20', 'June 14').replace('cash &amp; marketable securities of $714', 'cash of $446')
     r = parse(p(hold, PREF), F, URL)
