@@ -47,7 +47,29 @@ def test_card_is_square_1080_and_labels_every_plotted_week():
     for r in on_card:
         assert f'>{eth_card.md(r["week_end"])}</text>' in html
     assert all(f'>{r["net_eth_per_1000_shares"]}</text>' in html for r in on_card[-2:])  # the two values the title compares
+    assert eth_card.AXIS in html and eth_card.LABEL in html and '0.044% a week' in html
+    assert '.source{font-size:15px;line-height:1.08;color:#F5F5EF' in html
     assert 'as of Oct 25, 2026, 2:00 PM ET' in html and 'BitMine 8-K ex99-1 plus dat-accretion model' in html
+
+
+def test_alt_text_quotes_only_values_the_card_labels():
+    import json
+    on_card = [r for r in rows() if r['on_card'] == 'yes']
+    html = open(f'{CARD}/card.html').read()
+    alt = open(f'{CARD}/alt.txt').read()
+    assert alt.strip() == json.load(open(f'{CARD}/brief.json'))['alt']
+    for r in on_card:
+        labelled = f'>{r["net_eth_per_1000_shares"]}</text>' in html
+        assert (r['net_eth_per_1000_shares'] in alt) == labelled, r['week_end']
+    assert eth_card.LABEL in alt and eth_card.AXIS in alt
+
+
+def test_brief_records_the_bundle_version_and_the_390_check():
+    import json
+    brief = json.load(open(f'{CARD}/brief.json'))
+    assert '390x390' in brief['sizes_checked'] and brief['overflow'] == []
+    if os.path.isdir(eth_card.BUNDLE):
+        assert brief['system_version'] == open(os.path.join(eth_card.BUNDLE, 'VERSION')).read().strip()
 
 
 @pytest.mark.skipif(not os.path.isdir(eth_card.BUNDLE), reason='rahil-design bundle not on this machine')
