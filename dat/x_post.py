@@ -120,6 +120,11 @@ def check_thread():
     return problems
 
 
+def hero(text):
+    """The hero minus is its own span so CSS can set it in Plex Sans Bold; Anton's minus is its hyphen glyph, set low."""
+    return f'<span class="minus">{MINUS}</span>{text[1:]}' if text.startswith(MINUS) else text
+
+
 def card_html(figs, fonts):
     """Authored at 360x360 CSS px; rendered at 3x it is exactly 1080x1080. Colors and fonts are Rahil Design tokens.
 
@@ -132,9 +137,10 @@ def card_html(figs, fonts):
 @font-face{{font-family:'Rahil Display';src:url(data:font/ttf;base64,{font('Anton-Regular.ttf')})}}
 @font-face{{font-family:'Rahil Plex';src:url(data:font/ttf;base64,{font('IBMPlexSans-Regular.ttf')})}}
 @font-face{{font-family:'Rahil Plex';font-weight:600;src:url(data:font/ttf;base64,{font('IBMPlexSans-SemiBold.ttf')})}}
+@font-face{{font-family:'Rahil Plex';font-weight:700;src:url(data:font/ttf;base64,{font('IBMPlexSans-Bold.ttf')})}}
 {CSS.replace('LOSS', str(-loss)).replace('GAIN', str(gain))}</style></head><body><article>
 <h1>DIVIDENDS ATE THE BUYBACKS</h1>
-<div class="hero"><span class="num">{figs['carry_sats']}</span><span class="what">sats per share, Q3 dividends + interest</span></div>
+<div class="hero"><span class="num">{hero(figs['carry_sats'])}</span><span class="what">sats per share, Q3 dividends + interest</span></div>
 <div class="figure">
 <div class="name">Buybacks + stock sales</div>
 <div class="bars"><div class="neg"></div><div class="pos"><span class="bar gain">{figs['returned_sats']}</span></div></div>
@@ -150,6 +156,7 @@ article{width:360px;height:360px;padding:19px 20px;display:flex;flex-direction:c
 h1{font:45px/.95 'Rahil Display',sans-serif;margin:0}
 .hero{display:flex;align-items:center;gap:12px}
 .num{font:84px/.9 'Rahil Display',sans-serif;color:#FFE500}
+.minus{font:700 103.5px/0 'Rahil Plex',sans-serif;position:relative;top:-4.5px;margin:0 -4.4px}
 .what{font-size:20px;line-height:1.15;text-wrap:balance}
 .figure{background:#F5F5EF;color:#111214;border-radius:12px;padding:5px 8px;font-size:20px;line-height:21px;
 font-variant-numeric:tabular-nums}
@@ -166,7 +173,7 @@ font-variant-numeric:tabular-nums}
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument('--card', type=Path, help='write card.html here')
-    ap.add_argument('--fonts', type=Path, help='directory with Anton-Regular.ttf and IBMPlexSans-*.ttf')
+    ap.add_argument('--fonts', type=Path, help='directory with Anton-Regular.ttf and IBMPlexSans-{Regular,SemiBold,Bold}.ttf')
     args = ap.parse_args()
     figs, sources = figures()
     write_sources(sources)

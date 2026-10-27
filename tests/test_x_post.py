@@ -60,7 +60,7 @@ def test_text_check_flags_an_unsourced_number(tmp_path, monkeypatch):
 
 
 def card(tmp_path):
-    for n in ('Anton-Regular.ttf', 'IBMPlexSans-Regular.ttf', 'IBMPlexSans-SemiBold.ttf'):
+    for n in ('Anton-Regular.ttf', 'IBMPlexSans-Regular.ttf', 'IBMPlexSans-SemiBold.ttf', 'IBMPlexSans-Bold.ttf'):
         (tmp_path / n).write_bytes(b'font')
     figs, _ = x_post.figures()
     return figs, x_post.card_html(figs, tmp_path)
@@ -70,11 +70,21 @@ def test_card_html_has_title_footer_real_minus_hero_and_both_bars(tmp_path):
     figs, html = card(tmp_path)
     assert f'<p class="source">{FOOTER}</p>' in html
     assert '<h1>DIVIDENDS ATE THE BUYBACKS</h1>' in html
-    assert '<span class="num">\u2212801</span>' in html  # U+2212, not a hyphen-minus
+    assert '<span class="num"><span class="minus">\u2212</span>801</span>' in html  # U+2212, not a hyphen-minus
     assert 'sats per share, Q3 dividends + interest' in html
     assert '>+511</span>' in html and '>\u2212801</span>' in html
     strip = lambda h: re.sub(r'base64,[A-Za-z0-9+/=]+', 'base64,', h)  # committed card.html differs only by font bytes
     assert strip((x_post.POST / 'card.html').read_text()) == strip(html)
+
+
+def test_hero_minus_is_plex_bold_at_anton_digit_cap_height_centered_on_the_digits(tmp_path):
+    _, html = card(tmp_path)
+    css = re.search(r'\.minus\{font:700 ([\d.]+)px/0 \'Rahil Plex\'.*?top:(-[\d.]+)px', html)
+    size, top = float(css.group(1)), float(css.group(2))
+    anton_cap, plex_cap, plex_minus_mid = 1761 / 2048, 698 / 1000, (247 + 365) / 2 / 1000  # em, from the font files
+    assert abs(size * plex_cap - 84 * anton_cap) < 0.1  # Plex digit cap height = Anton digit cap height at 84px
+    assert abs(-top - (84 * anton_cap / 2 - size * plex_minus_mid)) < 0.1  # minus bar centered on the digits
+    assert "font-family:'Rahil Plex';font-weight:700;src:url(data:font/ttf;base64," in html
 
 
 def test_bar_lengths_are_proportional_to_sats(tmp_path):

@@ -15,7 +15,7 @@ review of the exact card bytes below; this file does not authorize posting. v3 r
 
 Regenerate: `python -m dat.x_post --card DIR --fonts <rahil-design>/assets/fonts` rewrites `sources.csv`, checks the
 thread and alt text, and writes `DIR/card.html`. Render that file at 360x360 with device scale factor 3 in Firefox,
-then drop the alpha channel (`card.png` is RGB). `tests/test_x_post.py` pins every figure, the thread text, the footer
+then drop the alpha channel (`card.png` is RGB). v3.1 (hero minus fix) changes only the minus glyph in `card.html` and `card.png`; `thread.md`, `alt.txt` and `sources.csv` are byte-identical to v3. `tests/test_x_post.py` pins every figure, the thread text, the footer
 and its size, the U+2212 hero, the bar scale and the PNG size and colour type.
 
 ## Where each number comes from
@@ -43,11 +43,19 @@ which are not shown. Those rows have no accession of their own, so the public te
 - Governing system: rahil-design 3.11.0 (current in the hub). The request named 3.3.2, which 3.11.0 supersedes;
   colors and fonts are unchanged between them: charcoal #111214, off-white #F5F5EF, yellow #FFE500, Anton title and
   hero, IBM Plex Sans body and footer. The 1080x1080 square is taken from the request.
-- Artifact hashes (sha256): `card.png` ed885eeb8c21dcc76f1d5be6b1308a1084328c5c8bba9e9b6a045acfbd6a9a09, `card.html` 3085fc02cd881edce678c1a92f4fc83a4a840338ce77c6842e0075e252e2573c.
+- Artifact hashes (sha256): `card.png` cf6dce1dcb093e9942946986604d011e31d97427170c5d18bf8084b05b6c026b, `card.html` d05ee73ddae6f6d3120ccddd67bc491f876b9bc42eb57f2c89ca40a0dd0cef6e.
 - Form: one hero number, one two-bar comparison on a shared scale and zero line (bar lengths proportional: 801 to
   511 as 801fr to 511fr), the one accent on the value the title names. The bars sit on the light figure surface;
   gray `chart.series-2` for +511 (off-white text on it has over 8:1 contrast), yellow with a charcoal outline for -801.
-- Hero minus: Anton has U+2212 (checked with fontTools); the card uses it, as do the thread and alt text.
+- Hero minus: U+2212, set in IBM Plex Sans Bold (700) instead of Anton, whose minus is its hyphen glyph, set low.
+  Plex Bold's digit cap height (698/1000 em) is matched to Anton's digit cap height (1761/2048 em at 84px) by
+  `font-size:103.5px`, and `top:-4.5px` centers the bar on the digits' mid-height. Measured in the render at 3x: bar
+  48.0px wide against 37.3 to 38.0px for 8 and 0 (about 1.27x the digit ink, 1.16x its 41.5px advance), 12.0px thick,
+  bar center 147.5px against 147.2 to 147.3px for the digit centers; the digits did not move vertically. The thread and
+  alt text use U+2212 as before. Plex Bold is outside the 3.11.0 bundle's Regular and SemiBold; it comes from IBM's
+  `packages/plex-sans/fonts/complete/ttf/IBMPlexSans-Bold.ttf` (sha256 9e6c74a889a700d707613d24548fe4ffa6bc59559a0689d2cf9e133bdcdafb2f),
+  is embedded in `card.html`, and must sit in the `--fonts` directory to regenerate it. This is the requested exception
+  for this one glyph; the in-bar -801 stays Plex SemiBold.
 - Footer: 20px at 360 CSS px, so 60px in the 1080 export and 18.1px in a 326px feed box. It passes the 30px
   requirement and the 18px feed floor, on two lines.
 - Checks run: `design_check.py lint card.html` ok; `design_check.py system` ok (0 errors); `design_check.py feed` at
