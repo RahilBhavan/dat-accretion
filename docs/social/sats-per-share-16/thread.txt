@@ -1,5 +1,0 @@
-Holdings can rise while coins per share fall. This illustration adds 10% more coins and 25% more shares. Each share ends up with 12% less.
----
-This example uses gross coins. Strategy's Net Bitcoin Per Share instead nets USD assets and debt/preferred claims before dividing by fully diluted shares. Definition: https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.htm
----
-dat-accretion applies Strategy's definition to BitMine. BitMine's weekly shares are estimated, not filed counts. Coins per share is one measure; it leaves out price and risk. Method and limits: https://github.com/RahilBhavan/dat-accretion/blob/main/docs/methodology.md

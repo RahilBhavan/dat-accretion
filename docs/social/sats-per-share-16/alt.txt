@@ -1,1 +1,1 @@
-Coins +10%. Per share −12%. Illustration · before → after. Coins: 100 → 110. Shares: 100 → 125. Per share: 1.00 → 0.88, so 110 ÷ 125 = 0.88. Illustration, made-up numbers · definition: Strategy Net BTC per Share (SEC FWP).
+Card titled "More coins, less for you". A large yellow −12% is labeled "coins per share". Two labels sit below it: "+10% coins" and "+25% shares". The numbers are made up: 1.10 ÷ 1.25 = 0.88, so each share ends with 12% fewer coins. Footer: "Illustration, hypothetical numbers · Oct 27".
