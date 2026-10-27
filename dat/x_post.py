@@ -14,7 +14,7 @@ POST = ROOT / 'posts' / 'sats-per-share-15'
 START, END = '2026-06-30', '2026-09-30'  # week_end after START through END: Strategy's Q3
 SATS = 1e8
 MINUS = '−'
-FOOTER = 'Source: Strategy 8-Ks Jul–Sep 2026 · dat-accretion · as of Oct 27, 2026'
+FOOTER = 'Source: Strategy 8-Ks, Jul–Sep 2026 · Oct 27'
 
 
 def accession(url):
@@ -72,6 +72,7 @@ def figures():
         'btc_trade_sats': signed(sats(totals['btc_trade_sats'])), 'carry_sats': signed(sats(totals['carry_sats'])),
         'strc_usd': f'${usd(strc):,.1f}M', 'btc_bought': f'{btc(buys):,} BTC / ${usd(buys):,.1f}M',
         'btc_sold': f'{btc(sells):,} BTC / ${usd(sells):,.1f}M'}
+    figs['returned_sats'] = signed(sats(totals['atm_sats']) + sats(totals['strc_sats']))  # +332 and +179, as shown
     figs['_values'] = {k: totals[k] * SATS for k in totals}
     return figs, sources
 
@@ -86,13 +87,13 @@ def write_sources(sources):
 
 MONTH_DAY = r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? \d{1,2}(?:, 20\d\d)?'
 BANNED = re.compile(r'\b(buy|sell|undervalued|opportunity|cheap|expensive|smart|costly|target|forecast)\b', re.I)
-CAVEAT = 'do not sum'  # the one sentence that qualifies the card; it must appear in exactly one thread part
+CAVEAT = "BTC's price move is excluded"  # the one sentence that qualifies the figures; exactly one thread post
 
 
 def magnitudes(text):
     """Figure-like tokens with sign stripped: 332, $1,379.1M, 7,218. Dates, Q3, #15 and part counters are removed."""
-    text = re.sub(MONTH_DAY + r'|\d+/4|Q\d|#\d+|Jul.Sep 2026|dat-accretion|8-Ks?', '', text.replace(MINUS, '-'))
-    return {t.lstrip('+-') for t in re.findall(r'[+-]?\$?\d[\d,]*(?:\.\d+)?M?', text)}
+    text = re.sub(MONTH_DAY + r'|(?m:^\d/)|Q\d|#\d+|Jul.Sep 2026|dat-accretion|8-Ks?', '', text.replace(MINUS, '-'))
+    return {t.lstrip('+-') for t in re.findall(r'[+-]?\$?\d+(?:,\d{3})*(?:\.\d+)?M?', text)}
 
 
 def check_text(figs):
@@ -107,46 +108,59 @@ def check_text(figs):
 
 
 def thread_parts():
-    return [p.strip() for p in re.split(r'^## Part \d/4\s*$', (POST / 'thread.md').read_text(), flags=re.M)[1:]]
+    return [p.strip() for p in re.split(r'^(?=\d/ )', (POST / 'thread.md').read_text(), flags=re.M) if p.strip()]
 
 
 def check_thread():
     parts = thread_parts()
-    problems = [] if len(parts) == 4 else [f'thread.md has {len(parts)} parts, not 4']
-    problems += [f'part {i} has {len(p)} characters (limit 279)' for i, p in enumerate(parts, 1) if len(p) > 279]
+    problems = [] if len(parts) == 3 else [f'thread.md has {len(parts)} posts, not 3']
+    problems += [f'post {i} has {len(p)} characters (limit 279)' for i, p in enumerate(parts, 1) if len(p) > 279]
     hits = [i for i, p in enumerate(parts, 1) if CAVEAT in p]
-    problems += [] if len(hits) == 1 else [f'caveat {CAVEAT!r} appears in parts {hits}, not exactly one']
+    problems += [] if len(hits) == 1 else [f'caveat {CAVEAT!r} appears in posts {hits}, not exactly one']
     return problems
 
 
 def card_html(figs, fonts):
-    """Authored at 360x360 CSS px; rendered at 3x it is exactly 1080x1080. Colors and fonts are Rahil Design tokens."""
+    """Authored at 360x360 CSS px; rendered at 3x it is exactly 1080x1080. Colors and fonts are Rahil Design tokens.
+
+    Hero: the dividends and interest figure. Two bars share one scale and one zero line: +511 to the right, the
+    hero's figure to the left, each length exactly proportional to its sats.
+    """
     font = lambda n: base64.b64encode((fonts / n).read_bytes()).decode()
-    rows = ''.join(
-        f'<div class="row{" hi" if hi else ""}"><span>{html.escape(label)}</span>'
-        f'<span class="val">{html.escape(figs[key])} sats</span></div>'
-        for key, label, hi in (('atm_sats', 'Stock sales', False), ('strc_sats', 'STRC buybacks', True),
-                               ('btc_trade_sats', 'BTC trades', False), ('carry_sats', 'Dividends, interest', False)))
+    gain, loss = (int(figs[k].replace(MINUS, '-')) for k in ('returned_sats', 'carry_sats'))
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
 @font-face{{font-family:'Rahil Display';src:url(data:font/ttf;base64,{font('Anton-Regular.ttf')})}}
 @font-face{{font-family:'Rahil Plex';src:url(data:font/ttf;base64,{font('IBMPlexSans-Regular.ttf')})}}
 @font-face{{font-family:'Rahil Plex';font-weight:600;src:url(data:font/ttf;base64,{font('IBMPlexSans-SemiBold.ttf')})}}
-{CSS}</style></head><body><article><h1>Q3 STRC buybacks added <span class="pt">{figs['strc_sats'][1:]}</span> sats a share</h1>
-<div class="figure">{rows}</div>
-<p class="def">Net sats per share: Strategy's own net bitcoin per share, in satoshis.</p>
+{CSS.replace('LOSS', str(-loss)).replace('GAIN', str(gain))}</style></head><body><article>
+<h1>DIVIDENDS ATE THE BUYBACKS</h1>
+<div class="hero"><span class="num">{figs['carry_sats']}</span><span class="what">sats per share, Q3 dividends + interest</span></div>
+<div class="figure">
+<div class="name">Buybacks + stock sales</div>
+<div class="bars"><div class="neg"></div><div class="pos"><span class="bar gain">{figs['returned_sats']}</span></div></div>
+<div class="name">Dividends + interest</div>
+<div class="bars"><div class="neg"><span class="bar loss">{figs['carry_sats']}</span></div><div class="pos"></div></div>
+</div>
 <p class="source">{html.escape(FOOTER)}</p></article></body></html>"""
 
 
 CSS = """*{box-sizing:border-box}html,body{margin:0}
 body{width:360px;height:360px;background:#111214;color:#F5F5EF;font-family:'Rahil Plex',sans-serif}
-article{width:360px;height:360px;padding:19px 20px;display:flex;flex-direction:column;gap:5px}
-h1{font:45px/1 'Rahil Display',sans-serif;margin:0;text-transform:uppercase}.pt{color:#FFE500;display:inline-block}
-.figure{background:#F5F5EF;color:#111214;border-radius:12px;padding:2px 10px;font-size:20px;line-height:21px;
+article{width:360px;height:360px;padding:19px 20px;display:flex;flex-direction:column;gap:6px}
+h1{font:45px/.95 'Rahil Display',sans-serif;margin:0}
+.hero{display:flex;align-items:center;gap:12px}
+.num{font:84px/.9 'Rahil Display',sans-serif;color:#FFE500}
+.what{font-size:20px;line-height:1.15;text-wrap:balance}
+.figure{background:#F5F5EF;color:#111214;border-radius:12px;padding:5px 8px;font-size:20px;line-height:21px;
 font-variant-numeric:tabular-nums}
-.row{display:flex;justify-content:space-between;align-items:center;height:21px}
-.val{font-weight:600;padding:0 3px}.hi .val{background:#FFE500;outline:2px solid #111214}
-.def{font-size:20px;line-height:1.1;margin:0}
-.source{font-size:18px;line-height:1.1;color:#B7B8B1;margin:0}"""
+.name{height:21px}
+.bars{display:grid;grid-template-columns:LOSSfr GAINfr;height:24px}
+.pos{border-left:2px solid #111214}
+.neg{display:flex;justify-content:flex-end}
+.bar{display:block;height:24px;line-height:24px;font-weight:600;padding:0 6px;white-space:nowrap}
+.gain{width:100%;background:#45474C;color:#F5F5EF;text-align:right}
+.loss{width:100%;background:#FFE500;outline:2px solid #111214;outline-offset:-2px;text-align:left}
+.source{font-size:20px;line-height:1.05;color:#B7B8B1;margin:0;text-wrap:balance}"""
 
 
 def main():
