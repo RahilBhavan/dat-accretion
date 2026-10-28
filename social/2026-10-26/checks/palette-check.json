@@ -1,0 +1,66 @@
+{
+  "scope": "solid-colour Rahil role matrix on the HTML source; pixel_audit.py covers the PNGs",
+  "pairs": [
+    {
+      "foreground": "ink",
+      "background": "canvas",
+      "ratio": 17.13,
+      "min": 4.5,
+      "ok": true
+    },
+    {
+      "foreground": "figure-ink",
+      "background": "figure-surface",
+      "ratio": 17.13,
+      "min": 4.5,
+      "ok": true
+    },
+    {
+      "foreground": "figure-secondary",
+      "background": "figure-surface",
+      "ratio": 6.92,
+      "min": 4.5,
+      "ok": true
+    },
+    {
+      "foreground": "secondary",
+      "background": "canvas",
+      "ratio": 9.38,
+      "min": 4.5,
+      "ok": true
+    },
+    {
+      "foreground": "figure-ink",
+      "background": "accent",
+      "ratio": 14.69,
+      "min": 4.5,
+      "ok": true
+    }
+  ],
+  "cards": [
+    {
+      "path": "tue27-am-q3.html",
+      "colors": [
+        "#111214",
+        "#52545A",
+        "#B7B8B1",
+        "#F5F5EF",
+        "#FFE500"
+      ],
+      "off_palette": []
+    },
+    {
+      "path": "tue27-pm-per-share.html",
+      "colors": [
+        "#111214",
+        "#52545A",
+        "#B7B8B1",
+        "#F5F5EF",
+        "#FFE500"
+      ],
+      "off_palette": []
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

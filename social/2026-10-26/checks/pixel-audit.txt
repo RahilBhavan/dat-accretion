@@ -1,0 +1,6 @@
+/home/rahil/.t3/worktrees/dat-accretion/grok-cr-f72ff8b1/social/2026-10-26/cards/tue27-am-q3-square.png: 0.00% of pixels off-system (limit 0.01%)
+/home/rahil/.t3/worktrees/dat-accretion/grok-cr-f72ff8b1/social/2026-10-26/cards/tue27-pm-per-share-square.png: 0.00% of pixels off-system (limit 0.01%)
+/home/rahil/.t3/worktrees/dat-accretion/grok-cr-f72ff8b1/social/2026-10-26/cards/tue27-am-q3-phone.png: 0.00% of pixels off-system (limit 0.01%)
+/home/rahil/.t3/worktrees/dat-accretion/grok-cr-f72ff8b1/social/2026-10-26/cards/tue27-pm-per-share-phone.png: 0.00% of pixels off-system (limit 0.01%)
+
+exit 0
