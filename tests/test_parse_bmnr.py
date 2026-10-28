@@ -166,3 +166,34 @@ def test_holdings_change_without_acquired_raises(s):
               ('2026-09-18', 'ETH', 2600.0)]
     with pytest.raises(ValueError, match='no .we acquired N ETH. sentence'):
         build([({'filed': '2026-09-14'}, URL, week1), ({'filed': '2026-09-21'}, URL, week2)], [], prices)
+
+
+# 10/26 release (0001493152-26-048429): new cumulative buyback sentences, quoted from the filing.
+BB_HEAD = ('Bitmine repurchased 2.04 million shares in the past week Bitmine has repurchased a cumulative 22.9 million '
+           'shares so far in 2026, the largest ever crypto treasury company equity buyback executed')
+BB_QUOTE = ('“Bitmine executed equity buybacks in the past week, acquiring 2.04 million shares, repurchased at an average '
+            'price of $22.48. When management believes Bitmine shares are relatively undervalued, the Company intends to '
+            'accretively repurchase shares, subject to market conditions and under the existing repurchase authorization.')
+BB_YTD = ('In 2026, Bitmine has repurchased 22.9 million common shares, at an average price of $17.48 or an aggregate '
+          'amount of $399.6 million.')
+
+
+def test_cumulative_buyback_sentences_keep_the_weeks_figures():
+    r = parse(p(HOLD, BB_HEAD, BB_QUOTE, BB_YTD), F, URL)
+    assert r['buyback'] == (2_040_000, Decimal('22.48'))  # the week's count and price, not the year-to-date $17.48
+
+
+@pytest.mark.parametrize('old, new', [
+    ('acquiring 2.04 million shares', 'acquiring 2.40 million shares'),   # week's restatement disagrees with its headline
+    ('repurchased 22.9 million common shares', 'repurchased 21.9 million common shares'),  # year-to-date totals disagree
+    ('so far in 2026', 'so far in 2025'),
+])
+def test_cumulative_buyback_figures_that_disagree_raise(old, new):
+    texts = [t.replace(old, new) for t in (BB_HEAD, BB_QUOTE, BB_YTD)]
+    with pytest.raises(ValueError):
+        parse(p(HOLD, *texts), F, URL)
+
+
+def test_unrecognised_buyback_total_still_raises():
+    with pytest.raises(ValueError, match='unknown number'):
+        parse(p(HOLD, BB_HEAD, BB_QUOTE, BB_YTD, 'Bitmine has also repurchased 3.1 million shares this quarter.'), F, URL)
