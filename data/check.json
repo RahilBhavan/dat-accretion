@@ -1,15 +1,15 @@
 {
  "status": "pass",
- "run_at": "2026-10-28T00:35:42Z",
+ "run_at": "2026-10-28T20:32:41Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 155,628.8760 vs API 155,531.5482: +0.063% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,811.00 (API latestPrice), MSTR $141.40 (Yahoo); repo at week 2026-10-18; newer 8-K filed 2026-10-26 not yet parsed",
+   "compared": "rebuilt 155,802.8163 vs API 155,699.2191: +0.067% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $81,124.00 (API latestPrice), MSTR $145.16 (Yahoo)",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2803 vs API 1.2797: +0.047% (tolerance 0.5%); state from 8-K for week 2026-10-18 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526424688/mstr-20261019.htm; the API may reflect a newer 8-K), BTC $80,811.00 (API latestPrice), MSTR $141.40 (Yahoo); repo at week 2026-10-18; newer 8-K filed 2026-10-26 not yet parsed",
+   "compared": "rebuilt 1.2789 vs API 1.2783: +0.044% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $81,124.00 (API latestPrice), MSTR $145.16 (Yahoo)",
    "ok": true
   },
   {
@@ -83,6 +83,11 @@
    "ok": true
   },
   {
+   "name": "residual MSTR 2026-10-25",
+   "compared": "|residual| $0.0M vs 5% of |observed| $75.6M = $3.8M or R rounding \u00b1$10.1M: <5%",
+   "ok": true
+  },
+  {
    "name": "residual SBET 2026-06-28 (report only)",
    "compared": "residual $+0.0M on observed $+13.5M since 2026-06-16; not tested",
    "ok": true
@@ -99,7 +104,7 @@
   },
   {
    "name": "actions.csv filing_url fetch",
-   "compared": "48 of 48 unique URLs returned 200",
+   "compared": "50 of 50 unique URLs returned 200",
    "ok": true
   }
  ]
