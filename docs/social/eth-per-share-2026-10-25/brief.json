@@ -1,0 +1,29 @@
+{
+  "id": "eth-per-share-2026-10-25",
+  "title": "Bought back 2.04M shares. ETH/share within error.",
+  "system_version": "3.3.2",
+  "accents": 1,
+  "accent_meaning": "latest week",
+  "encodings": [
+    {
+      "mark": "line",
+      "baseline": "five plotted values"
+    }
+  ],
+  "sizes_checked": [
+    "360x360",
+    "390x390"
+  ],
+  "measurement_basis": "canvas",
+  "measured_by": "dat.eth_card/firefox",
+  "min_label_px": 15,
+  "point_px": 41,
+  "overflow": [],
+  "source": "Source: BitMine 8-K ex99-1 plus dat-accretion model, as of Oct 25, 2026, 2:00 PM ET",
+  "alt": "Line chart, Estimated net ETH per 1,000 diluted shares (ETH plus net cash in ETH), vertical axis ETH per 1,000 shares, at BitMine for five weeks ending 9/27 to 10/25. Value labels on the chart: 10/18 9.6912 and 10/25 9.6938, up 0.03% in the last week. Week ending Oct 25: 6,051,933 ETH held, 5,227,037 staked, 10,452 ETH added; 2.04 million shares bought back at $22.48. Share count is estimated, and its staking bias of 0.044% a week is larger than the change. The vertical axis spans only the five values. Source: BitMine 8-K ex99-1 plus dat-accretion model, as of Oct 25, 2026, 2:00 PM ET.",
+  "review_status": "design review pending",
+  "artifacts": {
+    "card.html": "fa488d84b5fefda0961462f88d54a635312c7abcb8700086a62c7cabcc952f52",
+    "card.png": "0dfdb6cd32d83f06ffd0ee5b42a448458eb5ea7abdd9c1b7052804352625a12e"
+  }
+}

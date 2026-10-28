@@ -21,7 +21,7 @@
 <text x="38.0" y="42.0" text-anchor="start" font-weight="500">adds above the line (m &gt; q)</text>
 <text x="160.0" y="380.4" text-anchor="end" font-weight="500">BitMine's rotation adds</text>
 <text x="160.0" y="392.4" text-anchor="end" font-weight="500">below the line (m &lt; q)</text>
-<polyline points="149.4,78.6 125.9,64.1 131.8,88.5 105.7,134.1 46.8,245.7 90.0,203.1 102.7,168.7 101.0,228.4 91.8,224.9 98.5,242.1 109.3,221.1 132.6,212.3 131.7,224.6 137.6,247.8 142.4,216.1 144.2,177.0 147.9,198.7 147.3,149.8 147.5,159.5 150.9,173.4 151.1,157.3 152.2,160.9 144.0,209.2" fill="none" stroke="#2a78d6" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="none"/>
+<polyline points="149.4,78.6 125.9,64.1 131.8,88.5 105.7,134.1 46.8,245.7 90.0,203.1 102.7,168.7 101.0,228.4 91.8,224.9 98.5,242.1 109.3,221.1 132.6,212.3 131.7,224.6 137.6,247.8 142.4,216.1 144.2,177.0 147.9,198.7 147.3,149.8 147.5,159.5 150.9,173.4 151.1,157.3 152.2,160.9 144.0,209.2 150.9,175.6" fill="none" stroke="#2a78d6" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="none"/>
 <circle cx="149.4" cy="78.6" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
 <circle cx="125.9" cy="64.1" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
 <circle cx="131.8" cy="88.5" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
@@ -44,7 +44,8 @@
 <circle cx="150.9" cy="173.4" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
 <circle cx="151.1" cy="157.3" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
 <circle cx="152.2" cy="160.9" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
-<polyline points="69.6,240.7 98.4,249.9 73.8,287.1 83.6,292.5 93.6,296.8 94.3,289.3 96.5,291.2 107.4,256.4 108.7,232.6 114.1,242.1 125.3,267.2 139.7,238.3 145.7,220.1 147.9,229.2 144.8,229.2 151.3,216.3 151.4,233.5 151.6,241.9 139.6,273.2" fill="none" stroke="#eb6834" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="5 2.5"/>
+<circle cx="144.0" cy="209.2" r="3.6" style="fill:#fff;stroke:#2a78d6;stroke-width:1.1"/>
+<polyline points="69.6,240.7 98.4,249.9 73.8,287.1 83.6,292.5 93.6,296.8 94.3,289.3 96.5,291.2 107.4,256.4 108.7,232.6 114.1,242.1 125.3,267.2 139.7,238.3 145.7,220.1 147.9,229.2 144.8,229.2 151.3,216.3 151.4,233.5 151.6,241.9 139.6,273.2 141.0,254.0" fill="none" stroke="#eb6834" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="5 2.5"/>
 <rect x="66.4" y="237.5" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
 <rect x="95.2" y="246.7" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
 <rect x="70.7" y="284.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
@@ -63,16 +64,17 @@
 <rect x="148.1" y="213.1" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
 <rect x="148.2" y="230.4" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
 <rect x="148.4" y="238.7" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
+<rect x="136.4" y="270.0" width="6.4" height="6.4" rx="1" style="fill:#fff;stroke:#eb6834;stroke-width:1.1"/>
 <polyline points="153.6,348.3 153.6,357.7 153.6,357.0 153.6,321.2" fill="none" stroke="#4a3aa7" stroke-opacity="0.75" stroke-width="1" stroke-dasharray="1.2 2.4"/>
 <path d="M153.6,342.7L158.4,351.1L148.8,351.1Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.1"/>
 <path d="M153.6,352.1L158.4,360.5L148.8,360.5Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.1"/>
 <path d="M153.6,351.4L158.4,359.8L148.8,359.8Z" style="fill:#fff;stroke:#4a3aa7;stroke-width:1.1"/>
-<circle cx="144.0" cy="209.2" r="4.9" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.1"/>
-<text x="168.0" y="208.2" text-anchor="start" font-weight="500">Strategy</text>
-<text x="168.0" y="219.2" text-anchor="start" fill="#333">2026-10-18</text>
-<rect x="135.2" y="268.9" width="8.7" height="8.7" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.1"/>
-<text x="168.0" y="272.2" text-anchor="start" font-weight="500">BitMine</text>
-<text x="168.0" y="283.2" text-anchor="start" fill="#333">2026-10-18</text>
+<circle cx="150.9" cy="175.6" r="4.9" style="fill:#2a78d6;stroke:#2a78d6;stroke-width:1.1"/>
+<text x="168.0" y="174.6" text-anchor="start" font-weight="500">Strategy</text>
+<text x="168.0" y="185.6" text-anchor="start" fill="#333">2026-10-25</text>
+<rect x="136.7" y="249.7" width="8.7" height="8.7" rx="1" style="fill:#eb6834;stroke:#eb6834;stroke-width:1.1"/>
+<text x="168.0" y="253.0" text-anchor="start" font-weight="500">BitMine</text>
+<text x="168.0" y="264.0" text-anchor="start" fill="#333">2026-10-25</text>
 <path d="M153.6,313.5L160.2,325.0L147.0,325.0Z" style="fill:#4a3aa7;stroke:#4a3aa7;stroke-width:1.1"/>
 <text x="168.0" y="320.2" text-anchor="start" font-weight="500">SharpLink</text>
 <text x="168.0" y="331.2" text-anchor="start" fill="#333">2026-08-03</text>
