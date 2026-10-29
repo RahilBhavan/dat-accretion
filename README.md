@@ -16,7 +16,7 @@ Figures are for the data in the repository at this commit: filings dated 2026-06
 - **Break-even, week ending 2026-10-18.** At net mNAV 1.076, Strategy's STRC rotation adds net sats per share while STRC trades below $107.58; STRC closed at $97.72. At net mNAV 0.923, BitMine's BMNP rotation adds net ETH per share while BMNP trades above $92.33; BMNP closed at $96.66. Source: `docs/memo.md`.
 - **Weekly counts.** STRC closed below its break-even in 22 of 22 filed weeks, and BMNP closed below its break-even in 18 of 18. SharpLink's m was below 1 on 4 of 4 filed dates. Source: `docs/memo.md`.
 - **SharpLink coverage.** SharpLink is measured only on the four dates its filings state ETH holdings (2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03). Nothing is carried forward between them.
-- **Checks.** 199 pytest cases pass offline. On 2026-10-28 the live done check, `check.py`, passed 21 of 21 checks. One of them fetched the 50 unique filing URLs in `data/actions.csv`, and all 50 returned HTTP 200.
+- **Checks.** 306 pytest cases pass offline. On 2026-10-28 the live done check, `check.py`, passed 21 of 21 checks. One of them fetched the 50 unique filing URLs in `data/actions.csv`, and all 50 returned HTTP 200.
 
 ## How it works
 
@@ -37,7 +37,7 @@ uv venv && uv pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
 ```
 
-Observed on 2026-10-28: `199 passed`.
+Observed on 2026-10-29: `306 passed`.
 
 Rebuild the memo and the page data from the committed CSVs (offline):
 
