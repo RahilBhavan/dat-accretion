@@ -24,7 +24,7 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/setup-python@v7
         with: { python-version: '3.12' }
-      - run: pip install pytest numpy
+      - run: pip install -r requirements-dev.txt
       # Filed documents never change once filed, so data/raw is safe to keep across runs. The submissions index
       # that lists new filings is never cached (dat/edgar.py), so new 8-Ks are still found.
       - uses: actions/cache@v6

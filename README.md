@@ -16,7 +16,7 @@ Figures are for the data in the repository at this commit: filings dated 2026-06
 - **Break-even, week ending 2026-10-18.** At net mNAV 1.076, Strategy's STRC rotation adds net sats per share while STRC trades below $107.58; STRC closed at $97.72. At net mNAV 0.923, BitMine's BMNP rotation adds net ETH per share while BMNP trades above $92.33; BMNP closed at $96.66. Source: `docs/memo.md`.
 - **Weekly counts.** STRC closed below its break-even in 22 of 22 filed weeks, and BMNP closed below its break-even in 18 of 18. SharpLink's m was below 1 on 4 of 4 filed dates. Source: `docs/memo.md`.
 - **SharpLink coverage.** SharpLink is measured only on the four dates its filings state ETH holdings (2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03). Nothing is carried forward between them.
-- **Checks.** 199 pytest cases pass offline. On 2026-10-28 the live done check, `check.py`, passed 21 of 21 checks. One of them fetched the 50 unique filing URLs in `data/actions.csv`, and all 50 returned HTTP 200.
+- **Checks.** The offline pytest suite runs on every PR and push to `main` (the `ci` badge above); the count is not typed here, so it cannot go stale. On 2026-10-28 the live done check, `check.py`, passed 21 of 21 checks. One of them fetched the 50 unique filing URLs in `data/actions.csv`, and all 50 returned HTTP 200.
 
 ## How it works
 
@@ -28,16 +28,35 @@ Figures are for the data in the repository at this commit: filings dated 2026-06
 
 `dat/refresh.py` runs steps 2 to 5 in order. `check.py` runs the live checks.
 
+## How this was built
+
+<!-- DRAFT for Rahil to confirm: drafted by an AI agent from docs/how-it-was-made.md, docs/decisions.md and the commit history. Edit the two lists to what you actually did, then delete this comment. -->
+
+AI coding agents wrote most of the code. The build used Claude Code, and the commit history carries `Co-Authored-By` trailers for the Claude models that worked on it. The agents were split by role: an orchestrator that dispatched the work, a runner that implemented one step against a named acceptance check, a reviewer that tried to break the finished change, and a read-only `filing-verifier` that opened each cited filing and confirmed the row's numbers appear in it. [`docs/how-it-was-made.md`](docs/how-it-was-made.md) tells the build step by step.
+
+What Rahil designed, according to the repository record:
+
+- The question, the plan and its acceptance check for each step. The written spec lives outside this repo; its engineering half is in `CLAUDE.md` and `.claude/rules/`.
+- The decisions that change the output, which the agents were told to ask about. Each is dated in `.claude/rules/` and [`docs/decisions.md`](docs/decisions.md), with the reason and the alternative it rules out.
+- The framing: states each action's per-share effect and break-even price, and makes no judgment, forecast or investment claim (`.claude/rules/framing.md`).
+
+What was checked, and by what:
+
+- Each step's PR body pastes the real output of its acceptance check, and `main` accepts only squash-merged PRs with CI green.
+- The agent-run `filing-verifier` matched every row of `data/actions.csv` and `data/stated.csv` to its filing before merge in the parsing steps. `check.py` re-runs live checks, including one that fetches every `filing_url`.
+- The reader tests in [`docs/reader-test.md`](docs/reader-test.md) used simulated AI readers. The repository holds no human reader results.
+- Weekly refresh PRs merge on the automated checks alone.
+
 ## Run it
 
 Prerequisites: Python 3.12 or later, [uv](https://docs.astral.sh/uv/), and Node 24 only to rebuild the balance figure. The tests need no network and no credentials.
 
 ```bash
-uv venv && uv pip install -e '.[dev]'
+uv venv && uv pip install -r requirements-dev.txt
 .venv/bin/python -m pytest -q
 ```
 
-Observed on 2026-10-28: `199 passed`.
+`requirements-dev.txt` pins every dependency, direct and transitive, and CI installs from it. It is compiled from `pyproject.toml`; to change a dependency, edit `pyproject.toml` and run `uv pip compile pyproject.toml --extra dev --python-version 3.12 -o requirements-dev.txt`. A test fails if the file and `pyproject.toml` disagree.
 
 Rebuild the memo and the page data from the committed CSVs (offline):
 

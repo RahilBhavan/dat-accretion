@@ -209,4 +209,4 @@ page keeps its last passing build (#17).
   SharpLink), a read-only agent matched every changed row of `actions.csv` and `stated.csv` to its filing
   before merge. Weekly refresh PRs merge on the automated checks alone.
 
-`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs 170 offline tests as of 2026-10-21.
+`python check.py` runs the live checks and exits 0 only if all pass. `pytest` runs the offline tests.

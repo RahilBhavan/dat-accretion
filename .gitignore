@@ -16,5 +16,5 @@ data/raw/
 site/data.json
 data/check.json
 
-# uv lock: CI installs with pip from pyproject (decided 2026-10-14)
+# uv lock: CI installs with pip from requirements-dev.txt, compiled from pyproject (see that file's header)
 uv.lock
