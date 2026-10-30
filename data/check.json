@@ -1,15 +1,15 @@
 {
  "status": "pass",
- "run_at": "2026-10-29T01:05:11Z",
+ "run_at": "2026-10-30T01:11:05Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 155,684.1297 vs API 155,581.1064: +0.066% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $80,903.00 (API latestPrice), MSTR $145.16 (Yahoo)",
+   "compared": "rebuilt 153,444.2584 vs API 153,347.2665: +0.063% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $76,947.00 (API latestPrice), MSTR $141.62 (Yahoo)",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.2798 vs API 1.2793: +0.042% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $80,903.00 (API latestPrice), MSTR $145.16 (Yahoo)",
+   "compared": "rebuilt 1.2985 vs API 1.2979: +0.048% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $76,947.00 (API latestPrice), MSTR $141.62 (Yahoo)",
    "ok": true
   },
   {
