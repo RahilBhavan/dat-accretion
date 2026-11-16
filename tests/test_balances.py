@@ -63,14 +63,14 @@ def test_pref_roll_both_directions():
 
 
 def test_class_a_roll_direction():
-    acts = [act('2026-07-19', 'issue_common', 'MSTR', units='100'), act('2026-07-26', 'issue_common', 'MSTR', units='10'),
-            act('2026-08-02', 'issue_common', 'MSTR', units='1'), act('2026-08-09', 'buyback_common', 'MSTR', units='3')]
-    base = 364_585_501
-    assert class_a(acts, '2026-07-26') == base  # the 7/20-7/26 week is in the 7/24 anchor
-    assert class_a(acts, '2026-07-19') == base - 10
-    assert class_a(acts, '2026-07-12') == base - 110
-    assert class_a(acts, '2026-08-02') == base + 1
-    assert class_a(acts, '2026-08-09') == base - 2
+    acts = [act('2026-10-18', 'issue_common', 'MSTR', units='100'), act('2026-10-25', 'issue_common', 'MSTR', units='10'),
+            act('2026-11-01', 'issue_common', 'MSTR', units='1'), act('2026-11-08', 'buyback_common', 'MSTR', units='3')]
+    base = 402_714_357  # Q3 10-Q cover, 10/25
+    assert class_a(acts, '2026-10-25') == base  # the 10/19-10/25 week is in the 10/25 anchor
+    assert class_a(acts, '2026-10-18') == base - 10
+    assert class_a(acts, '2026-10-11') == base - 110
+    assert class_a(acts, '2026-11-01') == base + 1
+    assert class_a(acts, '2026-11-08') == base - 2
 
 
 def st(week, reserve, rprec, cash='', cprec='', r_in='', r_out=''):
@@ -125,6 +125,38 @@ def test_bmnr_basic_scales_to_anchor_then_accumulates():
     assert out['2026-07-12'][0] == BMNR_A1[1] and 'anchored' in out['2026-07-12'][2]
     assert out['2026-07-19'][0] == BMNR_A1[1] - 5 and out['2026-07-19'][1] == 0
     assert out['2026-07-26'][0] == BMNR_A1[1] - 5 + 10 and 'estimated' in out['2026-07-26'][2]
+
+
+def test_bmnr_basic_scales_each_segment_to_the_next_filed_count(monkeypatch):
+    from dat import balances
+    monkeypatch.setattr(balances, 'BMNR_LATER', [('2026-08-31', 613_267_022, '2026-08-30', '10-K balance sheet'),
+                                                 ('2026-11-04', 626_451_021, '2026-11-08', '10-K cover')])
+    weeks = ['2026-05-31', '2026-07-12', '2026-08-30', '2026-09-07', '2026-11-01', '2026-11-08']
+    flows = {'2026-07-12': (0, 0, 100), '2026-08-30': (0, 0, 100), '2026-09-07': (0, 0, 100), '2026-11-01': (0, 0, 300),
+             '2026-11-08': (0, 0, -5)}
+    out, scales, first = balances.bmnr_segments(weeks, flows, dict.fromkeys(weeks, 10.0), [])
+    assert out['2026-08-30'][0] == 613_267_022 and 'anchored 10-K balance sheet' in out['2026-08-30'][2]
+    assert 'one day after' in out['2026-08-30'][2]  # the 8/31 balance sheet sits after that week's 8/30 end
+    # 9/07 and 11/01 issue 10 and 30 shares unscaled; scaled so the level lands on the 11/04 cover count at 11/08
+    gap = 626_451_021 - 613_267_022
+    assert out['2026-09-07'][0] == pytest.approx(613_267_022 + gap / 4)
+    assert out['2026-11-01'][0] == pytest.approx(626_451_021) and out['2026-11-08'][0] == 626_451_021
+    assert [w for w, _ in scales] == ['2026-07-12', '2026-08-30', '2026-11-08']
+    assert scales[2][1] == pytest.approx(gap / 40)
+
+
+def test_bmnr_buyback_in_later_anchor_week_raises(monkeypatch):
+    from dat import balances
+    monkeypatch.setattr(balances, 'BMNR_LATER', [('2026-11-04', 626_451_021, '2026-11-08', '10-K cover')])
+    weeks = ['2026-05-31', '2026-07-12', '2026-11-08']
+    with pytest.raises(ValueError, match='holds the 2026-11-04 anchor'):
+        balances.bmnr_segments(weeks, {'2026-07-12': (0, 0, 100), '2026-11-08': (0, 0, 100)}, dict.fromkeys(weeks, 10.0),
+                               [act('2026-11-08', 'buyback_common', 'BMNR', units='5')])
+
+
+def test_bmnr_rsu_switches_to_the_10k_count_after_8_31():
+    from dat.balances import bmnr_rsu, BMNR_RSU
+    assert bmnr_rsu('2026-08-30') == BMNR_RSU == 1_097_346 and bmnr_rsu('2026-09-07') == 1_076_449
 
 
 def test_bmnr_buyback_in_anchor_week_raises():

@@ -17,9 +17,9 @@ START = '2026-06-01'
 AP = "[’']"
 N = r'([\d,]+)'
 
-# Holdings, each -> {date: coins}; parts -> {date: (native, LsETH, weETH)}.
+# Holdings, each -> {date: coins}; parts -> {date: (native, LsETH, weETH[, wstETH])}.
 PARTS = (rf'Total ETH holdings held as of ({DATE}),? (?:were )?comprised of {N} native ETH, {N} ETH as-if redeemed from '
-         rf'LsETH and {N} ETH as-if redeemed from (?i:weETH)')
+         rf'LsETH(?: and|,) {N} ETH as-if redeemed from (?i:weETH)(?:, and {N} ETH as-if-redeemed from wstETH)?')  # wstETH from Q3
 AGG = (rf'As of ({DATE}), the Company{AP}s aggregate ETH Holdings were {N} of which {N} of the total ETH Holdings are '
        rf'native ETH, {N} ETH as-if redeemed from LsETH and {N} ETH as-if redeemed from weETH')
 TOTALED = rf'ETH holdings totaled approximately {N} ETH\d? as of ({DATE})(?:, (?:increasing to|and) {N} ETH\d? as of ({DATE}))?'
@@ -129,7 +129,7 @@ def parse(html, filing, url):
         return d
 
     for m in re.finditer(PARTS, text):  # a footnote's parts state the total when the dated sentence doesn't
-        ps = tuple(num(x) for x in m.group(2, 3, 4))
+        ps = tuple(num(x) for x in m.group(2, 3, 4, 5) if x)
         parts[put(m.group(1), sum(ps))] = ps
     for m in re.finditer(AGG, text):
         d = put(m.group(1), num(m.group(2)))
@@ -193,7 +193,9 @@ def check_summaries(docs):
 
 # ---- Q2 10-Q equity statement: net proceeds and treasury cost (in thousands) ----
 EQ_ROWS = {  # label -> key (None: known, not used)
-    'Net loss': None, 'Stock-based compensation expense': None, 'Shares issued for vested restricted stock': None,
+    'Net loss': None, 'Net income': None, 'Balance': None,  # Q3 10-Q: a repeated opening-balance row, and net income
+    'Issuance of Common Stock for exercise of non-plan options': None,
+    'Stock-based compensation expense': None, 'Shares issued for vested restricted stock': None,
     'Issuance of Common Stock for exercise of pre-funded warrants': None,
     'Shares of Common Stock withheld for taxes for net share settlement': None,
     'Shares of common stock withheld for taxes for net share settlement': None,
@@ -221,6 +223,8 @@ def equity(html, url, start, end):
             if on and re.fullmatch(rf'Balance (?:as of|at) {end}', label):
                 return out
             if not on:
+                continue
+            if EQ_ROWS.get(label, 1) is None:  # known and unused (a Q3 10-Q row can omit its trailing '-'): no count check
                 continue
             cells = [c for c in r[1:] if c not in (')', '')]
             vals = [cell(c + ')' if c.startswith('(') and not c.endswith(')') else c) for c in cells]

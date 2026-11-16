@@ -6,7 +6,7 @@ and residual. Every step is an exact recompute through net().
 """
 import math, os, sys
 from dat.balances import (net, read, write, CONVERTS, STRK_CONV, CLASS_B, AWARDS, pref_notional, class_a,
-                          bmnr_flows, bmnr_basic, BMNR_RSU, BMNR_DILUTIVE, reserve_checks, sbet_basic, sbet_awards,
+                          bmnr_flows, bmnr_basic, bmnr_rsu, BMNR_DILUTIVE, reserve_checks, sbet_basic, sbet_awards,
                           sbet_options)
 
 FIELDS = ['firm', 'week_end', 'action', 'ticker', 'usd', 'm', 'q', 'dn_first_order', 'dn_exact', 'dn_per_dollar',
@@ -115,7 +115,7 @@ def states(firm, bal, weekly, stated, actions):
                       basic=class_a(actions, w) + CLASS_B, awards=AWARDS, options=[])
         elif firm == 'BMNR':
             st.update(converts=[], prefs={'BMNP': float(b['pref_notional'])}, conv={}, basic=basic[w][0],
-                      awards=BMNR_RSU, options=BMNR_DILUTIVE)
+                      awards=bmnr_rsu(w), options=BMNR_DILUTIVE)
         elif firm == 'SBET':  # no converts or preferred; rows per filed holdings date
             st.update(converts=[], prefs={}, conv={}, basic=sbet_basic(actions, w)[0], awards=sbet_awards(w),
                       options=sbet_options(w))

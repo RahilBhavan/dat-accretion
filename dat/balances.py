@@ -5,7 +5,7 @@ https://www.sec.gov/Archives/edgar/data/1050446/000119312526363557/d431748dfwp.h
 In-the-money (s > conversion price) converts and prefs leave D/F and add their shares to S.
 Other debt (the secured term loan) is not deducted.
 
-Step 2 (`python -m dat.balances`): per stated 8-K week, C and R as stated, D/F/S from Q2 10-Q anchors
+Step 2 (`python -m dat.balances`): per stated 8-K week, C and R as stated, D/F/S from Q3 10-Q anchors
 rolled by actions.csv -> data/balances.csv and data/weekly.csv; prints the R check (method.md).
 """
 import csv, os, sys
@@ -34,8 +34,9 @@ def net(coins, usd_assets, converts, prefs, basic_shares, awards, p, s):
 
 
 # ---- Step 2: weekly state for Strategy (MSTR) -> data/balances.csv, data/weekly.csv ----
-Q2_10Q = 'https://www.sec.gov/Archives/edgar/data/1050446/000105044626000044/mstr-20260630.htm'
-# converts (face, conv price), Q2 10-Q above
+Q3_10Q = 'https://www.sec.gov/Archives/edgar/data/1050446/000105044626000060/mstr-20260930.htm'  # filed 2026-11-02; reanchored from Q2 on 2026-11-15
+Q3_PERIOD = '2026-09-30'  # period of the Q3 10-Q the Strategy anchors (class A cover, awards, converts, preferred check) come from
+# converts (face, conv price), outstanding principal at 9/30 (Q3 10-Q, unchanged from Q2)
 CONVERTS = [
     (1_010.0e6, 183.19),  # 2028
     (1_500.0e6, 672.40),  # 2029
@@ -45,15 +46,18 @@ CONVERTS = [
     (800.0e6, 204.33),  # 2032
 ]
 EURUSD = 1.147  # STRE: API-implied rate; Friday 12:30 NY fixing unpublished
-PREF_ANCHOR_DATE = '2026-06-30'  # Q2 10-Q notional per preferred, USD
+PREF_ANCHOR_DATE = '2026-06-30'  # Q2 10-Q notional per preferred, USD. The Q3 10-Q (9/30) gives the same STRF, STRK, STRD and
+# STRE; STRC differs only by repurchases executed but unsettled at 9/30 (see Q3_STRC), so these anchors are kept (decisions.md).
 PREF_ANCHOR = {'STRF': 1_283_969_000, 'STRC': 104_894_705 * 100, 'STRK': 1_402_074_000,
                'STRD': 1_402_422_000, 'STRE': 775_000_000 * EURUSD}
 STRK_CONV = 1000.0  # STRK: $100 liquidation preference converts to 0.1 MSTR share
-# Class A as of 2026-07-24 (10-Q cover); the 7/20-7/26 week's ATM sales are taken as included.
-CLASS_A, CLASS_A_WEEK = 364_585_501, '2026-07-26'
-CLASS_B = 19_640_250  # 10-Q 6/30, constant
-AWARDS = 3_950_554  # options + RSU + PSU, 10-Q 6/30, constant
+# Class A as of 2026-10-25 (Q3 10-Q cover); the week ending 10/25's ATM sales are taken as included.
+CLASS_A, CLASS_A_WEEK = 402_714_357, '2026-10-25'
+CLASS_B = 19_640_250  # Q3 10-Q cover (10/25) and balance sheet, constant
+AWARDS = 3_872_240  # options 3,123,865 + RSU 633,296 + PSU 115,079, 10-Q 9/30, constant
 CHECK_FROM = '2026-08-02'
+# Q3 10-Q, 9/30: STRC shares issued 90,964,532 (settled basis) and $36.8M payable for STRC repurchased but not yet settled.
+Q3_STRC = (90_964_532 * 100, 36_800_000)
 STRC_CHECK = ('2026-09-20', 9_316_191_300)  # 93,161,913 sh x $100 (Step 0)
 BAL_FIELDS = ['firm', 'date', 'coins', 'usd_reserve', 'debt', 'pref_notional', 'shares_diluted', 'source']
 WEEK_FIELDS = ['firm', 'week_end', 'price_date', 'p', 's', 'q', 'm', 'n']
@@ -158,7 +162,12 @@ def build(stated, actions, prices):
 BMNR_10Q = 'https://www.sec.gov/Archives/edgar/data/1829311/000162828026048157/bmnr-20260531.htm'
 BMNR_A0 = ('2026-05-31', 579_652_432)  # common outstanding, 10-Q balance sheet
 BMNR_A1 = ('2026-07-09', 603_226_394)  # common outstanding, 10-Q cover
+BMNR_10K = 'https://www.sec.gov/Archives/edgar/data/1829311/000162828026072846/bmnr-20260831.htm'  # FY ended 8/31, filed 2026-11-10
+# Later filed common counts, each (date, shares, week holding it, what). The 8/31 balance sheet sits one day after the 8/30
+# holdings week (the 9/07 week would add a week of issuance); no buyback in either week.
+BMNR_LATER = [('2026-08-31', 613_267_022, '2026-08-30', '10-K balance sheet'), ('2026-11-04', 626_451_021, '2026-11-08', '10-K cover')]
 BMNR_RSU = 1_097_346  # unvested time-based RSUs at 5/31 (10-Q); no strike, always in S
+BMNR_RSU_10K = ('2026-08-31', 1_076_449)  # same at 8/31 (10-K); used for weeks after 8/31 (options, warrants unchanged)
 # (shares, strike) from the 10-Q; in S only while the BMNR close is above the strike.
 BMNR_DILUTIVE = [(359_124, 21.10),  # options: weighted-average exercise price (per-grant strikes not disclosed)
                  (2_820_774, 5.40),  # strategic advisor warrants
@@ -166,6 +175,10 @@ BMNR_DILUTIVE = [(359_124, 21.10),  # options: weighted-average exercise price (
                  (10_435_430, 87.50)]  # CVI warrants, expire 2027-03-22
 # Excluded: 4,500,000 performance RSUs (conditions unmet at 5/31); 1,280 C-3 warrants (strike not disclosed,
 # out of the money per the 10-Q). D = 0: the 10-Q states no debt at 5/31.
+
+
+def bmnr_rsu(week):
+    return BMNR_RSU_10K[1] if week > BMNR_RSU_10K[0] else BMNR_RSU
 
 
 def bmnr_flows(stated, actions):
@@ -183,35 +196,56 @@ def bmnr_flows(stated, actions):
 
 def bmnr_basic(weeks, flows, closes, actions):
     """{week: (basic shares, estimated shares added that week, label)}. Estimate = max(unexplained dR, 0) / BMNR close.
-    Weeks up to the one holding the 7/09 anchor: estimates scaled so A0 + issuance - buybacks = A1 there.
-    Later weeks: A1 + unscaled estimates - buybacks."""
+    Weeks up to a filed count (A1 7/09 cover, then the FY-end 10-K's 8/31 balance sheet and 11/04 cover, BMNR_LATER):
+    estimates scaled so the previous anchor + issuance - buybacks = that count there. Weeks after the last anchor:
+    that count + unscaled estimates - buybacks. -> (levels, first segment's scale, its weeks)."""
+    out, scales, between = bmnr_segments(weeks, flows, closes, actions)
+    return out, scales[0][1], between
+
+
+def md(d):
+    return f'{int(d[5:7])}/{d[8:]}'
+
+
+def bmnr_segments(weeks, flows, closes, actions):
+    """bmnr_basic's levels plus every segment's scale: -> ({week: (basic, added, label)}, [(anchor week, scale)], first weeks)."""
     bb = {}
     for a in actions:
         if a['action'] == 'buyback_common':
             bb[a['week_end']] = bb.get(a['week_end'], 0) + float(a['units'])
     est = {w: max(float(flows[w][2]), 0) / closes[w] if w in flows else 0.0 for w in weeks}
-    a1_week = min(w for w in weeks if w >= BMNR_A1[0])
-    between = [w for w in weeks if BMNR_A0[0] < w <= a1_week]
-    if bb.get(a1_week):
-        raise ValueError(f'buyback in week {a1_week}, which holds the {BMNR_A1[0]} anchor: cannot tell if it is before or '
-                         'after the cover count; split the week by trade date before rolling')
-    scale = (BMNR_A1[1] - BMNR_A0[1] + sum(bb.get(w, 0) for w in between)) / sum(est[w] for w in between)
-    out, level = {}, float(BMNR_A0[1])
+    anchors = [(min(w for w in weeks if w >= BMNR_A1[0]), BMNR_A1[1], f'10-Q cover {BMNR_A1[0]}', BMNR_A1[0])]
+    anchors += [(wk, n, f'{what} {d}', d) for d, n, wk, what in BMNR_LATER if wk in weeks]
+    for wk, _, _, d in anchors:
+        if bb.get(wk):
+            raise ValueError(f'buyback in week {wk}, which holds the {d} anchor: cannot tell if it is before or '
+                             'after the count; split the week by trade date before rolling')
+    out, level, prev, scales, first = {}, float(BMNR_A0[1]), BMNR_A0[0], [], None
     for w in weeks:
         if w <= BMNR_A0[0]:
             out[w] = (float(BMNR_A0[1]), 0.0, 'S anchored 10-Q 5/31 balance sheet')
-            continue
-        add = est[w] * (scale if w <= a1_week else 1)
+    for wk, n, what, d in anchors:
+        seg = [w for w in weeks if prev < w <= wk]
+        scale = (n - level + sum(bb.get(w, 0) for w in seg)) / sum(est[w] for w in seg)
+        scales.append((wk, scale))
+        first = first or seg
+        for w in seg:
+            add = est[w] * scale
+            level += add - bb.get(w, 0)
+            if w == wk:
+                level = float(n)
+                out[w] = (level, add, f'S anchored {what} (week holding it)' if w >= d else
+                          f'S anchored {what} (one day after the {md(w)} week end)')
+            else:
+                out[w] = (level, add, f'S estimated: {md(prev)} anchor + unexplained dR / BMNR close x {scale:.4f} '
+                                      f'(scaled to the {md(d)} count)')
+        prev = wk
+    for w in (x for x in weeks if x > prev):
+        d = anchors[-1][3]
+        add = est[w]
         level += add - bb.get(w, 0)
-        if w == a1_week:
-            level = float(BMNR_A1[1]) - sum(bb.get(x, 0) for x in weeks if BMNR_A1[0] < x <= w)
-            label = f'S anchored 10-Q cover {BMNR_A1[0]} (week holding it)'
-        elif w < a1_week:
-            label = f'S estimated: 5/31 anchor + unexplained dR / BMNR close x {scale:.4f} (scaled to 7/09 anchor)'
-        else:
-            label = 'S estimated: 7/09 anchor + unexplained dR / BMNR close (unscaled) - buybacks'
-        out[w] = (level, add, label)
-    return out, scale, between
+        out[w] = (level, add, f'S estimated: {md(d)} anchor + unexplained dR / BMNR close (unscaled) - buybacks')
+    return out, scales, first
 
 
 def bmnr_s_bias(data_dir='data', asof=None):
@@ -226,7 +260,8 @@ def bmnr_s_bias(data_dir='data', asof=None):
                   and (asof is None or r['date'] <= asof)), key=lambda r: r['date'])
     weeks = [r['date'] for r in bal]
     a1_week = min((w for w in weeks if w >= BMNR_A1[0]), default=None)
-    if a1_week is None:  # at or before the week holding the 7/09 anchor: no estimate yet
+    a1_week = max([a1_week] + [wk for _, _, wk, _ in BMNR_LATER if wk in weeks]) if a1_week else None  # latest filed count
+    if a1_week is None:  # at or before the week holding the latest anchor: no estimate yet
         return 0.0, weeks[-1]
     shares = 0.0
     for w in weeks:
@@ -264,13 +299,13 @@ def build_bmnr(stated, actions, prices):
                          f'to max($100, last sale, 10-day average) per method.md; update q before building')
     issue = issues[0]
     flows = bmnr_flows(stated, actions)
-    basic, scale, between = bmnr_basic(weeks, flows, closes, actions)
+    basic, scales, between = bmnr_segments(weeks, flows, closes, actions)
     bal, weekly, lines = [], [], []
     for st in stated:
         w, s = st['week_end'], closes[st['week_end']]
         F = sum(SIGN[a['action']] * float(a['units']) for a in actions
                 if a['ticker'] == 'BMNP' and a['action'] in ('issue_pref', 'retire_pref') and a['week_end'] <= w)
-        awards = BMNR_RSU + sum(n for n, k in BMNR_DILUTIVE if s > k)
+        awards = bmnr_rsu(w) + sum(n for n, k in BMNR_DILUTIVE if s > k)
         b, add, label = basic[w]
         p = close('ETH', w)
         x = net(float(st['coins']), float(st['usd_reserve']), [], [(F, None, 0)], b, awards, p, s)
@@ -290,7 +325,8 @@ def build_bmnr(stated, actions, prices):
         un = f"unexplained dR={float(flows[w][2]) / 1e6:+,.1f}M" if w in flows else 'first week'
         lines.append(f"{w} {'anchored' if 'anchored' in label else 'estimated'} basic={b:,.0f} est_added={add:,.0f} "
                      f"({un}) S={x['S']:,.0f} m={x['mnav']:.4f} q={q if q == '' else f'{q:.4f}'}")
-    lines.append(f'BMNR: issuance estimates {between[0][5:]}..{between[-1][5:]} scaled x{scale:.4f} to land on the 7/09 10-Q cover count')
+    lines.append(f'BMNR: issuance estimates {between[0][5:]}..{between[-1][5:]} scaled x{scales[0][1]:.4f} to land on the 7/09 10-Q cover count')
+    lines += [f'BMNR: issuance estimates to {wk[5:]} scaled x{k:.4f} to land on the filed count' for wk, k in scales[1:]]
     return bal, weekly, lines
 
 
@@ -420,9 +456,16 @@ def main(data_dir='data'):
     strc = dict(notes)[STRC_CHECK[0]]
     strc_ok = round(strc) == STRC_CHECK[1]
     print(f'STRC notional {STRC_CHECK[0]} = {strc:,.0f} (expect {STRC_CHECK[1]:,}) {"OK" if strc_ok else "FAIL"}')
+    q3 = dict(notes).get('2026-09-30')
+    q3_ok = True
+    if q3 is not None:  # Q3 10-Q: the 8-K roll sits below the settled count by the repurchases executed but unsettled at 9/30
+        gap = Q3_STRC[0] - q3
+        q3_ok = gap > 0 and 0.95 <= Q3_STRC[1] / gap <= 1.0  # payable is cost: at or just under the notional it retires
+        print(f'STRC 2026-09-30 8-K roll {q3:,.0f}; 10-Q settled {Q3_STRC[0]:,}, {gap:,.0f} higher; 10-Q payable for unsettled '
+              f'repurchases ${Q3_STRC[1]:,} ({Q3_STRC[1] / gap:.4f} of it) {"OK" if q3_ok else "FAIL"}')
     if bad:
         print(f'reserve check FAILED: {bad}')
-    return 1 if bad or missing or not strc_ok else 0
+    return 1 if bad or missing or not strc_ok or not q3_ok else 0
 
 
 if __name__ == '__main__':

@@ -38,7 +38,7 @@ def test_headline_gap(site):
 def test_every_map_point_links_to_a_filing(site):
     # app.js mapPoints: q and m present, or SharpLink (no preferred, drawn at q = 1)
     points = [w for w in site['weeks'] if w['m'] is not None and (w['q'] is not None or w['firm'] == 'SBET')]
-    assert len(points) >= 30 and sum(w['firm'] == 'SBET' for w in points) == 4
+    assert len(points) >= 30 and sum(w['firm'] == 'SBET' for w in points) == 6
     for w in points:
         assert w['filing_urls'] and all(u.startswith('https://www.sec.gov/') for u in w['filing_urls'])
 
@@ -99,7 +99,7 @@ def test_dollars_moved_excludes_carry(site):
 
 def test_est_issuance_in_issue_common_and_flagged(site):
     w = week(site, 'BMNR', '2026-09-20')
-    assert w['est_issuance'] == pytest.approx(6_583_230, abs=1)
+    assert w['est_issuance'] == pytest.approx(6_129_314, abs=1)
     assert w['value']['issue_common'] == w['est_issuance']  # BitMine files no issuance: all of it is the estimate
 
 
@@ -139,19 +139,28 @@ def test_eth_per_share_weekly_line(site):
         assert r['filing_url'].startswith('https://www.sec.gov/Archives/edgar/data/1829311/')
     first = e['weeks'][0]
     assert (first['week_end'], first['basic'], first['estimated']) == ('2026-05-31', 579_652_432, False)
-    assert e['weeks'][-1]['estimated']
+    last = e['weeks'][-1]  # the week holding the 11/04 10-K cover count is anchored, not estimated
+    assert (last['week_end'], last['estimated']) == ('2026-11-08', False)
 
 
 def test_eth_per_share_filed_checks(site):
     e = site['eth_per_share']
-    a0, a1 = e['filed']
+    a0, a1, a2, a3 = e['filed']
     assert (a0['date'], a0['shares'], a0['per_1000']) == ('2026-05-31', 579_652_432, [9.3451])
     assert (a1['date'], a1['shares'], a1['eth_weeks']) == ('2026-07-09', 603_226_394, ['2026-07-05', '2026-07-12'])
     assert a1['per_1000'] == [9.5192, 9.5653]  # ETH held on 7/05 and 7/12 over the 7/09 cover count
     by = {r['week_end']: r for r in e['weeks']}
     assert by['2026-07-12']['basic'] == 603_226_394 and not by['2026-07-12']['estimated']  # anchored, so error 0 there
+    assert (a2['date'], a2['shares'], a2['eth_weeks'], a2['per_1000']) == ('2026-08-31', 613_267_022, ['2026-08-30', '2026-09-07'],
+                                                                         [9.6224, 9.6682])
+    assert (a3['date'], a3['shares'], a3['eth_weeks'], a3['per_1000']) == ('2026-11-04', 626_451_021, ['2026-11-01', '2026-11-08'],
+                                                                         [9.6743, 9.6897])
+    for f in (a0, a1):
+        assert f['share_url'].endswith('bmnr-20260531.htm')
+    for f in (a2, a3):
+        assert f['share_url'].endswith('bmnr-20260831.htm')
     for f in e['filed']:
-        assert f['share_url'].endswith('bmnr-20260531.htm') and all(u.startswith('https://www.sec.gov/') for u in f['eth_urls'])
+        assert all(u.startswith('https://www.sec.gov/') for u in f['eth_urls'])
 
 
 def test_eth_per_share_error_and_note(site):
@@ -159,5 +168,10 @@ def test_eth_per_share_error_and_note(site):
     # The 7/09 count rebuilt from 5/31 with the unscaled estimate (dat.balances.bmnr_basic without its scale).
     assert (c['estimate'], c['filed'], c['error'], c['error_pct']) == (601_675_391, 603_226_394, -1_551_003, -0.257)
     assert f"{c['estimate']:,}" in note and '1,551,003 (0.26%) under' in note
+    # From each filed count, the unscaled estimate to the next filed count (10-K balance sheet 8/31, 10-K cover 11/04).
+    l1, l2 = c['later']
+    assert (l1['estimate'], l1['filed'], l1['error'], l1['error_pct']) == (613_224_292, 613_267_022, -42_730, -0.007)
+    assert (l2['estimate'], l2['filed'], l2['error'], l2['error_pct']) == (627_310_023, 626_451_021, 859_002, 0.137)
+    assert '859,002 (0.14%) over' in note and 'No share count has been filed since' not in note
     assert f"{site['eth_per_share']['bias_pct']:.2f}% of S by {site['eth_per_share']['bias_week']}" in note
     assert '—' not in note and 'estimated basic share count' in note

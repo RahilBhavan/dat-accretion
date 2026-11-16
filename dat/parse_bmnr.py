@@ -20,7 +20,8 @@ HOLDINGS = (rf'As of ({DATE})(?: at [^,]+)?, the Company{AP}s crypto holdings ar
             rf'.*? and total cash(?: & marketable securities)? of {MONEY}')
 ACQUIRED = r'\bwe acquired ([\d,]+) ETH\b'
 STAKED = rf'As of ({DATE}), Bitmine(?:{AP}s)? total staked ETH stands at ([\d,]+)'
-YIELD = r'\b(\d+\.\d+)% 7-day BMNR yield|7-day yield of (\d+\.\d+)% \(annualized\)'
+YIELD = (r'\b(\d+\.\d+)% 7-day BMNR yield|7-day yield of (\d+\.\d+)% \(annualized\)'
+         r'|trailing 7-day staking yield of (\d+\.\d+)% as of')  # third wording: 11/09 release
 BUYBACK = (r'\brepurchased (?:approximately )?(\d+(?:\.\d+)?) million (?:shares of common stock|common stock|'
            r'common shares|shares) (?:in|during) the past week')
 BUYBACK_AVG = r'\bat an average price of \$([\d,]+\.\d+)'
@@ -190,7 +191,7 @@ def parse(html, filing, url, prev_week=None):
     return {'week_end': as_of, 'coins': coins, 'cash': money(*cash), 'cash_prec': ulp(*cash),
             'acquired': one([num(m.group(1)) for m in re.finditer(ACQUIRED, text)], 'acquired ETH', where),
             'staked': staked and staked[1], 'staked_date': staked and staked[0],
-            'yield': one([num(a or b) for a, b in re.findall(YIELD, text)], '7-day yield', where),
+            'yield': one([num(a or b or c) for a, b, c in re.findall(YIELD, text)], '7-day yield', where),
             'buyback': buy and (buy, one([num(m.group(1)) for m in re.finditer(BUYBACK_AVG, text)
                                           if not any(a <= m.start() < b for a, b in ytd)], 'buyback avg', where)),
             'pref': list(dict.fromkeys(pref))}

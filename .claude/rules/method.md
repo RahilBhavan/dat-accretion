@@ -151,18 +151,21 @@ Strategy's definition counts only the coin reserve and USD assets; the page stat
 amount. F = BMNP notional ($100 × shares). Releases give ETH bought in coins only, so a BMNR
 `buy_coin` row's usd = units × that week's ETH close, labeled estimated (neutral in attribution).
 
-BitMine S (decided 2026-09-25). Filed anchors: 579,652,432 (5/31 10-Q balance sheet) and
-603,226,394 (7/09, 10-Q cover). Roll by disclosed buybacks. Unreported issuance per week is
-estimated as the week's unexplained ΔR ÷ that week's BMNR close (unexplained = ΔR − disclosed
-cash flows). Between the two anchors, estimates are scaled so 5/31 + issuance = 7/09 exactly;
-after 7/09 they accumulate unscaled until the fiscal-year 10-K cover count reanchors. Estimates
-live in balances.csv (`source` says "S estimated"), never as actions.csv rows. Awards and
-warrants follow the in-the-money rule at the week's BMNR close. Known bias: "acquired" ETH
-includes staking (~2,500 ETH/week), so it is costed as a cash purchase, which inflates
-unexplained ΔR and S (≈ +0.43% of S by 2026-09-20); the 10-K reanchor removes it. Weeks with
-negative unexplained ΔR add 0 shares (two weeks; ≈ +0.015% of S). Warrants and options are
-counted from the 10-Q; an exercise before the next 10-K would be counted twice (as a warrant
-and via unexplained ΔR). Releases don't disclose exercises; the 10-K reanchor resets both.
+BitMine S (decided 2026-09-25; reanchored 2026-11-15). Filed anchors: 579,652,432 (5/31 10-Q balance sheet),
+603,226,394 (7/09, 10-Q cover), 613,267,022 (8/31, FY-end 10-K balance sheet) and 626,451,021 (11/04, 10-K cover).
+Roll by disclosed buybacks. Unreported issuance per week is estimated as the week's unexplained ΔR ÷ that week's
+BMNR close (unexplained = ΔR − disclosed cash flows). Between consecutive anchors, estimates are scaled so the
+previous anchor + issuance = the next anchor exactly (x1.0704 to 7/09, x1.0014 to 8/31, x0.9466 to 11/04); after the
+last anchor they accumulate unscaled until the next filed count. The 8/31 count sits one day after the 8/30 holdings
+week, so that week carries it (the 9/07 week would hold a week of later issuance); the 11/04 count is carried by the
+11/08 week. No buyback falls in an anchor week (the roll raises if one does). Estimates live in balances.csv (`source` says
+"S estimated"), never as actions.csv rows. Awards and warrants follow the in-the-money rule at the week's BMNR close;
+time-based RSUs are 1,097,346 (5/31 10-Q) up to 8/31 and 1,076,449 (8/31 10-K) after; options, warrants and CVI
+warrants are unchanged in the 10-K. Known bias: "acquired" ETH includes staking (~2,500 ETH/week), so it is costed as a
+cash purchase, which inflates unexplained ΔR and S; each filed count resets it (+0.43% of S by 2026-09-20 from the 7/09
+anchor; +0.12% from the 8/31 anchor; 0 at 11/08). Out-of-sample: the unscaled estimate from 7/09 landed 0.007% under the
+8/31 count and, from 8/31, 0.137% over the 11/04 count. Weeks with negative unexplained ΔR add 0 shares. An exercise
+before the next filed count would be counted twice (as a warrant and via unexplained ΔR); releases don't disclose exercises.
 
 ### SharpLink mapping (decided 2026-09-26)
 

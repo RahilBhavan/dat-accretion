@@ -30,16 +30,33 @@ def test_each_week_uses_its_own_bias():
     rows = [MSTR, {'firm': 'BMNR', 'week_end': '2026-08-23', 'm': '1.005', 'q': '1.0'},
             {'firm': 'BMNR', 'week_end': '2026-10-11', 'm': '1.05', 'q': '1.0'}]
     text = memo.closest(rows, {'2026-08-23': 0.003, '2026-10-11': 0.009})
-    assert 'up to 0.90% of S by 2026-10-11' in text and 'leaves m above q in every BitMine week' in text
+    assert 'up to 0.90% of S by 2026-10-11' in text and 'moves no BitMine week from above q' in text
     text = memo.closest(rows, {'2026-08-23': 0.006, '2026-10-11': 0.009})  # its own bias now flips 8/23
-    assert 'at or below q in 1 of 2 BitMine weeks (2026-08-23)' in text
+    assert 'to at or below it in 1 of 2 BitMine weeks (2026-08-23)' in text
 
 
 def test_bias_that_flips_weeks_is_stated():
     rows = read('data/weekly.csv')
     text = memo.closest(rows, {w: 0.5 for w in memo.week_biases('data', rows)})  # a bias that flips every week
     n = sum(r['firm'] == 'BMNR' and bool(r['m']) and bool(r['q']) for r in rows)
-    assert f'at or below q in {n} of {n} BitMine weeks' in text
+    above = sum(r['firm'] == 'BMNR' and bool(r['m']) and bool(r['q']) and float(r['m']) > float(r['q']) for r in rows)
+    assert f'to at or below it in {above} of {n} BitMine weeks' in text
+
+
+def test_week_already_below_q_is_not_a_bias_flip():
+    # 11/08 shape: m 0.863 vs q 0.971 with zero bias. The gap is real, not "within the S-estimate bias".
+    rows = [{'firm': 'BMNR', 'week_end': '2026-11-08', 'm': '0.863268', 'q': '0.9710'},
+            {'firm': 'BMNR', 'week_end': '2026-10-11', 'm': '1.0015', 'q': '1.0'}]
+    assert memo.bias_flips(rows, {'2026-11-08': 0.0, '2026-10-11': 0.0}) == []
+    assert memo.bias_flips(rows, {'2026-11-08': 0.2, '2026-10-11': 0.01}) == ['2026-10-11']
+
+
+def test_committed_memo_never_calls_a_below_q_week_bias_flip():
+    rows = read('data/weekly.csv')
+    flips = memo.bias_flips(rows, memo.week_biases('data', rows))
+    for w in flips:
+        r = next(r for r in rows if r['firm'] == 'BMNR' and r['week_end'] == w)
+        assert float(r['m']) > float(r['q'])
 
 
 def test_memo_leads_with_break_even_table(tmp_path):
