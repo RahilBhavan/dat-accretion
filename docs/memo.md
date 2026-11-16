@@ -3,10 +3,10 @@
 | Firm | Week ending | Net mNAV m | Preferred close | Break-even ($100 × m) | Rotation adds while |
 |---|---|---|---|---|---|
 | Strategy | 2026-11-08 | 1.115 | STRC $99.84 | $111.48 | STRC below break-even |
-| BitMine | 2026-11-08 | 0.863 | BMNP $97.10 | $86.33 | BMNP above break-even* |
+| BitMine | 2026-11-08 | 0.863 | BMNP $97.10 | $86.33 | BMNP above break-even |
 | SharpLink | 2026-11-02 (last filed) | 0.699 | no preferred | m = 1 | issue if m > 1; buy back if m < 1 |
 
-<sub>STRC closed at $99.84 on 2026-11-06 (q = 0.9984). BMNP closed at $97.10 on 2026-11-06 (q = 0.9710). SBET closed at $6.49 on 2026-11-02. SharpLink's filings state ETH holdings only on 2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03, 2026-09-30, 2026-11-02. *BitMine's 2026-11-08 gap between m and q is within the S-estimate bias; see the note under the map.</sub>
+<sub>STRC closed at $99.84 on 2026-11-06 (q = 0.9984). BMNP closed at $97.10 on 2026-11-06 (q = 0.9710). SBET closed at $6.49 on 2026-11-02. SharpLink's filings state ETH holdings only on 2026-06-16, 2026-06-28, 2026-06-30, 2026-08-03, 2026-09-30, 2026-11-02.</sub>
 
 <sub>Key. m, net mNAV: share price over net coin value per share. q: preferred close over its $100 notional. Net sats: net bitcoin per share in satoshis (100 million per BTC). Rotation: Strategy sells common and retires STRC; BitMine sells BMNP and buys back common. STRC: Strategy's perpetual preferred, $100 stated amount. BMNP: BitMine's 9.50% cumulative preferred, $100 liquidation preference.</sub>
 
@@ -32,7 +32,7 @@ STRC closed below its break-even in 26 of 26 filed weeks, and BMNP closed below 
 
 ---
 
-<sub>Closest weeks to the line: Strategy 2026-08-23, m 2.38% above q; BitMine 2026-10-11, m 0.14% above q. BitMine's estimated diluted share count S carries an upward bias of up to 0.00% of S by 2026-11-08 because its releases count staked ETH as purchased, which this memo costs as cash; the bias raises m by the same proportion, and removing it puts m at or below q in 5 of 22 BitMine weeks (2026-10-11, 2026-10-18, 2026-10-25, 2026-11-01, 2026-11-08), where BitMine's rotation would add.</sub>
+<sub>Closest weeks to the line: Strategy 2026-08-23, m 2.38% above q; BitMine 2026-10-11, m 0.14% above q. BitMine's estimated diluted share count S carries an upward bias of up to 0.00% of S by 2026-11-08 because its releases count staked ETH as purchased, which this memo costs as cash; the bias raises m by the same proportion, and removing it moves m from above q to at or below it in 1 of 22 BitMine weeks (2026-10-11), where BitMine's rotation would add.</sub>
 
 <sub>Period: Strategy weeks ending 2026-05-31 to 2026-11-08 (26 filed dates, including the 2026-06-30 quarter-end holdings row); BitMine weeks ending 2026-06-14 to 2026-11-08 (22 weeks with a BMNP price; BMNP was issued 2026-06-10); SharpLink filed holdings dates 2026-06-16 to 2026-11-02 (6 dates; SharpLink states holdings only on those dates, and this memo carries nothing forward between them).</sub>
 

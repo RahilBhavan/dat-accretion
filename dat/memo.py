@@ -37,11 +37,12 @@ def _bmnr(weekly):
 
 
 def bias_flips(weekly, biases):
-    """BitMine weeks where removing that week's own S bias puts m at or below q (the rotation would add there)."""
+    """BitMine weeks where m is above q but removing that week's own S bias puts it at or below q (the rotation would
+    add there). Weeks with m already at or below q are not flips: the bias does not explain that gap."""
     missing = [r['week_end'] for r in _bmnr(weekly) if r['week_end'] not in biases]
     if missing:  # raise, not assert: must hold under python -O too
         raise ValueError(f'BitMine weeks {missing} have no S bias: rerun dat.balances')
-    return [r['week_end'] for r in _bmnr(weekly) if not float(r['m']) * (1 - biases[r['week_end']]) > float(r['q'])]
+    return [r['week_end'] for r in _bmnr(weekly) if float(r['m']) > float(r['q']) >= float(r['m']) * (1 - biases[r['week_end']])]
 
 
 def closest(weekly, biases):
@@ -55,8 +56,8 @@ def closest(weekly, biases):
         near[f] = f"{FIRMS[f]['name']} {r['week_end']}, m {abs(d):.2%} {'above' if d > 0 else 'below'} q"
     cross = bias_flips(weekly, biases)
     asof = max(r['week_end'] for r in rows('BMNR'))
-    tail = ("removing it leaves m above q in every BitMine week." if not cross else
-            f"removing it puts m at or below q in {len(cross)} of {len(rows('BMNR'))} BitMine weeks "
+    tail = ("removing it moves no BitMine week from above q to at or below it." if not cross else
+            f"removing it moves m from above q to at or below it in {len(cross)} of {len(rows('BMNR'))} BitMine weeks "
             f"({', '.join(cross)}), where BitMine's rotation would add.")
     return (f"Closest weeks to the line: {near['MSTR']}; {near['BMNR']}. BitMine's estimated diluted share count S "
             f"carries {s_bias_text(biases[asof], asof)} because its releases count staked ETH as purchased, which this "
