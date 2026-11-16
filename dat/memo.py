@@ -238,7 +238,7 @@ def footnote(c, weekly, biases):
         f"row); BitMine weeks ending {b0} to {b1} ({k} weeks with a BMNP price; BMNP was issued 2026-06-10); SharpLink "
         f"filed holdings dates {s0} to {s1} ({y} dates; SharpLink states holdings only on those dates, and this memo "
         "carries nothing forward between them).",
-        "Sources: Strategy weekly 8-Ks and Q2 10-Q (EDGAR CIK 1050446); BitMine weekly 8-K releases and 10-Q (EDGAR CIK "
+        "Sources: Strategy weekly 8-Ks, Q2 and Q3 10-Qs (EDGAR CIK 1050446); BitMine weekly 8-K releases, the 5/31 10-Q and the 8/31 10-K (EDGAR CIK "
         "1829311); SharpLink 8-K releases and Q2 10-Q (EDGAR CIK 1981535); Yahoo Finance daily closes for MSTR, STRC, "
         "STRK, STRF, STRD, BMNR, BMNP and SBET; CoinGecko BTC and ETH "
         "closes. Each week uses closes from the last US trading day on or before the week's end.",

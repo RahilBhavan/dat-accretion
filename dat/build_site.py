@@ -5,7 +5,7 @@ Per firm-week: m, q, n, p, s, S, dollars moved, filing links, and each attributi
 Observed value to common is recomputed through the engine's states, so the bars can be checked against it.
 """
 import datetime as dt, json, math, os, sys
-from dat.balances import read, bmnr_s_bias, bmnr_flows, BMNR_10Q, BMNR_A0, BMNR_A1, BMNR_RSU, BMNR_DILUTIVE
+from dat.balances import read, bmnr_s_bias, bmnr_flows, BMNR_10Q, BMNR_10K, BMNR_A0, BMNR_A1, BMNR_LATER, bmnr_rsu, BMNR_DILUTIVE
 from dat.engine import states, state_net, CHECK_FROM
 from dat.parse_bmnr import excluded_holdings
 from dat.filings import page_name
@@ -30,10 +30,11 @@ def s_bias_text(bias, week):
 
 
 NOTES = [  # (group, text): estimate = an estimated figure; coverage = what is in or out; convention = a stated rule
-    ('estimate', 'BitMine S is estimated between filings. It is anchored to the 10-Q share counts for 2026-05-31 and 2026-07-09 '
-    'and rolled by disclosed buybacks. Unreported issuance each week is estimated as the week\'s unexplained change '
-    'in R divided by that week\'s BMNR close; the bars show it hatched as estimated issuance. ETH counted as bought '
-    'includes staking, which gives the S estimate {s_bias}; the next 10-K count resets it.'),
+    ('estimate', 'BitMine S is estimated between filings. It is anchored to the filed share counts for 2026-05-31 and 2026-07-09 '
+    '(10-Q) and 2026-08-31 and 2026-11-04 (10-K) and rolled by disclosed buybacks. Unreported issuance each week is estimated as '
+    'the week\'s unexplained change in R divided by that week\'s BMNR close, scaled to land on the next filed count; the bars show '
+    'it hatched as estimated issuance. ETH counted as bought includes staking, which gives the S estimate {s_bias}; the 2026-11-04 '
+    'count reset it, and it builds again with each later week.'),
     ('estimate', 'BitMine releases give ETH bought in coins only. The USD of each BitMine ETH purchase is estimated as units × that '
     'week\'s ETH close. Coin trades are neutral on day one, so the estimate does not move the bars. The releases do '
     'not separate staking rewards from purchases.'),
@@ -182,9 +183,9 @@ def close_sentence(h):
 BMNR_EDGAR = 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=1829311&type=8-K'
 
 
-def bmnr_awards(close):
+def bmnr_awards(close, week):
     """Awards and warrants in BitMine S at a BMNR close (dat.balances in-the-money rule): S minus these is basic."""
-    return BMNR_RSU + sum(n for n, k in BMNR_DILUTIVE if close > k)
+    return bmnr_rsu(week) + sum(n for n, k in BMNR_DILUTIVE if close > k)
 
 
 def eth_per_share(data_dir='data'):
@@ -206,7 +207,7 @@ def eth_per_share(data_dir='data'):
         b = bal[w]
         if int(b['coins']) != int(st['coins']):
             raise ValueError(f'BMNR {w}: balances.csv coins {b["coins"]} differ from stated {st["coins"]}')
-        basic = int(b['shares_diluted']) - bmnr_awards(float(wk[w]['s']))
+        basic = int(b['shares_diluted']) - bmnr_awards(float(wk[w]['s']), w)
         rows.append({'week_end': w, 'eth': int(st['coins']), 'basic': basic, 'per_1000': round(1000 * int(st['coins']) / basic, 4),
                      'estimated': 'anchored' not in b['source'], 'filing_url': st['filing_url']})
     by = {r['week_end']: r for r in rows}
@@ -218,6 +219,11 @@ def eth_per_share(data_dir='data'):
              {'date': BMNR_A1[0], 'shares': BMNR_A1[1], 'what': '10-Q cover', 'share_url': BMNR_10Q,
               'eth_weeks': [before, a1_week], 'eth_urls': [lo['filing_url'], hi['filing_url']],
               'per_1000': [round(1000 * lo['eth'] / BMNR_A1[1], 4), round(1000 * hi['eth'] / BMNR_A1[1], 4)]}]
+    for d, n, wk, what in BMNR_LATER:  # each later count sits between two stated weeks (the first is one day after its week)
+        i = weeks.index(wk)
+        pair = [weeks[i - 1], wk] if wk >= d else [wk, weeks[i + 1]]
+        filed.append({'date': d, 'shares': n, 'what': what, 'share_url': BMNR_10K, 'eth_weeks': pair,
+                      'eth_urls': [by[x]['filing_url'] for x in pair], 'per_1000': [round(1000 * by[x]['eth'] / n, 4) for x in pair]})
     # Out of sample: the same estimate, unscaled, from the 5/31 count to the week holding 7/09.
     flows, prices = bmnr_flows(stated, actions), load(path('prices.csv'))
     between = [w for w in weeks if BMNR_A0[0] < w <= a1_week]
@@ -229,6 +235,17 @@ def eth_per_share(data_dir='data'):
     check = {'from': BMNR_A0[0], 'to': BMNR_A1[0], 'estimate': round(unscaled), 'filed': BMNR_A1[1],
              'error': round(err), 'error_pct': round(100 * err / BMNR_A1[1], 3),
              'captured_pct': round(100 * (unscaled - BMNR_A0[1]) / (BMNR_A1[1] - BMNR_A0[1]), 1)}
+    # Out of sample again: from each filed count, the unscaled estimate to the next filed count (BMNR_LATER).
+    later, prev_w, prev_n = [], a1_week, BMNR_A1[1]
+    for d, n, wk, what in BMNR_LATER:
+        seg = [w for w in weeks if prev_w < w <= wk]
+        est = math.fsum(max(float(flows[w][2]), 0) / close_on_or_before(prices, 'BMNR', w)[1] for w in seg)
+        bt = math.fsum(float(a['units']) for a in actions if a['action'] == 'buyback_common' and a['week_end'] in seg)
+        u = prev_n + est - bt
+        later.append({'from': prev_w, 'to': d, 'estimate': round(u), 'filed': n, 'error': round(u - n),
+                      'error_pct': round(100 * (u - n) / n, 3), 'what': what})
+        prev_w, prev_n = wk, n
+    check['later'] = later
     return {'weeks': rows, 'filed': filed, 'edgar_url': BMNR_EDGAR, 'check': check,
             'note': eth_note(check, s_bias_text(bias, bias_week)), 'bias_pct': round(100 * bias, 2), 'bias_week': bias_week}
 
@@ -236,15 +253,17 @@ def eth_per_share(data_dir='data'):
 def eth_note(c, s_bias):
     """The panel's printed caveat: how the share count is estimated, its error against a filed count, its bias."""
     side = 'under' if c['error'] < 0 else 'over'
+    later = ' '.join(f"From the {x['from']} count to the {x['to']} {x['what']} the unscaled estimate gives {x['estimate']:,} "
+                     f"against {x['filed']:,} filed, {abs(x['error']):,} ({abs(x['error_pct']):.2f}%) "
+                     f"{'under' if x['error'] < 0 else 'over'}." for x in c['later'])
     return (f"BitMine's weekly releases state ETH held but no share count, so the dashed line divides by an estimated "
             f"basic share count: the 10-Q count for {c['from']}, plus the week's unexplained change in cash divided by "
-            f"the BMNR close, minus disclosed buybacks. Up to {c['to']} the estimate is scaled to land on the 10-Q cover "
-            f"count, so the line meets the filed figures there by construction. Check: unscaled, the estimate gives "
+            f"the BMNR close, minus disclosed buybacks. Up to each filed count the estimate is scaled to land on it, "
+            f"so the line meets the filed figures there by construction. Check: unscaled, the estimate gives "
             f"{c['estimate']:,} shares for {c['to']} against {c['filed']:,} filed, {abs(c['error']):,} "
-            f"({abs(c['error_pct']):.2f}%) {side}. No share count has been filed since {c['to']}; the next 10-K cover "
-            f"count is the next check. ETH counted as bought includes staking, which gives the estimate {s_bias}, so "
-            f"the line after {c['to']} reads low by up to about as much. Gross: ETH held only; the page's net coins per "
-            f"share (n) also counts cash and BMNP.")
+            f"({abs(c['error_pct']):.2f}%) {side}. {later} ETH counted as bought includes staking, which gives the "
+            f"estimate {s_bias}, so the line after the last filed count reads low by up to about as much. Gross: ETH held "
+            f"only; the page's net coins per share (n) also counts cash and BMNP.")
 
 
 

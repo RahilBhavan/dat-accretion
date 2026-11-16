@@ -7,14 +7,14 @@ no automatic reanchoring).
 Exit codes: 0 done; 1 a step failed; 2 done, reanchor needed (refresh.yml tells these apart).
 """
 import importlib, os, sys
-from dat.balances import read, PREF_ANCHOR_DATE, BMNR_A0, SBET_BASIC
+from dat.balances import read, BMNR_LATER, SBET_BASIC, Q3_PERIOD
 
 # One line per step; a new firm's parser goes in before dat.balances.
 STEPS = ['dat.parse_mstr', 'dat.prices', 'dat.parse_bmnr', 'dat.parse_sbet', 'dat.balances', 'dat.engine', 'dat.memo',
          'dat.filings', 'dat.build_site']
-# (firm, CIK, period of the 10-Q the anchors come from: Strategy Q2 10-Q; BitMine 5/31 10-Q, whose cover gives BMNR_A1;
+# (firm, CIK, period of the 10-Q the anchors come from: Strategy Q3 10-Q (9/30; class A cover, awards, preferred check); BitMine FY-end 10-K (8/31; its balance sheet and 11/04 cover give the S counts);
 # SharpLink Q2 10-Q, whose balance sheet and cover give SBET_BASIC)
-ANCHORS = [('MSTR', 1050446, PREF_ANCHOR_DATE), ('BMNR', 1829311, BMNR_A0[0]), ('SBET', 1981535, SBET_BASIC[0][0])]
+ANCHORS = [('MSTR', 1050446, Q3_PERIOD), ('BMNR', 1829311, BMNR_LATER[0][0]), ('SBET', 1981535, SBET_BASIC[0][0])]
 
 
 def last_weeks(data_dir):

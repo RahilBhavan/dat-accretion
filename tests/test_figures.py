@@ -11,4 +11,4 @@ def test_figures_build_in_both_themes(tmp_path):
 
 def test_ruler_matches_engine_n(tmp_path):
     svg = figures.ruler('data', 'MSTR', '2026-09-20', figures.THEMES['light'])  # asserts n against weekly.csv
-    assert '671,441' in svg and '156,379 sats per share' in svg
+    assert '671,441' in svg and '156,243 sats per share' in svg

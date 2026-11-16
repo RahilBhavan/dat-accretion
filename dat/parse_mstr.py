@@ -456,6 +456,8 @@ KNOWN_FILING_GAPS = {
                   '8-K 0001193125-26-276717 (filed 6/22) balances only from 846,843 (+520 = 847,363)',
     '2026-08-02': '843,775 - 1,638 = 842,137 but 8-K 0001193125-26-329565 (filed 8/03) states 842,138; '
                   '8-K 0001193125-26-341297 (filed 8/10) balances only from 842,137 (-1,690 = 840,447)',
+    '2026-11-01': '848,517 + 811 = 849,328 but 8-K 0001193125-26-442707 (filed 11/02) states 849,327; '
+                  '8-K 0001193125-26-452693 (filed 11/09) balances only from 849,328 (+1,036 = 850,364)',
 }
 
 # Weeks whose 8-K holdings disagree by 1 BTC with the prior 8-K plus that week's trade, where later 8-Ks

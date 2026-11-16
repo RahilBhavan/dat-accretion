@@ -20,9 +20,12 @@ def test_reanchor_filter_keeps_only_periods_after_the_anchor():
 
 
 def test_bmnr_s_bias_pin():
-    # method.md "BitMine S": about +0.43% of S by 2026-09-20; the memo prints it to 2 dp
+    # method.md "BitMine S": the staking bias builds from the latest filed count. By 2026-09-20 that was the 10-K's 8/31 balance
+    # sheet (about +0.43% from the 7/09 anchor before the 10-K reanchor); the 11/04 10-K cover resets it to zero at 11/08.
     b, week = bmnr_s_bias('data', '2026-09-20')
-    assert week == '2026-09-20' and f'{b:.2%}' == '0.43%'
+    assert week == '2026-09-20' and f'{b:.2%}' == '0.12%'
+    assert bmnr_s_bias('data', '2026-08-30')[0] == 0.0 and bmnr_s_bias('data', '2026-11-08')[0] == 0.0
+    assert bmnr_s_bias('data', '2026-10-25')[0] > 0
 
 
 def test_bmnr_s_bias_zero_before_first_estimate():
