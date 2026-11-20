@@ -1,15 +1,15 @@
 {
  "status": "fail",
- "run_at": "2026-11-19T02:40:58Z",
+ "run_at": "2026-11-20T02:26:16Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 142,916.2805 vs API 143,347.6341: -0.301% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $62,567.00 (API latestPrice), MSTR $90.32 (Yahoo); repo at week 2026-10-25; newer 8-K filed 2026-11-16 not yet parsed",
+   "compared": "rebuilt 141,935.1644 vs API 142,410.9315: -0.334% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $61,496.00 (API latestPrice), MSTR $86.13 (Yahoo); repo at week 2026-10-25; newer 8-K filed 2026-11-16 not yet parsed",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.3942 vs API 1.3751: +1.388% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $62,567.00 (API latestPrice), MSTR $90.32 (Yahoo); repo at week 2026-10-25; newer 8-K filed 2026-11-16 not yet parsed",
+   "compared": "rebuilt 1.4038 vs API 1.3842: +1.417% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $61,496.00 (API latestPrice), MSTR $86.13 (Yahoo); repo at week 2026-10-25; newer 8-K filed 2026-11-16 not yet parsed",
    "ok": false
   },
   {
