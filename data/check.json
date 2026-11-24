@@ -1,15 +1,15 @@
 {
  "status": "fail",
- "run_at": "2026-11-23T01:51:21Z",
+ "run_at": "2026-11-24T05:23:17Z",
  "checks": [
   {
    "name": "netSatsPerShare vs API",
-   "compared": "rebuilt 141,277.1395 vs API 141,782.9105: -0.357% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $60,798.00 (API latestPrice), MSTR $77.80 (Yahoo); repo at week 2026-10-25; newer 8-K filed 2026-11-16 not yet parsed",
+   "compared": "rebuilt 141,066.5961 vs API 141,585.1405: -0.366% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $60,578.00 (API latestPrice), MSTR $84.40 (Yahoo); EDGAR 8-K lookup failed: ValueError: 0001193125-26-470961 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526470961/mstr-20261123.htm): unknown USD Reserve flow: \"USD Reserve\" at char 133 is not part of a balance, capacity, inflow or outflow phrase in 'On November 23, 2026, Strategy announced that its board of directors authorized management to reallocate up to $1.0 billion from the USD Reserve to USD Cash.'",
    "ok": true
   },
   {
    "name": "amplification vs API",
-   "compared": "rebuilt 1.4104 vs API 1.3903: +1.443% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $60,798.00 (API latestPrice), MSTR $77.80 (Yahoo); repo at week 2026-10-25; newer 8-K filed 2026-11-16 not yet parsed",
+   "compared": "rebuilt 1.4125 vs API 1.3867: +1.858% (tolerance 0.5%); state from 8-K for week 2026-10-25 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526431146/mstr-20261026.htm; the API may reflect a newer 8-K), BTC $60,578.00 (API latestPrice), MSTR $84.40 (Yahoo); EDGAR 8-K lookup failed: ValueError: 0001193125-26-470961 (https://www.sec.gov/Archives/edgar/data/1050446/000119312526470961/mstr-20261123.htm): unknown USD Reserve flow: \"USD Reserve\" at char 133 is not part of a balance, capacity, inflow or outflow phrase in 'On November 23, 2026, Strategy announced that its board of directors authorized management to reallocate up to $1.0 billion from the USD Reserve to USD Cash.'",
    "ok": false
   },
   {
